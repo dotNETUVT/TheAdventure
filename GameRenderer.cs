@@ -29,7 +29,7 @@ namespace TheAdventure{
             _texturePointers = new Dictionary<int, nint>();
         }
 
-        public void Render(){
+        public void Render(int timeSinceLastFrame){
             _sdl.RenderClear(_renderer);
             foreach(var renderable in _gameLogic.GetRenderables()){
                 if(renderable.TextureId > -1 &&

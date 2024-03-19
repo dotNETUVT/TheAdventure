@@ -9,11 +9,9 @@ public static class Program
     {
         var sdl = new Sdl(new SdlContext());
 
-        ulong framesRenderedCounter = 0;
         var timer = new Stopwatch();
 
-        var sdlInitResult = sdl.Init(Sdl.InitVideo | Sdl.InitAudio | Sdl.InitEvents | Sdl.InitTimer | Sdl.InitGamecontroller |
-                                     Sdl.InitJoystick);
+        var sdlInitResult = sdl.Init(Sdl.InitVideo | Sdl.InitEvents);
         if (sdlInitResult < 0)
         {
             throw new InvalidOperationException("Failed to initialize SDL.");
@@ -26,23 +24,20 @@ public static class Program
 
         gameLogic.InitializeGame(gameRenderer);
 
+        var lastFrameRendereAt = DateTimeOffset.UtcNow;
+
         bool quit = false;
         while (!quit)
         {
+            var timeSinceLastFrame = (int)DateTimeOffset.UtcNow.Subtract(lastFrameRendereAt).TotalMilliseconds;
+            
             quit = inputLogic.ProcessInput();
             if(quit) break;
-            gameLogic.ProcessFrame();
             
-            #region Frame Timer
-            var elapsed = timer.Elapsed;
-            timer.Restart();
-            #endregion
+            gameLogic.ProcessFrame(timeSinceLastFrame);
+            gameRenderer.Render(timeSinceLastFrame);
 
-            // game.render(renderer, RenderEvent{ elapsed, framesRenderedCounter++ });
-            gameRenderer.Render();
-
-            ++framesRenderedCounter;
-            System.Threading.Thread.Sleep(TimeSpan.FromSeconds(0.041666666666667));
+            lastFrameRendereAt = DateTimeOffset.UtcNow;
         }
 
         gameWindow.Destroy();

@@ -8,11 +8,12 @@ public class RenderableGameObject : GameObject
     public Rectangle<int> TextureDestination { get; set; }
     public GameRenderer.TextureInfo TextureInformation {get;set;}
 
-    public RenderableGameObject(int textureId = -1, Rectangle<int> textureSource = new Rectangle<int>() , Rectangle<int> textureDestination = new Rectangle<int>(), GameRenderer.TextureInfo textureInfo = default(GameRenderer.TextureInfo))
-    {
+    public RenderableGameObject(GameRenderer renderer, string fileName) {
+        var textureId = renderer.LoadTexture(fileName, out var textureInfo);
         TextureId = textureId;
-        TextureSource = textureSource;
-        TextureDestination = textureDestination;
+        TextureSource = Rectangle.FromLTRB(0, 0, textureInfo.Width, textureInfo.Height);
+        TextureDestination = TextureSource;
         TextureInformation = textureInfo;
     }
+
 }

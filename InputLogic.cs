@@ -1,6 +1,9 @@
+using Silk.NET.Maths;
 using Silk.NET.SDL;
+using TheAdventure.Models;
 
-namespace TheAdventure{
+namespace TheAdventure
+{
     public unsafe class InputLogic
     {
         private Sdl _sdl;
@@ -8,7 +11,8 @@ namespace TheAdventure{
         private GameWindow _gameWindow;
         private GameRenderer _renderer;
 
-        public InputLogic(Sdl sdl, GameWindow window, GameRenderer renderer, GameLogic logic){
+        public InputLogic(Sdl sdl, GameWindow window, GameRenderer renderer, GameLogic logic)
+        {
             _sdl = sdl;
             _gameLogic = logic;
             _gameWindow = window;
@@ -106,6 +110,11 @@ namespace TheAdventure{
                     case (uint)EventType.Mousebuttondown:
                     {
                         mouseButtonStates[ev.Button.Button] = 1;
+                        var bomb = new AnimatedGameObject(_renderer, "BombExploding.png", 1, 13, 13, 1);
+                        bomb.TextureDestination = new Rectangle<int>(ev.Button.X, ev.Button.Y,
+                            bomb.TextureDestination.Size.X, bomb.TextureDestination.Size.Y);
+                        _gameLogic.AddGameObject(bomb);
+                        
                         break;
                     }
 
@@ -137,6 +146,7 @@ namespace TheAdventure{
                     }
                 }
             }
+
             return false;
         }
     }
