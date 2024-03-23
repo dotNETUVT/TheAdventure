@@ -25,17 +25,18 @@ public class GameEventListener
                 // Huge switch case to take correct actions depending on what event was dispatched
                 switch (gameEvent.type)
                 {
-                    case "spawnAnimatedGameObject":
+                    case GameEventTypes.spawnAnimatedGameObject:
                         AnimatedGameObject gameObject = new AnimatedGameObject(gameEvent._eventSettings["fileName"], int.Parse(gameEvent._eventSettings["durationInSeconds"]), gameEvent._counter, int.Parse(gameEvent._eventSettings["numberOfFrames"]), int.Parse(gameEvent._eventSettings["numberOfColumns"]), int.Parse(gameEvent._eventSettings["numberOfRows"]), int.Parse(gameEvent._eventSettings["x"]), int.Parse(gameEvent._eventSettings["y"]));
                         _gameObjects.Add(gameObject.Id, gameObject);
                         break;
                 }
                 // Finished with one event from the queue
                 _eventsQueue.Dequeue();
+                _numberOfEventsInQueue--;
             }
     }
 
-    public void DispatchEvent(string eventType, Dictionary<string, string> eventSettings, int counter)
+    public void DispatchEvent(GameEventTypes eventType, Dictionary<string, string> eventSettings, int counter)
     {
         // Create a new event
         GameEvent eventToBeDispatched = new GameEvent(eventType, eventSettings, counter);

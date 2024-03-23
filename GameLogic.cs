@@ -84,7 +84,7 @@ namespace TheAdventure
                 {"y", y.ToString()},
             };
             
-            _gameEventListener.DispatchEvent("spawnAnimatedGameObject", settings, _bombIds);
+            _gameEventListener.DispatchEvent(GameEventTypes.spawnAnimatedGameObject, settings, _bombIds);
             ++_bombIds;
         }
     }

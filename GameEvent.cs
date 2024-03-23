@@ -1,8 +1,13 @@
 namespace TheAdventure;
 
+public enum GameEventTypes
+{
+    spawnAnimatedGameObject
+}
+
 public class GameEvent
 {
-    public string type;
+    public GameEventTypes type;
     // To keep it flexible we use a string to string Dict
     public Dictionary<string, string> _eventSettings { get; private set; }
     
@@ -12,7 +17,7 @@ public class GameEvent
     
     
 
-    public GameEvent(string type, Dictionary<string, string> settings, int counter)
+    public GameEvent(GameEventTypes type, Dictionary<string, string> settings, int counter)
     {
         this.type = type;
         // Set the settings (this was done with a dict to increase flexibility as different event types may have very different settings). 
