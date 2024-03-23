@@ -1,3 +1,4 @@
+using System.Diagnostics;
 using System.Runtime.CompilerServices;
 using Silk.NET.Maths;
 
@@ -5,8 +6,9 @@ namespace TheAdventure
 {
     public class GameLogic
     {
-        private Dictionary<int, GameObject> _gameObjects = new();
-
+        private static Dictionary<int, GameObject> _gameObjects = new();
+        // Instantiate a new event listener
+        private GameEventListener _gameEventListener = new GameEventListener(_gameObjects);
         public GameLogic()
         {
         }
@@ -28,6 +30,8 @@ namespace TheAdventure
 
         public void ProcessFrame()
         {
+            // Continuously listen for new events and handle them
+            _gameEventListener.Listen();
         }
 
 
@@ -67,8 +71,20 @@ namespace TheAdventure
 
         public void AddBomb(int x, int y)
         {
-            AnimatedGameObject bomb = new AnimatedGameObject("BombExploding.png", 2, _bombIds, 13, 13, 1, x, y);
-            _gameObjects.Add(bomb.Id, bomb);
+            // Dispatch an event
+            // The name of the attributes are exactly the same everywhere to avoid confusions.
+            Dictionary<string, string> settings = new Dictionary<string, string>
+            {
+                {"fileName", "BombExploding.png"},
+                {"durationInSeconds", "2"},
+                {"numberOfFrames", "13"},
+                {"numberOfColumns", "13"},
+                {"numberOfRows", "1"},
+                {"x", x.ToString()},
+                {"y", y.ToString()},
+            };
+            
+            _gameEventListener.DispatchEvent("spawnAnimatedGameObject", settings, _bombIds);
             ++_bombIds;
         }
     }
