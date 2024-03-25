@@ -1,3 +1,4 @@
+using Silk.NET.Maths;
 using Silk.NET.SDL;
 using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.PixelFormats;
@@ -85,9 +86,22 @@ namespace TheAdventure
             }
         }
 
+        public void RenderTexture(int textureId, Rectangle<int> src, Rectangle<int> dst)
+        {
+            if (_textures.TryGetValue(textureId, out var imageTexture))
+            {
+                _sdl.RenderCopyEx(_renderer, (Texture*)imageTexture, src,
+                    dst,
+                    0,
+                    new Silk.NET.SDL.Point(0,0), RendererFlip.None);
+            }
+        }
+
         public void Render()
         {
             _sdl.RenderClear(_renderer);
+
+            _gameLogic.RenderTerrain(this);
 
             var timeSinceLastFrame = 0;
             if (_lastFrameRenderedAt > DateTimeOffset.MinValue)
