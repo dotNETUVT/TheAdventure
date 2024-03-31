@@ -11,7 +11,7 @@ namespace TheAdventure
         {
             _sdl = sdl;
             _window = (IntPtr)sdl.CreateWindow(
-                "The Adventure", Sdl.WindowposUndefined, Sdl.WindowposUndefined, 800, 800,
+                "The Adventure", Sdl.WindowposUndefined, Sdl.WindowposUndefined, 640, 640,
                 (uint)WindowFlags.Resizable /*| (uint)WindowFlags.AllowHighdpi*/
             );
 

@@ -19,7 +19,7 @@ namespace TheAdventure
         public void LoadGameState()
         {
             var jsonSerializerOptions =  new JsonSerializerOptions(){ PropertyNameCaseInsensitive = true };
-            var levelContent = File.ReadAllText(Path.Combine("Assets", "terrain.tmj"));
+            var levelContent = File.ReadAllText(Path.Combine("Assets", "layers_1_2.tmj"));
 
             var level = JsonSerializer.Deserialize<Level>(levelContent, jsonSerializerOptions);
             if(level == null) return;
