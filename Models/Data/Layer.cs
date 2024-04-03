@@ -7,4 +7,10 @@ public class Layer
     public int Y { get; set; }
     public bool Visible { get; set; }
     public int Id { get; set; }
+    public float Opacity { get; set; }
+
+    public override string ToString()
+    {
+        return $"Id: {Id}, Opacity: {Opacity}, Height: {Height}, Width: {Width}, X: {X}, Y: {Y}, Visible: {Visible}";
+    }
 }

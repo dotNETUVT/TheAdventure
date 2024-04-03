@@ -19,16 +19,14 @@ namespace TheAdventure
         public void LoadGameState()
         {
             var jsonSerializerOptions =  new JsonSerializerOptions(){ PropertyNameCaseInsensitive = true };
-            var levelContent = File.ReadAllText(Path.Combine("Assets", "layers_1_2.tmj"));
-
+            var levelContent = File.ReadAllText(Path.Combine("Assets", "terrain_plants_final.tmj"));
             var level = JsonSerializer.Deserialize<Level>(levelContent, jsonSerializerOptions);
             if(level == null) return;
             foreach(var refTileSet in level.TileSets){
                 var tileSetContent = File.ReadAllText(Path.Combine("Assets", refTileSet.Source));
                 if(!_loadedTileSets.TryGetValue(refTileSet.Source, out var tileSet)){
                     tileSet = JsonSerializer.Deserialize<TileSet>(tileSetContent, jsonSerializerOptions);
-
-                    foreach(var tile in tileSet.Tiles)
+                    foreach (var tile in tileSet.Tiles)
                     {
                         var internalTextureId = GameRenderer.LoadTexture(Path.Combine("Assets", tile.Image), out var _);
                         tile.InternalTextureId = internalTextureId;
@@ -61,7 +59,7 @@ namespace TheAdventure
             foreach(var tileSet in _currentLevel.TileSets){
                 foreach(var tile in tileSet.Set.Tiles)
                 {
-                    if(tile.Id == id)
+                    if(tile.InternalTextureId == id)
                     {
                         return tile;
                     }
@@ -72,7 +70,7 @@ namespace TheAdventure
 
         public void RenderTerrain(GameRenderer renderer)
         {
-            for(var layer = 0; layer < _currentLevel.Layers.Length; ++layer){
+            for (var layer = 0; layer < _currentLevel.Layers.Length; ++layer){
                 var cLayer = _currentLevel.Layers[layer];
 
                 for (var i = 0; i < _currentLevel.Width; ++i)
@@ -85,7 +83,7 @@ namespace TheAdventure
                         var src = new Rectangle<int>(0,0, cTile.ImageWidth, cTile.ImageHeight);
                         var dst = new Rectangle<int>(i * cTile.ImageWidth, j * cTile.ImageHeight, cTile.ImageWidth, cTile.ImageHeight);
 
-                        renderer.RenderTexture(cTile.InternalTextureId, src, dst);
+                        renderer.RenderTexture(cTile.InternalTextureId, cLayer.Opacity, src, dst);
                     }
                 }
             }

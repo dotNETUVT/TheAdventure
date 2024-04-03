@@ -79,6 +79,7 @@ namespace TheAdventure
         {
             if (_textures.TryGetValue(gameObject.TextureId, out var imageTexture))
             {
+                //_sdl.SetTextureAlphaMod(gameObject.TextureId, 155);
                 _sdl.RenderCopyEx(_renderer, (Texture*)imageTexture, gameObject.TextureSource,
                     gameObject.TextureDestination,
                     gameObject.TextureRotation,
@@ -86,10 +87,12 @@ namespace TheAdventure
             }
         }
 
-        public void RenderTexture(int textureId, Rectangle<int> src, Rectangle<int> dst)
+        public void RenderTexture(int textureId, float textureOpacity, Rectangle<int> src, Rectangle<int> dst)
         {
             if (_textures.TryGetValue(textureId, out var imageTexture))
             {
+                byte opacity255 = (byte)(textureOpacity * 255);
+                _sdl.SetTextureAlphaMod((Texture*)imageTexture, opacity255);
                 _sdl.RenderCopyEx(_renderer, (Texture*)imageTexture, src,
                     dst,
                     0,
