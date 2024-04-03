@@ -14,8 +14,9 @@ public class AnimatedGameObject : RenderableGameObject
     private int _rowHeight = 0;
     private int _columnWidth = 0;
     private int _timePerFrame;
+    private string _sound;
 
-    public AnimatedGameObject(string fileName, int durationInSeconds, int id, int numberOfFrames, int numberOfColumns,int numberOfRows, int x, int y):
+    public AnimatedGameObject(string fileName, int durationInSeconds, int id, int numberOfFrames, int numberOfColumns,int numberOfRows, int x, int y, string _sound):
         base(fileName, id){
         _durationInSeconds = durationInSeconds;
         _numberOfFrames = numberOfFrames;
@@ -32,6 +33,13 @@ public class AnimatedGameObject : RenderableGameObject
 
         this.TextureDestination = new Silk.NET.Maths.Rectangle<int>(x - halfColumn, y - halfRow, _columnWidth, _rowHeight);
         this.TextureSource = new Silk.NET.Maths.Rectangle<int>(_currentColumn * _columnWidth, _currentRow * _rowHeight, _columnWidth, _rowHeight);
+
+        _sound = _sound;
+
+    }
+
+    public string getSound() {
+        return _sound;
     }
 
     public override bool Update(int timeSinceLastFrame){
