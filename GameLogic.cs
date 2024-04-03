@@ -152,7 +152,7 @@ namespace TheAdventure
                     System.Console.WriteLine("EXCEPTION = " + e.Message);
                 }
             else {
-                System.Console.WriteLine("FILENAME IS NULL WTF");
+                System.Console.WriteLine("FILENAME IS NULL");
                     }
 
 
@@ -162,7 +162,7 @@ namespace TheAdventure
         {
             AnimatedGameObject bomb = new AnimatedGameObject("BombExploding.png", 2, _bombIds, 13, 13, 1, x, y, "Assets/bomb_sound.m4a");
             _gameObjects.Add(bomb.Id, bomb);
-            System.Console.WriteLine("BOMB GETTER = " + bomb.getSound());
+            //System.Console.WriteLine("BOMB GETTER = " + bomb.getSound());
             playSound("Assets/bomb_sound.m4a");
             ++_bombIds;
         }
