@@ -11,22 +11,33 @@ namespace TheAdventure
         private Dictionary<string, TileSet> _loadedTileSets = new();
 
         private Level _currentLevel;
-
-        public GameLogic()
-        {
-        }
-
+        
         public void LoadGameState()
         {
             var jsonSerializerOptions =  new JsonSerializerOptions(){ PropertyNameCaseInsensitive = true };
+            
             var levelContent = File.ReadAllText(Path.Combine("Assets", "terrain.tmj"));
 
             var level = JsonSerializer.Deserialize<Level>(levelContent, jsonSerializerOptions);
+            
             if(level == null) return;
+            
             foreach(var refTileSet in level.TileSets){
                 var tileSetContent = File.ReadAllText(Path.Combine("Assets", refTileSet.Source));
+
+                if (tileSetContent is null)
+                {
+                    throw new Exception($"Could not get tile content from {refTileSet.Source}");
+                }
+                
+                
                 if(!_loadedTileSets.TryGetValue(refTileSet.Source, out var tileSet)){
                     tileSet = JsonSerializer.Deserialize<TileSet>(tileSetContent, jsonSerializerOptions);
+
+                    if (tileSet is null)
+                    {
+                        throw new Exception("Could not deserialize tile set");
+                    }
 
                     foreach(var tile in tileSet.Tiles)
                     {

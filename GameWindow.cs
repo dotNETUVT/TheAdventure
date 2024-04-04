@@ -15,32 +15,36 @@ namespace TheAdventure
                 (uint)WindowFlags.Resizable /*| (uint)WindowFlags.AllowHighdpi*/
             );
 
-            if (_window == IntPtr.Zero)
+            if (_window != IntPtr.Zero)
             {
-                var ex = sdl.GetErrorAsException();
-                if (ex != null)
-                {
-                    throw ex;
-                }
-
-                throw new Exception("Failed to create window.");
+                return;
+            } 
+            
+            var ex = sdl.GetErrorAsException();
+            if (ex != null)
+            {
+                throw ex;
             }
+
+            throw new Exception("Failed to create window.");
         }
 
         public IntPtr CreateRenderer(){
 
             var renderer = (IntPtr)_sdl.CreateRenderer((Window*)_window, -1, (uint)RendererFlags.Accelerated);
-            if (renderer == IntPtr.Zero)
+            if (renderer != IntPtr.Zero)
             {
-                var ex = _sdl.GetErrorAsException();
-                if (ex != null)
-                {
-                    throw ex;
-                }
-
-                throw new Exception("Failed to create renderer.");
+                return renderer;
             }
-            return renderer;
+            
+            
+            var ex = _sdl.GetErrorAsException();
+            if (ex != null)
+            {
+                throw ex;
+            }
+
+            throw new Exception("Failed to create renderer.");
         }
 
         public void Destroy(){
