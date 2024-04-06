@@ -46,5 +46,7 @@ namespace TheAdventure
         public void Destroy(){
             _sdl.DestroyWindow((Window*)_window);
         }
+        
+        public IntPtr Window => _window;
     }
 }

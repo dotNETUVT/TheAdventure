@@ -7,13 +7,17 @@ namespace TheAdventure{
         private GameLogic _gameLogic;
         private GameWindow _gameWindow;
         private GameRenderer _renderer;
+        private GameCamera _camera;
+        private IntPtr _window;
         private DateTimeOffset _lastUpdate;
 
-        public InputLogic(Sdl sdl, GameWindow window, GameRenderer renderer, GameLogic logic){
+        public InputLogic(Sdl sdl, GameWindow window, GameRenderer renderer, GameLogic logic, GameCamera camera){
             _sdl = sdl;
             _gameLogic = logic;
             _gameWindow = window;
             _renderer = renderer;
+            _camera = camera;
+            _window = window.Window;
             _lastUpdate = DateTimeOffset.UtcNow;
         }
 
@@ -25,6 +29,9 @@ namespace TheAdventure{
             Event ev = new Event();
             var mouseX = 0;
             var mouseY = 0;
+            var relativeMouseX = 0;
+            var relativeMouseY = 0;
+            int windowWidth, windowHeight;
             while (_sdl.PollEvent(ref ev) != 0)
             {
                 if (ev.Type == (uint)EventType.Quit)
@@ -163,8 +170,12 @@ namespace TheAdventure{
 
             _lastUpdate = currentTime;
 
-            if (mouseButtonStates[(byte)MouseButton.Primary] == 1){
-                _gameLogic.AddBomb(mouseX, mouseY);
+            if (mouseButtonStates[(byte)MouseButton.Primary] == 1)
+            {
+                _sdl.GetWindowSize((Window*)_window, &windowWidth, &windowHeight);
+                relativeMouseX = mouseX - windowWidth / 2 + _camera.X;
+                relativeMouseY = mouseY - windowHeight / 2 + _camera.Y;
+                _gameLogic.AddBomb(relativeMouseX, relativeMouseY);
             }
             return false;
         }

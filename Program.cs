@@ -21,8 +21,9 @@ public static class Program
 
         var gameWindow = new GameWindow(sdl);
         var gameLogic = new GameLogic();
-        var gameRenderer = new GameRenderer(sdl, gameWindow, gameLogic);
-        var inputLogic = new InputLogic(sdl, gameWindow, gameRenderer, gameLogic);
+        var gameCamera = new GameCamera();
+        var gameRenderer = new GameRenderer(sdl, gameWindow, gameLogic, gameCamera);
+        var inputLogic = new InputLogic(sdl, gameWindow, gameRenderer, gameLogic, gameCamera);
 
         gameLogic.LoadGameState();
 

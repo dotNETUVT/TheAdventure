@@ -31,7 +31,7 @@ namespace TheAdventure
         private static GameRenderer? _singleton;
         private DateTimeOffset _lastFrameRenderedAt = DateTimeOffset.MinValue;
 
-        public GameRenderer(Sdl sdl, GameWindow gameWindow, GameLogic gameLogic)
+        public GameRenderer(Sdl sdl, GameWindow gameWindow, GameLogic gameLogic, GameCamera gameCamera)
         {
             _window = gameWindow;
             _gameLogic = gameLogic;
@@ -39,9 +39,9 @@ namespace TheAdventure
             _renderer = (Renderer*)gameWindow.CreateRenderer();
             _textures = new Dictionary<int, IntPtr>();
             _textureData = new Dictionary<int, TextureData>();
-            _camera = new GameCamera();
+            _camera = gameCamera;
             _camera.Width = 800;
-            _camera.Height = 600;
+            _camera.Height = 800;
 
             // TODO: Check if _singleton is not null, if it is, clear resources.
 
