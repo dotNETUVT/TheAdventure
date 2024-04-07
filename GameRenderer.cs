@@ -130,5 +130,11 @@ namespace TheAdventure
 
             _sdl.RenderPresent(_renderer);
         }
+        
+        public void ResizeCamera(int width, int height)
+        {
+            _camera.Width = width;
+            _camera.Height = height;
+        }
     }
 }

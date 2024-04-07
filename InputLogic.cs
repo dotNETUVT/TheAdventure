@@ -53,6 +53,9 @@ namespace TheAdventure{
                             }
                             case (byte)WindowEventID.SizeChanged:
                             {
+                                var width = ev.Window.Data1;
+                                var height = ev.Window.Data2;
+                                _renderer.ResizeCamera(width, height);
                                 break;
                             }
                             case (byte)WindowEventID.Minimized:
@@ -148,18 +151,13 @@ namespace TheAdventure{
 
             var timeSinceLastUpdateInMS = (int)currentTime.Subtract(_lastUpdate).TotalMilliseconds;
 
-            if (_keyboardState[(int)Scancode.ScancodeUp] == 1){
-                _gameLogic.UpdatePlayerPosition(1.0, 0, 0, 0, timeSinceLastUpdateInMS);
-            }
-            else if (_keyboardState[(int)Scancode.ScancodeDown] == 1){
-                _gameLogic.UpdatePlayerPosition(0, 1.0, 0, 0, timeSinceLastUpdateInMS);
-            }
-            else if (_keyboardState[(int)Scancode.ScancodeLeft] == 1){
-                _gameLogic.UpdatePlayerPosition(0, 0, 1.0, 0, timeSinceLastUpdateInMS);
-            }
-            else if (_keyboardState[(int)Scancode.ScancodeRight] == 1){
-                _gameLogic.UpdatePlayerPosition(0, 0, 0, 1.0, timeSinceLastUpdateInMS);
-            }
+           
+            //Support for diagonal movement
+            _gameLogic.UpdatePlayerPosition(_keyboardState[(int)Scancode.ScancodeUp],
+                (double)_keyboardState[(int)Scancode.ScancodeDown],
+                (double)_keyboardState[(int)Scancode.ScancodeLeft],
+                (double)_keyboardState[(int)Scancode.ScancodeRight],
+                timeSinceLastUpdateInMS);
 
             _lastUpdate = currentTime;
 
