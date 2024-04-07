@@ -9,13 +9,6 @@
     </PropertyGroup>
 
     <ItemGroup>
-      <PackageReference Include="Silk.NET.Input.Sdl" Version="2.20.0" />
-      <PackageReference Include="Silk.NET.SDL" Version="2.20.0" />
-      <PackageReference Include="Silk.NET.Windowing.Sdl" Version="2.20.0" />
-      <PackageReference Include="SixLabors.ImageSharp" Version="3.1.3" />
-    </ItemGroup>
-
-    <ItemGroup>
       <None Remove="BombExploding.png" />
       <Content Include="BombExploding.png">
         <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
@@ -52,6 +45,12 @@
       <Content Include="Assets\terrain.tmj">
         <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
       </Content>
+    </ItemGroup>
+
+    <ItemGroup>
+      <PackageReference Include="Silk.NET.Maths" Version="2.20.0" />
+      <PackageReference Include="Silk.NET.SDL" Version="2.20.0" />
+      <PackageReference Include="SixLabors.ImageSharp" Version="3.1.3" />
     </ItemGroup>
 
 </Project>

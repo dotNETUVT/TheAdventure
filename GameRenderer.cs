@@ -52,6 +52,7 @@ namespace TheAdventure
         {
             using (var fStream = new FileStream(fileName, FileMode.Open))
             {
+                
                 var image = Image.Load<Rgba32>(fStream);
                 textureData = new TextureData()
                 {

@@ -1,6 +1,5 @@
-using System.Runtime.CompilerServices;
 using System.Text.Json;
-using System.Text.Json.Serialization;
+using kbradu;
 using Silk.NET.Maths;
 
 namespace TheAdventure
@@ -9,7 +8,6 @@ namespace TheAdventure
     {
         private Dictionary<int, GameObject> _gameObjects = new();
         private Dictionary<string, TileSet> _loadedTileSets = new();
-
         private Level? _currentLevel;
         private PlayerObject _player;
 
@@ -25,7 +23,9 @@ namespace TheAdventure
             var levelContent = File.ReadAllText(Path.Combine("Assets", "terrain.tmj"));
 
             var level = JsonSerializer.Deserialize<Level>(levelContent, jsonSerializerOptions);
+
             if(level == null) return;
+
             foreach(var refTileSet in level.TileSets){
                 var tileSetContent = File.ReadAllText(Path.Combine("Assets", refTileSet.Source));
                 if(!_loadedTileSets.TryGetValue(refTileSet.Source, out var tileSet)){
@@ -42,6 +42,22 @@ namespace TheAdventure
                 refTileSet.Set = tileSet;
             }
             _currentLevel = level;
+
+            // Generate chests (note: if you get an error with Asset file not found, try pasting it in the bin file directly) 
+            const int chestsNum = 8; // if someone wants to organize it, good luck.
+            level.ChestSets = new kbradu.ChestObject[chestsNum];
+            Random rng = new Random(System.DateTime.Now.Millisecond);
+            for (int i = 0; i < chestsNum; i++)
+            {
+                int id = 3141592 + i; // i see no id generator all around the scripts, so who knows where is it. Replace this please.
+                int randX = 10 + rng.Next(900);
+                int randY = 10 + rng.Next(600);
+                var material = rng.Next() > 0.3 ? MaterialType.Silver : MaterialType.Gold;
+                level.ChestSets[i] = new kbradu.ChestObject(id, randX, randY, 3 + rng.Next(10), material);
+                _gameObjects.Add(id, level.ChestSets[i]);
+            }
+
+            // Other gameobjects to be added...
         }
 
         public IEnumerable<RenderableGameObject> GetAllRenderableObjects()
@@ -76,8 +92,7 @@ namespace TheAdventure
 
         public void UpdatePlayerPosition(double up, double down, double left, double right, int timeSinceLastUpdateInMS)
         {
-            _player.UpdatePlayerPosition(up, down, left, right, timeSinceLastUpdateInMS);
-            
+            _player.UpdatePlayerPosition(up, down, left, right, timeSinceLastUpdateInMS);           
         }
 
         public (int x, int y) GetPlayerCoordinates()
