@@ -1,0 +1,222 @@
+\doxysection{The\+Adventure.\+Game\+Logic Class Reference}
+\hypertarget{class_the_adventure_1_1_game_logic}{}\label{class_the_adventure_1_1_game_logic}\index{TheAdventure.GameLogic@{TheAdventure.GameLogic}}
+
+
+Manages the core game logic, including loading game states, rendering, and updating game objects and the player. This class is responsible for orchestrating the high-\/level behavior of the game.  
+
+
+\doxysubsubsection*{Public Member Functions}
+\begin{DoxyCompactItemize}
+\item 
+\Hypertarget{class_the_adventure_1_1_game_logic_af9d8252202091be975f85b815ea900b0}\label{class_the_adventure_1_1_game_logic_af9d8252202091be975f85b815ea900b0} 
+{\bfseries Game\+Logic} ()
+\begin{DoxyCompactList}\small\item\em Initializes a new instance of the Game\+Logic class, setting up the initial state for the game logic. \end{DoxyCompactList}\item 
+\Hypertarget{class_the_adventure_1_1_game_logic_a7fb62ffffef941898f65c9b10eb4d818}\label{class_the_adventure_1_1_game_logic_a7fb62ffffef941898f65c9b10eb4d818} 
+void {\bfseries Load\+Game\+State} ()
+\begin{DoxyCompactList}\small\item\em Loads the initial game state from external JSON files. This includes parsing level layouts, initializing tile sets, and setting the player\textquotesingle{}s starting position. \end{DoxyCompactList}\item 
+IEnumerable$<$ Renderable\+Game\+Object $>$ \mbox{\hyperlink{class_the_adventure_1_1_game_logic_a98a7216d6d2b0daec1f0aa886c4014a7}{Get\+All\+Renderable\+Objects}} ()
+\begin{DoxyCompactList}\small\item\em Retrieves all renderable game objects currently active in the game. \end{DoxyCompactList}\item 
+\Hypertarget{class_the_adventure_1_1_game_logic_a9527fc91b12c443adae7d7549becee0e}\label{class_the_adventure_1_1_game_logic_a9527fc91b12c443adae7d7549becee0e} 
+void {\bfseries Process\+Frame} ()
+\begin{DoxyCompactList}\small\item\em Processes a single frame of game logic, updating the state of the game as necessary. This method should be called repeatedly in the game loop. \end{DoxyCompactList}\item 
+Tile? \mbox{\hyperlink{class_the_adventure_1_1_game_logic_a919ddd181292875606f1dc682c6d9d41}{Get\+Tile}} (int id)
+\begin{DoxyCompactList}\small\item\em Retrieves a specific tile based on its ID. \end{DoxyCompactList}\item 
+void \mbox{\hyperlink{class_the_adventure_1_1_game_logic_aad70b7cc8b8735f12b2272f47d058de0}{Update\+Player\+Position}} (double up, double down, double left, double right, int time\+Since\+Last\+Update\+In\+MS)
+\begin{DoxyCompactList}\small\item\em Updates the player\textquotesingle{}s position based on input directions and the amount of time that has passed since the last update. \end{DoxyCompactList}\item 
+\Hypertarget{class_the_adventure_1_1_game_logic_adda58ddecd0324a9aef2e98890776870}\label{class_the_adventure_1_1_game_logic_adda58ddecd0324a9aef2e98890776870} 
+int int y {\bfseries Get\+Player\+Coordinates} ()
+\item 
+void \mbox{\hyperlink{class_the_adventure_1_1_game_logic_a482a5b368b6ac9641aea34de3dbcc9eb}{Render\+Terrain}} (\mbox{\hyperlink{class_the_adventure_1_1_game_renderer}{Game\+Renderer}} renderer)
+\begin{DoxyCompactList}\small\item\em Instructs the renderer to draw the terrain for the current level. \end{DoxyCompactList}\item 
+IEnumerable$<$ Renderable\+Game\+Object $>$ \mbox{\hyperlink{class_the_adventure_1_1_game_logic_ad1b666bf7ed7dbc14f1d660da5d6cd45}{Get\+Renderables}} ()
+\begin{DoxyCompactList}\small\item\em Retrieves all game objects that can be rendered. \end{DoxyCompactList}\item 
+void \mbox{\hyperlink{class_the_adventure_1_1_game_logic_a95f969dcc738d8131fda367b7e11e473}{Render\+All\+Objects}} (int time\+Since\+Last\+Frame, \mbox{\hyperlink{class_the_adventure_1_1_game_renderer}{Game\+Renderer}} renderer)
+\begin{DoxyCompactList}\small\item\em Renders all objects in the game, removing any that are no longer active. \end{DoxyCompactList}\item 
+void \mbox{\hyperlink{class_the_adventure_1_1_game_logic_a7f3c809aebccea496ddd3696a6421339}{Add\+Bomb}} (int \mbox{\hyperlink{class_the_adventure_1_1_game_logic_afd41463cc810718afe667a931cf3f2aa}{x}}, int y)
+\begin{DoxyCompactList}\small\item\em Adds a bomb game object at the specified coordinates. \end{DoxyCompactList}\end{DoxyCompactItemize}
+\doxysubsubsection*{Public Attributes}
+\begin{DoxyCompactItemize}
+\item 
+int \mbox{\hyperlink{class_the_adventure_1_1_game_logic_afd41463cc810718afe667a931cf3f2aa}{x}}
+\begin{DoxyCompactList}\small\item\em Gets the current coordinates of the player within the game world. \end{DoxyCompactList}\end{DoxyCompactItemize}
+\doxysubsubsection*{Private Attributes}
+\begin{DoxyCompactItemize}
+\item 
+Dictionary$<$ int, Game\+Object $>$ \mbox{\hyperlink{class_the_adventure_1_1_game_logic_a7b0a30c0db181f757b11f5f55b5886cb}{\+\_\+game\+Objects}} = new()
+\item 
+Dictionary$<$ string, Tile\+Set $>$ \mbox{\hyperlink{class_the_adventure_1_1_game_logic_a6b9baab0099f71129992aa861532eee5}{\+\_\+loaded\+Tile\+Sets}} = new()
+\item 
+Level? \mbox{\hyperlink{class_the_adventure_1_1_game_logic_aed128f99780663b8bd22238c0cf64b7b}{\+\_\+current\+Level}}
+\item 
+Player\+Object \mbox{\hyperlink{class_the_adventure_1_1_game_logic_aae4516fab110552b08e8ac312f3b80e5}{\+\_\+player}}
+\item 
+\Hypertarget{class_the_adventure_1_1_game_logic_a7966f32978377c6d789f04c8d88bb44f}\label{class_the_adventure_1_1_game_logic_a7966f32978377c6d789f04c8d88bb44f} 
+int {\bfseries \+\_\+bomb\+Ids} = 100
+\end{DoxyCompactItemize}
+
+
+\doxysubsection{Detailed Description}
+Manages the core game logic, including loading game states, rendering, and updating game objects and the player. This class is responsible for orchestrating the high-\/level behavior of the game. 
+
+\doxysubsection{Member Function Documentation}
+\Hypertarget{class_the_adventure_1_1_game_logic_a7f3c809aebccea496ddd3696a6421339}\label{class_the_adventure_1_1_game_logic_a7f3c809aebccea496ddd3696a6421339} 
+\index{TheAdventure.GameLogic@{TheAdventure.GameLogic}!AddBomb@{AddBomb}}
+\index{AddBomb@{AddBomb}!TheAdventure.GameLogic@{TheAdventure.GameLogic}}
+\doxysubsubsection{\texorpdfstring{AddBomb()}{AddBomb()}}
+{\footnotesize\ttfamily void The\+Adventure.\+Game\+Logic.\+Add\+Bomb (\begin{DoxyParamCaption}\item[{int}]{x,  }\item[{int}]{y }\end{DoxyParamCaption})}
+
+
+
+Adds a bomb game object at the specified coordinates. 
+
+
+\begin{DoxyParams}{Parameters}
+{\em x} & The x-\/coordinate where the bomb should be placed.\\
+\hline
+{\em y} & The y-\/coordinate where the bomb should be placed.\\
+\hline
+\end{DoxyParams}
+\Hypertarget{class_the_adventure_1_1_game_logic_a98a7216d6d2b0daec1f0aa886c4014a7}\label{class_the_adventure_1_1_game_logic_a98a7216d6d2b0daec1f0aa886c4014a7} 
+\index{TheAdventure.GameLogic@{TheAdventure.GameLogic}!GetAllRenderableObjects@{GetAllRenderableObjects}}
+\index{GetAllRenderableObjects@{GetAllRenderableObjects}!TheAdventure.GameLogic@{TheAdventure.GameLogic}}
+\doxysubsubsection{\texorpdfstring{GetAllRenderableObjects()}{GetAllRenderableObjects()}}
+{\footnotesize\ttfamily IEnumerable$<$ Renderable\+Game\+Object $>$ The\+Adventure.\+Game\+Logic.\+Get\+All\+Renderable\+Objects (\begin{DoxyParamCaption}{ }\end{DoxyParamCaption})}
+
+
+
+Retrieves all renderable game objects currently active in the game. 
+
+\begin{DoxyReturn}{Returns}
+An enumerable collection of renderable game objects.
+\end{DoxyReturn}
+\Hypertarget{class_the_adventure_1_1_game_logic_ad1b666bf7ed7dbc14f1d660da5d6cd45}\label{class_the_adventure_1_1_game_logic_ad1b666bf7ed7dbc14f1d660da5d6cd45} 
+\index{TheAdventure.GameLogic@{TheAdventure.GameLogic}!GetRenderables@{GetRenderables}}
+\index{GetRenderables@{GetRenderables}!TheAdventure.GameLogic@{TheAdventure.GameLogic}}
+\doxysubsubsection{\texorpdfstring{GetRenderables()}{GetRenderables()}}
+{\footnotesize\ttfamily IEnumerable$<$ Renderable\+Game\+Object $>$ The\+Adventure.\+Game\+Logic.\+Get\+Renderables (\begin{DoxyParamCaption}{ }\end{DoxyParamCaption})}
+
+
+
+Retrieves all game objects that can be rendered. 
+
+\begin{DoxyReturn}{Returns}
+An enumerable collection of renderable game objects.
+\end{DoxyReturn}
+\Hypertarget{class_the_adventure_1_1_game_logic_a919ddd181292875606f1dc682c6d9d41}\label{class_the_adventure_1_1_game_logic_a919ddd181292875606f1dc682c6d9d41} 
+\index{TheAdventure.GameLogic@{TheAdventure.GameLogic}!GetTile@{GetTile}}
+\index{GetTile@{GetTile}!TheAdventure.GameLogic@{TheAdventure.GameLogic}}
+\doxysubsubsection{\texorpdfstring{GetTile()}{GetTile()}}
+{\footnotesize\ttfamily Tile? The\+Adventure.\+Game\+Logic.\+Get\+Tile (\begin{DoxyParamCaption}\item[{int}]{id }\end{DoxyParamCaption})}
+
+
+
+Retrieves a specific tile based on its ID. 
+
+
+\begin{DoxyParams}{Parameters}
+{\em id} & The unique ID of the tile to retrieve.\\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+The tile with the specified ID, or null if no such tile exists.
+\end{DoxyReturn}
+\Hypertarget{class_the_adventure_1_1_game_logic_a95f969dcc738d8131fda367b7e11e473}\label{class_the_adventure_1_1_game_logic_a95f969dcc738d8131fda367b7e11e473} 
+\index{TheAdventure.GameLogic@{TheAdventure.GameLogic}!RenderAllObjects@{RenderAllObjects}}
+\index{RenderAllObjects@{RenderAllObjects}!TheAdventure.GameLogic@{TheAdventure.GameLogic}}
+\doxysubsubsection{\texorpdfstring{RenderAllObjects()}{RenderAllObjects()}}
+{\footnotesize\ttfamily void The\+Adventure.\+Game\+Logic.\+Render\+All\+Objects (\begin{DoxyParamCaption}\item[{int}]{time\+Since\+Last\+Frame,  }\item[{\mbox{\hyperlink{class_the_adventure_1_1_game_renderer}{Game\+Renderer}}}]{renderer }\end{DoxyParamCaption})}
+
+
+
+Renders all objects in the game, removing any that are no longer active. 
+
+
+\begin{DoxyParams}{Parameters}
+{\em time\+Since\+Last\+Frame} & The time elapsed since the last frame was rendered, in milliseconds.\\
+\hline
+{\em renderer} & The renderer used to draw the game objects.\\
+\hline
+\end{DoxyParams}
+\Hypertarget{class_the_adventure_1_1_game_logic_a482a5b368b6ac9641aea34de3dbcc9eb}\label{class_the_adventure_1_1_game_logic_a482a5b368b6ac9641aea34de3dbcc9eb} 
+\index{TheAdventure.GameLogic@{TheAdventure.GameLogic}!RenderTerrain@{RenderTerrain}}
+\index{RenderTerrain@{RenderTerrain}!TheAdventure.GameLogic@{TheAdventure.GameLogic}}
+\doxysubsubsection{\texorpdfstring{RenderTerrain()}{RenderTerrain()}}
+{\footnotesize\ttfamily void The\+Adventure.\+Game\+Logic.\+Render\+Terrain (\begin{DoxyParamCaption}\item[{\mbox{\hyperlink{class_the_adventure_1_1_game_renderer}{Game\+Renderer}}}]{renderer }\end{DoxyParamCaption})}
+
+
+
+Instructs the renderer to draw the terrain for the current level. 
+
+
+\begin{DoxyParams}{Parameters}
+{\em renderer} & The game renderer responsible for drawing the game objects.\\
+\hline
+\end{DoxyParams}
+\Hypertarget{class_the_adventure_1_1_game_logic_aad70b7cc8b8735f12b2272f47d058de0}\label{class_the_adventure_1_1_game_logic_aad70b7cc8b8735f12b2272f47d058de0} 
+\index{TheAdventure.GameLogic@{TheAdventure.GameLogic}!UpdatePlayerPosition@{UpdatePlayerPosition}}
+\index{UpdatePlayerPosition@{UpdatePlayerPosition}!TheAdventure.GameLogic@{TheAdventure.GameLogic}}
+\doxysubsubsection{\texorpdfstring{UpdatePlayerPosition()}{UpdatePlayerPosition()}}
+{\footnotesize\ttfamily void The\+Adventure.\+Game\+Logic.\+Update\+Player\+Position (\begin{DoxyParamCaption}\item[{double}]{up,  }\item[{double}]{down,  }\item[{double}]{left,  }\item[{double}]{right,  }\item[{int}]{time\+Since\+Last\+Update\+In\+MS }\end{DoxyParamCaption})}
+
+
+
+Updates the player\textquotesingle{}s position based on input directions and the amount of time that has passed since the last update. 
+
+
+\begin{DoxyParams}{Parameters}
+{\em up} & The movement in the upward direction.\\
+\hline
+{\em down} & The movement in the downward direction.\\
+\hline
+{\em left} & The movement in the leftward direction.\\
+\hline
+{\em right} & The movement in the rightward direction.\\
+\hline
+{\em time\+Since\+Last\+Update\+In\+MS} & The time elapsed since the last update, in milliseconds.\\
+\hline
+\end{DoxyParams}
+
+
+\doxysubsection{Member Data Documentation}
+\Hypertarget{class_the_adventure_1_1_game_logic_aed128f99780663b8bd22238c0cf64b7b}\label{class_the_adventure_1_1_game_logic_aed128f99780663b8bd22238c0cf64b7b} 
+\index{TheAdventure.GameLogic@{TheAdventure.GameLogic}!\_currentLevel@{\_currentLevel}}
+\index{\_currentLevel@{\_currentLevel}!TheAdventure.GameLogic@{TheAdventure.GameLogic}}
+\doxysubsubsection{\texorpdfstring{\_currentLevel}{\_currentLevel}}
+{\footnotesize\ttfamily Level? The\+Adventure.\+Game\+Logic.\+\_\+current\+Level\hspace{0.3cm}{\ttfamily [private]}}
+
+Represents the currently active level. It can be null if no level is currently loaded. This allows the game to dynamically load and unload levels. \Hypertarget{class_the_adventure_1_1_game_logic_a7b0a30c0db181f757b11f5f55b5886cb}\label{class_the_adventure_1_1_game_logic_a7b0a30c0db181f757b11f5f55b5886cb} 
+\index{TheAdventure.GameLogic@{TheAdventure.GameLogic}!\_gameObjects@{\_gameObjects}}
+\index{\_gameObjects@{\_gameObjects}!TheAdventure.GameLogic@{TheAdventure.GameLogic}}
+\doxysubsubsection{\texorpdfstring{\_gameObjects}{\_gameObjects}}
+{\footnotesize\ttfamily Dictionary$<$int, Game\+Object$>$ The\+Adventure.\+Game\+Logic.\+\_\+game\+Objects = new()\hspace{0.3cm}{\ttfamily [private]}}
+
+Stores all game objects, indexed by their unique ID. This dictionary serves as the central registry for all active game objects. \Hypertarget{class_the_adventure_1_1_game_logic_a6b9baab0099f71129992aa861532eee5}\label{class_the_adventure_1_1_game_logic_a6b9baab0099f71129992aa861532eee5} 
+\index{TheAdventure.GameLogic@{TheAdventure.GameLogic}!\_loadedTileSets@{\_loadedTileSets}}
+\index{\_loadedTileSets@{\_loadedTileSets}!TheAdventure.GameLogic@{TheAdventure.GameLogic}}
+\doxysubsubsection{\texorpdfstring{\_loadedTileSets}{\_loadedTileSets}}
+{\footnotesize\ttfamily Dictionary$<$string, Tile\+Set$>$ The\+Adventure.\+Game\+Logic.\+\_\+loaded\+Tile\+Sets = new()\hspace{0.3cm}{\ttfamily [private]}}
+
+Stores tile sets loaded from external files, indexed by their source file name. This allows for efficient reuse of tile set data across levels. \Hypertarget{class_the_adventure_1_1_game_logic_aae4516fab110552b08e8ac312f3b80e5}\label{class_the_adventure_1_1_game_logic_aae4516fab110552b08e8ac312f3b80e5} 
+\index{TheAdventure.GameLogic@{TheAdventure.GameLogic}!\_player@{\_player}}
+\index{\_player@{\_player}!TheAdventure.GameLogic@{TheAdventure.GameLogic}}
+\doxysubsubsection{\texorpdfstring{\_player}{\_player}}
+{\footnotesize\ttfamily Player\+Object The\+Adventure.\+Game\+Logic.\+\_\+player\hspace{0.3cm}{\ttfamily [private]}}
+
+The player object, representing the user\textquotesingle{}s character in the game. This object is central to player interactions and movements. \Hypertarget{class_the_adventure_1_1_game_logic_afd41463cc810718afe667a931cf3f2aa}\label{class_the_adventure_1_1_game_logic_afd41463cc810718afe667a931cf3f2aa} 
+\index{TheAdventure.GameLogic@{TheAdventure.GameLogic}!x@{x}}
+\index{x@{x}!TheAdventure.GameLogic@{TheAdventure.GameLogic}}
+\doxysubsubsection{\texorpdfstring{x}{x}}
+{\footnotesize\ttfamily int The\+Adventure.\+Game\+Logic.\+x}
+
+
+
+Gets the current coordinates of the player within the game world. 
+
+\begin{DoxyReturn}{Returns}
+A tuple containing the X and Y coordinates of the player.
+\end{DoxyReturn}
+
+
+The documentation for this class was generated from the following file\+:\begin{DoxyCompactItemize}
+\item 
+C\+:/\+Users/user/\+Rider\+Projects/\+The\+Adventure/Game\+Logic.\+cs\end{DoxyCompactItemize}

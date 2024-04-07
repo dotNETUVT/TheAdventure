@@ -1,0 +1,383 @@
+\doxysection{The\+Adventure Namespace Reference}
+\hypertarget{namespace_the_adventure}{}\label{namespace_the_adventure}\index{TheAdventure@{TheAdventure}}
+\doxysubsubsection*{Classes}
+\begin{DoxyCompactItemize}
+\item 
+class \mbox{\hyperlink{class_the_adventure_1_1_game_logic}{Game\+Logic}}
+\begin{DoxyCompactList}\small\item\em Manages the core game logic, including loading game states, rendering, and updating game objects and the player. This class is responsible for orchestrating the high-\/level behavior of the game. \end{DoxyCompactList}\item 
+class \mbox{\hyperlink{class_the_adventure_1_1_game_renderer}{Game\+Renderer}}
+\begin{DoxyCompactList}\small\item\em Responsible for rendering game elements to the screen. It utilizes Silk.\+NET for rendering and Image\+Sharp for texture management. \end{DoxyCompactList}\item 
+class \mbox{\hyperlink{class_the_adventure_1_1_game_window}{Game\+Window}}
+\begin{DoxyCompactList}\small\item\em Manages the creation, rendering, and destruction of the game window. \end{DoxyCompactList}\item 
+class \mbox{\hyperlink{class_the_adventure_1_1_input_logic}{Input\+Logic}}
+\begin{DoxyCompactList}\small\item\em Manages input handling for the game, including keyboard and mouse events. \end{DoxyCompactList}\item 
+class \mbox{\hyperlink{class_the_adventure_1_1_program}{Program}}
+\begin{DoxyCompactList}\small\item\em Main entry point and control hub for "{}\+The Adventure"{} game. \end{DoxyCompactList}\item 
+class \mbox{\hyperlink{class_the_adventure_1_1_sdl_context}{Sdl\+Context}}
+\begin{DoxyCompactList}\small\item\em Manages the loading and access of native SDL library functions. \end{DoxyCompactList}\end{DoxyCompactItemize}
+\doxysubsubsection*{Enumerations}
+\begin{DoxyCompactItemize}
+\item 
+enum \mbox{\hyperlink{namespace_the_adventure_ab0664c7bb567bda3b882cc9e6352a60a}{Key\+Code}} \+: UInt16 \{ \newline
+{\bfseries Unknown} = 0
+, {\bfseries A} = 4
+, {\bfseries B} = 5
+, {\bfseries C} = 6
+, \newline
+{\bfseries D} = 7
+, {\bfseries E} = 8
+, {\bfseries F} = 9
+, {\bfseries G} = 10
+, \newline
+{\bfseries H} = 11
+, {\bfseries I} = 12
+, {\bfseries J} = 13
+, {\bfseries K} = 14
+, \newline
+{\bfseries L} = 15
+, {\bfseries M} = 16
+, {\bfseries N} = 17
+, {\bfseries O} = 18
+, \newline
+{\bfseries P} = 19
+, {\bfseries Q} = 20
+, {\bfseries R} = 21
+, {\bfseries S} = 22
+, \newline
+{\bfseries T} = 23
+, {\bfseries U} = 24
+, {\bfseries V} = 25
+, {\bfseries W} = 26
+, \newline
+{\bfseries X} = 27
+, {\bfseries Y} = 28
+, {\bfseries Z} = 29
+, {\bfseries One} = 30
+, \newline
+{\bfseries Two} = 31
+, {\bfseries Three} = 32
+, {\bfseries Four} = 33
+, {\bfseries Five} = 34
+, \newline
+{\bfseries Six} = 35
+, {\bfseries Seven} = 36
+, {\bfseries Eight} = 37
+, {\bfseries Nine} = 38
+, \newline
+{\bfseries Zero} = 39
+, {\bfseries Return} = 40
+, {\bfseries Escape} = 41
+, {\bfseries Backspace} = 42
+, \newline
+{\bfseries Tab} = 43
+, {\bfseries Space} = 44
+, {\bfseries Minus} = 45
+, {\bfseries Equals} = 46
+, \newline
+{\bfseries Left\+Bracket} = 47
+, {\bfseries Right\+Bracket} = 48
+, {\bfseries Backslash} = 49
+, {\bfseries No\+Nus\+Hash} = 50
+, \newline
+{\bfseries Semicolon} = 51
+, {\bfseries Apostrophe} = 52
+, {\bfseries Grave} = 53
+, {\bfseries Comma} = 54
+, \newline
+{\bfseries Period} = 55
+, {\bfseries Slash} = 56
+, {\bfseries Capslock} = 57
+, {\bfseries F1} = 58
+, \newline
+{\bfseries F2} = 59
+, {\bfseries F3} = 60
+, {\bfseries F4} = 61
+, {\bfseries F5} = 62
+, \newline
+{\bfseries F6} = 63
+, {\bfseries F7} = 64
+, {\bfseries F8} = 65
+, {\bfseries F9} = 66
+, \newline
+{\bfseries F10} = 67
+, {\bfseries F11} = 68
+, {\bfseries F12} = 69
+, {\bfseries Print\+Screen} = 70
+, \newline
+{\bfseries Scroll\+Lock} = 71
+, {\bfseries Pause} = 72
+, {\bfseries Insert} = 73
+, {\bfseries Home} = 74
+, \newline
+{\bfseries Pageup} = 75
+, {\bfseries Delete} = 76
+, {\bfseries End} = 77
+, {\bfseries Pagedown} = 78
+, \newline
+{\bfseries Right} = 79
+, {\bfseries Left} = 80
+, {\bfseries Down} = 81
+, {\bfseries Up} = 82
+, \newline
+{\bfseries Num\+Lock\+Clear} = 83
+, {\bfseries Kp\+Divide} = 84
+, {\bfseries Kp\+Multiply} = 85
+, {\bfseries Kp\+Minus} = 86
+, \newline
+{\bfseries Kp\+Plus} = 87
+, {\bfseries Kp\+Enter} = 88
+, {\bfseries Kp\+One} = 89
+, {\bfseries Kp\+Two} = 90
+, \newline
+{\bfseries Kp\+Three} = 91
+, {\bfseries Kp\+Four} = 92
+, {\bfseries Kp\+Five} = 93
+, {\bfseries Kp\+Six} = 94
+, \newline
+{\bfseries Kp\+Seven} = 95
+, {\bfseries Kp\+Eight} = 96
+, {\bfseries Kp\+Nine} = 97
+, {\bfseries Kp\+Zero} = 98
+, \newline
+{\bfseries Kp\+Period} = 99
+, {\bfseries Non\+Us\+Backslash} = 100
+, {\bfseries Application} = 101
+, {\bfseries Power} = 102
+, \newline
+{\bfseries Kp\+Equals} = 103
+, {\bfseries F13} = 104
+, {\bfseries F14} = 105
+, {\bfseries F15} = 106
+, \newline
+{\bfseries F16} = 107
+, {\bfseries F17} = 108
+, {\bfseries F18} = 109
+, {\bfseries F19} = 110
+, \newline
+{\bfseries F20} = 111
+, {\bfseries F21} = 112
+, {\bfseries F22} = 113
+, {\bfseries F23} = 114
+, \newline
+{\bfseries F24} = 115
+, {\bfseries Execute} = 116
+, {\bfseries Help} = 117
+, {\bfseries Menu} = 118
+, \newline
+{\bfseries Select} = 119
+, {\bfseries Stop} = 120
+, {\bfseries Again} = 121
+, {\bfseries Undo} = 122
+, \newline
+{\bfseries Cut} = 123
+, {\bfseries Copy} = 124
+, {\bfseries Paste} = 125
+, {\bfseries Find} = 126
+, \newline
+{\bfseries Mute} = 127
+, {\bfseries Volume\+Up} = 128
+, {\bfseries Volume\+Down} = 129
+, {\bfseries Kp\+Comma} = 133
+, \newline
+{\bfseries Kp\+Equals\+As400} = 134
+, {\bfseries International1} = 135
+, {\bfseries International2} = 136
+, {\bfseries International3} = 137
+, \newline
+{\bfseries International4} = 138
+, {\bfseries International5} = 139
+, {\bfseries International6} = 140
+, {\bfseries International7} = 141
+, \newline
+{\bfseries International8} = 142
+, {\bfseries International9} = 143
+, {\bfseries Lang1} = 144
+, {\bfseries Lang2} = 145
+, \newline
+{\bfseries Lang3} = 146
+, {\bfseries Lang4} = 147
+, {\bfseries Lang5} = 148
+, {\bfseries Lang6} = 149
+, \newline
+{\bfseries Lang7} = 150
+, {\bfseries Lang8} = 151
+, {\bfseries Lang9} = 152
+, {\bfseries Alt\+Erase} = 153
+, \newline
+{\bfseries Sys\+Req} = 154
+, {\bfseries Cancel} = 155
+, {\bfseries Clear} = 156
+, {\bfseries Prior} = 157
+, \newline
+{\bfseries Return2} = 158
+, {\bfseries Separator} = 159
+, {\bfseries Out} = 160
+, {\bfseries Operation} = 161
+, \newline
+{\bfseries Clear\+Again} = 162
+, {\bfseries Cr\+Sel} = 163
+, {\bfseries Ex\+Sel} = 164
+, {\bfseries Kp00} = 176
+, \newline
+{\bfseries Kp000} = 177
+, {\bfseries Thousands\+Separator} = 178
+, {\bfseries Decimal\+Separator} = 179
+, {\bfseries Currency\+Unit} = 180
+, \newline
+{\bfseries Currency\+Sub\+Unit} = 181
+, {\bfseries Kp\+Left\+Paren} = 182
+, {\bfseries Kp\+Right\+Paren} = 183
+, {\bfseries Kp\+Left\+Brace} = 184
+, \newline
+{\bfseries Kp\+Right\+Brace} = 185
+, {\bfseries Kp\+Tab} = 186
+, {\bfseries Kp\+Backspace} = 187
+, {\bfseries KpA} = 188
+, \newline
+{\bfseries KpB} = 189
+, {\bfseries KpC} = 190
+, {\bfseries KpD} = 191
+, {\bfseries KpE} = 192
+, \newline
+{\bfseries KpF} = 193
+, {\bfseries Kp\+Xor} = 194
+, {\bfseries Kp\+Power} = 195
+, {\bfseries Kp\+Percent} = 196
+, \newline
+{\bfseries Kp\+Less} = 197
+, {\bfseries Kp\+Greater} = 198
+, {\bfseries Kp\+Ampersand} = 199
+, {\bfseries Kp\+Dbl\+Ampersand} = 200
+, \newline
+{\bfseries Kp\+Vertical\+Bar} = 201
+, {\bfseries Kp\+Dbl\+Vertical\+Bar} = 202
+, {\bfseries Kp\+Colon} = 203
+, {\bfseries Kp\+Hash} = 204
+, \newline
+{\bfseries Kp\+Space} = 205
+, {\bfseries Kp\+At} = 206
+, {\bfseries Kp\+Exclamation} = 207
+, {\bfseries Kp\+Mem\+Store} = 208
+, \newline
+{\bfseries Kp\+Mem\+Recall} = 209
+, {\bfseries Kp\+Mem\+Clear} = 210
+, {\bfseries Kp\+Mem\+Add} = 211
+, {\bfseries Kp\+Mem\+Subtract} = 212
+, \newline
+{\bfseries Kp\+Mem\+Multiply} = 213
+, {\bfseries Kp\+Mem\+Divide} = 214
+, {\bfseries Kp\+Plus\+Minus} = 215
+, {\bfseries Kp\+Clear} = 216
+, \newline
+{\bfseries Kp\+Clear\+Entry} = 217
+, {\bfseries Kp\+Binary} = 218
+, {\bfseries Kp\+Octal} = 219
+, {\bfseries Kp\+Decimal} = 220
+, \newline
+{\bfseries Kp\+Hexadecimal} = 221
+, {\bfseries LCtrl} = 224
+, {\bfseries LShift} = 225
+, {\bfseries LAlt} = 226
+, \newline
+{\bfseries LGui} = 227
+, {\bfseries RCtrl} = 228
+, {\bfseries RShift} = 229
+, {\bfseries RAlt} = 230
+, \newline
+{\bfseries RGui} = 231
+, {\bfseries Mode} = 257
+, {\bfseries Audio\+Next} = 258
+, {\bfseries Audio\+Prev} = 259
+, \newline
+{\bfseries Audio\+Stop} = 260
+, {\bfseries Audio\+Play} = 261
+, {\bfseries Audio\+Mute} = 262
+, {\bfseries Media\+Select} = 263
+, \newline
+{\bfseries Www} = 264
+, {\bfseries Mail} = 265
+, {\bfseries Calculator} = 266
+, {\bfseries Computer} = 267
+, \newline
+{\bfseries Ac\+Search} = 268
+, {\bfseries Ac\+Home} = 269
+, {\bfseries Ac\+Back} = 270
+, {\bfseries Ac\+Forward} = 271
+, \newline
+{\bfseries Ac\+Stop} = 272
+, {\bfseries Ac\+Refresh} = 273
+, {\bfseries Ac\+Bookmarks} = 274
+, {\bfseries Brightness\+Down} = 275
+, \newline
+{\bfseries Brightness\+Up} = 276
+, {\bfseries Display\+Switch} = 277
+, {\bfseries Illumination\+Toggle} = 278
+, {\bfseries Illumination\+Down} = 279
+, \newline
+{\bfseries Illumination\+Up} = 280
+, {\bfseries Eject} = 281
+, {\bfseries Sleep} = 282
+, {\bfseries App1} = 283
+, \newline
+{\bfseries App2} = 284
+, {\bfseries Audio\+Rewind} = 285
+, {\bfseries Audio\+Fast\+Forward} = 286
+, {\bfseries Count} = 512
+ \}
+\begin{DoxyCompactList}\small\item\em Represents key codes for keyboard input. \end{DoxyCompactList}\item 
+enum \mbox{\hyperlink{namespace_the_adventure_a1661004d64b284e6a2cb4a5f99c72ca9}{Mouse\+Button}} \+: byte \{ \newline
+\mbox{\hyperlink{namespace_the_adventure_a1661004d64b284e6a2cb4a5f99c72ca9a074de7e7c226d5c60f8af14c20725352}{Primary}} = 1
+, \mbox{\hyperlink{namespace_the_adventure_a1661004d64b284e6a2cb4a5f99c72ca9ab1ca34f82e83c52b010f86955f264e05}{Middle}}
+, \mbox{\hyperlink{namespace_the_adventure_a1661004d64b284e6a2cb4a5f99c72ca9a0c7d6cf19426e01dcfa32434828ed266}{Secondary}}
+, {\bfseries Button4}
+, \newline
+{\bfseries Button5}
+, {\bfseries Button6}
+, {\bfseries Button7}
+, {\bfseries Button8}
+, \newline
+{\bfseries Button9}
+, \mbox{\hyperlink{namespace_the_adventure_a1661004d64b284e6a2cb4a5f99c72ca9ae93f994f01c537c4e2f7d8528c3eb5e9}{Count}}
+ \}
+\begin{DoxyCompactList}\small\item\em Defines identifiers for mouse buttons recognized in the game. \end{DoxyCompactList}\end{DoxyCompactItemize}
+
+
+\doxysubsection{Enumeration Type Documentation}
+\Hypertarget{namespace_the_adventure_ab0664c7bb567bda3b882cc9e6352a60a}\label{namespace_the_adventure_ab0664c7bb567bda3b882cc9e6352a60a} 
+\index{TheAdventure@{TheAdventure}!KeyCode@{KeyCode}}
+\index{KeyCode@{KeyCode}!TheAdventure@{TheAdventure}}
+\doxysubsubsection{\texorpdfstring{KeyCode}{KeyCode}}
+{\footnotesize\ttfamily enum \mbox{\hyperlink{namespace_the_adventure_ab0664c7bb567bda3b882cc9e6352a60a}{The\+Adventure.\+Key\+Code}} \+: UInt16}
+
+
+
+Represents key codes for keyboard input. 
+
+This enumeration covers a broad range of keyboard keys and is used to map physical key states to actions within the game. \Hypertarget{namespace_the_adventure_a1661004d64b284e6a2cb4a5f99c72ca9}\label{namespace_the_adventure_a1661004d64b284e6a2cb4a5f99c72ca9} 
+\index{TheAdventure@{TheAdventure}!MouseButton@{MouseButton}}
+\index{MouseButton@{MouseButton}!TheAdventure@{TheAdventure}}
+\doxysubsubsection{\texorpdfstring{MouseButton}{MouseButton}}
+{\footnotesize\ttfamily enum \mbox{\hyperlink{namespace_the_adventure_a1661004d64b284e6a2cb4a5f99c72ca9}{The\+Adventure.\+Mouse\+Button}} \+: byte}
+
+
+
+Defines identifiers for mouse buttons recognized in the game. 
+
+This enumeration lists all mouse buttons that can be pressed and detected within the game context, including standard buttons like primary (left click) and secondary (right click), as well as additional buttons for mice that support more inputs. \begin{DoxyEnumFields}{Enumerator}
+\raisebox{\heightof{T}}[0pt][0pt]{\index{Primary@{Primary}!TheAdventure@{TheAdventure}}\index{TheAdventure@{TheAdventure}!Primary@{Primary}}}\Hypertarget{namespace_the_adventure_a1661004d64b284e6a2cb4a5f99c72ca9a074de7e7c226d5c60f8af14c20725352}\label{namespace_the_adventure_a1661004d64b284e6a2cb4a5f99c72ca9a074de7e7c226d5c60f8af14c20725352} 
+Primary&The primary mouse button, usually the left button. \\
+\hline
+
+\raisebox{\heightof{T}}[0pt][0pt]{\index{Middle@{Middle}!TheAdventure@{TheAdventure}}\index{TheAdventure@{TheAdventure}!Middle@{Middle}}}\Hypertarget{namespace_the_adventure_a1661004d64b284e6a2cb4a5f99c72ca9ab1ca34f82e83c52b010f86955f264e05}\label{namespace_the_adventure_a1661004d64b284e6a2cb4a5f99c72ca9ab1ca34f82e83c52b010f86955f264e05} 
+Middle&The middle mouse button, often integrated with the scroll wheel. \\
+\hline
+
+\raisebox{\heightof{T}}[0pt][0pt]{\index{Secondary@{Secondary}!TheAdventure@{TheAdventure}}\index{TheAdventure@{TheAdventure}!Secondary@{Secondary}}}\Hypertarget{namespace_the_adventure_a1661004d64b284e6a2cb4a5f99c72ca9a0c7d6cf19426e01dcfa32434828ed266}\label{namespace_the_adventure_a1661004d64b284e6a2cb4a5f99c72ca9a0c7d6cf19426e01dcfa32434828ed266} 
+Secondary&The secondary mouse button, usually the right button. \\
+\hline
+
+\raisebox{\heightof{T}}[0pt][0pt]{\index{Count@{Count}!TheAdventure@{TheAdventure}}\index{TheAdventure@{TheAdventure}!Count@{Count}}}\Hypertarget{namespace_the_adventure_a1661004d64b284e6a2cb4a5f99c72ca9ae93f994f01c537c4e2f7d8528c3eb5e9}\label{namespace_the_adventure_a1661004d64b284e6a2cb4a5f99c72ca9ae93f994f01c537c4e2f7d8528c3eb5e9} 
+Count&Represents the count of mouse buttons recognized by the game. \\
+\hline
+
+\end{DoxyEnumFields}

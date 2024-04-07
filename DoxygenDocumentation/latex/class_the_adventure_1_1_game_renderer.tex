@@ -1,0 +1,152 @@
+\doxysection{The\+Adventure.\+Game\+Renderer Class Reference}
+\hypertarget{class_the_adventure_1_1_game_renderer}{}\label{class_the_adventure_1_1_game_renderer}\index{TheAdventure.GameRenderer@{TheAdventure.GameRenderer}}
+
+
+Responsible for rendering game elements to the screen. It utilizes Silk.\+NET for rendering and Image\+Sharp for texture management.  
+
+
+\doxysubsubsection*{Classes}
+\begin{DoxyCompactItemize}
+\item 
+struct \mbox{\hyperlink{struct_the_adventure_1_1_game_renderer_1_1_texture_info}{Texture\+Info}}
+\begin{DoxyCompactList}\small\item\em Holds information about a texture, including its dimensions and pixel data size. \end{DoxyCompactList}\end{DoxyCompactItemize}
+\doxysubsubsection*{Public Member Functions}
+\begin{DoxyCompactItemize}
+\item 
+\mbox{\hyperlink{class_the_adventure_1_1_game_renderer_a24bf098462d955324a3b723aa1ab4e15}{Game\+Renderer}} (Sdl sdl, \mbox{\hyperlink{class_the_adventure_1_1_game_window}{Game\+Window}} game\+Window, \mbox{\hyperlink{class_the_adventure_1_1_game_logic}{Game\+Logic}} game\+Logic)
+\begin{DoxyCompactList}\small\item\em Initializes a new instance of the Game\+Renderer class. \end{DoxyCompactList}\item 
+void \mbox{\hyperlink{class_the_adventure_1_1_game_renderer_a2fc5e0b471ff3f94ad265c9565dd2090}{Render\+Game\+Object}} (Renderable\+Game\+Object game\+Object)
+\begin{DoxyCompactList}\small\item\em Renders a game object to the screen using its associated texture. \end{DoxyCompactList}\item 
+void \mbox{\hyperlink{class_the_adventure_1_1_game_renderer_aa92c82cc1fbef4b4142fa2d1edf9a6a9}{Render\+Texture}} (int texture\+Id, Rectangle$<$ int $>$ src, Rectangle$<$ int $>$ dst)
+\begin{DoxyCompactList}\small\item\em Renders a texture to the screen at specified source and destination rectangles. \end{DoxyCompactList}\item 
+\Hypertarget{class_the_adventure_1_1_game_renderer_ab6c1892b373a0a8487cf6090197a0cc9}\label{class_the_adventure_1_1_game_renderer_ab6c1892b373a0a8487cf6090197a0cc9} 
+void {\bfseries Render} ()
+\begin{DoxyCompactList}\small\item\em Executes the rendering process for the current frame. This method should be called every game loop iteration. \end{DoxyCompactList}\end{DoxyCompactItemize}
+\doxysubsubsection*{Static Public Member Functions}
+\begin{DoxyCompactItemize}
+\item 
+static int \mbox{\hyperlink{class_the_adventure_1_1_game_renderer_a9fb9e005466e80ce482ea4dc90f1d9c6}{Load\+Texture}} (string file\+Name, out Texture\+Data texture\+Data)
+\begin{DoxyCompactList}\small\item\em Loads a texture from a file and stores it for rendering. \end{DoxyCompactList}\end{DoxyCompactItemize}
+\doxysubsubsection*{Private Attributes}
+\begin{DoxyCompactItemize}
+\item 
+\Hypertarget{class_the_adventure_1_1_game_renderer_adb8fcdddd111e580cfd61e91ba804c59}\label{class_the_adventure_1_1_game_renderer_adb8fcdddd111e580cfd61e91ba804c59} 
+Sdl {\bfseries \+\_\+sdl}
+\item 
+\Hypertarget{class_the_adventure_1_1_game_renderer_a40c0d39b3c290fb2f5aafb22b62047ac}\label{class_the_adventure_1_1_game_renderer_a40c0d39b3c290fb2f5aafb22b62047ac} 
+Renderer \texorpdfstring{$\ast$}{*} {\bfseries \+\_\+renderer}
+\item 
+\Hypertarget{class_the_adventure_1_1_game_renderer_a3d0076263996c7a18f1163c1aacfdda0}\label{class_the_adventure_1_1_game_renderer_a3d0076263996c7a18f1163c1aacfdda0} 
+\mbox{\hyperlink{class_the_adventure_1_1_game_window}{Game\+Window}} {\bfseries \+\_\+window}
+\item 
+\Hypertarget{class_the_adventure_1_1_game_renderer_afe4efb37c0722ef2fea31664ca7780c6}\label{class_the_adventure_1_1_game_renderer_afe4efb37c0722ef2fea31664ca7780c6} 
+\mbox{\hyperlink{class_the_adventure_1_1_game_logic}{Game\+Logic}} {\bfseries \+\_\+game\+Logic}
+\item 
+\Hypertarget{class_the_adventure_1_1_game_renderer_a27f60f5e68467a53de455b0fdf0b4c21}\label{class_the_adventure_1_1_game_renderer_a27f60f5e68467a53de455b0fdf0b4c21} 
+Game\+Camera {\bfseries \+\_\+camera}
+\item 
+\Hypertarget{class_the_adventure_1_1_game_renderer_a3f630144d7cda46e886de72add544a9b}\label{class_the_adventure_1_1_game_renderer_a3f630144d7cda46e886de72add544a9b} 
+Dictionary$<$ int, Int\+Ptr $>$ {\bfseries \+\_\+textures}
+\item 
+\Hypertarget{class_the_adventure_1_1_game_renderer_a404ca4b0f1eb52e7f4cdcff037a9628b}\label{class_the_adventure_1_1_game_renderer_a404ca4b0f1eb52e7f4cdcff037a9628b} 
+Dictionary$<$ int, Texture\+Data $>$ {\bfseries \+\_\+texture\+Data}
+\item 
+\Hypertarget{class_the_adventure_1_1_game_renderer_abc0202141478a065a7aa607cb25e2ae4}\label{class_the_adventure_1_1_game_renderer_abc0202141478a065a7aa607cb25e2ae4} 
+int {\bfseries \+\_\+texture\+Id}
+\item 
+\Hypertarget{class_the_adventure_1_1_game_renderer_ab9b48ede7a09fcd06034d7521869a250}\label{class_the_adventure_1_1_game_renderer_ab9b48ede7a09fcd06034d7521869a250} 
+Date\+Time\+Offset {\bfseries \+\_\+last\+Frame\+Rendered\+At} = Date\+Time\+Offset.\+Min\+Value
+\end{DoxyCompactItemize}
+\doxysubsubsection*{Static Private Attributes}
+\begin{DoxyCompactItemize}
+\item 
+\Hypertarget{class_the_adventure_1_1_game_renderer_a58f624cabd06747e55b5f6e2e46b367f}\label{class_the_adventure_1_1_game_renderer_a58f624cabd06747e55b5f6e2e46b367f} 
+static ? \mbox{\hyperlink{class_the_adventure_1_1_game_renderer}{Game\+Renderer}} {\bfseries \+\_\+singleton}
+\end{DoxyCompactItemize}
+
+
+\doxysubsection{Detailed Description}
+Responsible for rendering game elements to the screen. It utilizes Silk.\+NET for rendering and Image\+Sharp for texture management. 
+
+\doxysubsection{Constructor \& Destructor Documentation}
+\Hypertarget{class_the_adventure_1_1_game_renderer_a24bf098462d955324a3b723aa1ab4e15}\label{class_the_adventure_1_1_game_renderer_a24bf098462d955324a3b723aa1ab4e15} 
+\index{TheAdventure.GameRenderer@{TheAdventure.GameRenderer}!GameRenderer@{GameRenderer}}
+\index{GameRenderer@{GameRenderer}!TheAdventure.GameRenderer@{TheAdventure.GameRenderer}}
+\doxysubsubsection{\texorpdfstring{GameRenderer()}{GameRenderer()}}
+{\footnotesize\ttfamily The\+Adventure.\+Game\+Renderer.\+Game\+Renderer (\begin{DoxyParamCaption}\item[{Sdl}]{sdl,  }\item[{\mbox{\hyperlink{class_the_adventure_1_1_game_window}{Game\+Window}}}]{game\+Window,  }\item[{\mbox{\hyperlink{class_the_adventure_1_1_game_logic}{Game\+Logic}}}]{game\+Logic }\end{DoxyParamCaption})}
+
+
+
+Initializes a new instance of the Game\+Renderer class. 
+
+
+\begin{DoxyParams}{Parameters}
+{\em sdl} & The SDL context for rendering operations.\\
+\hline
+{\em game\+Window} & The window where the game is displayed.\\
+\hline
+{\em game\+Logic} & The game logic instance for accessing game state.\\
+\hline
+\end{DoxyParams}
+
+
+\doxysubsection{Member Function Documentation}
+\Hypertarget{class_the_adventure_1_1_game_renderer_a9fb9e005466e80ce482ea4dc90f1d9c6}\label{class_the_adventure_1_1_game_renderer_a9fb9e005466e80ce482ea4dc90f1d9c6} 
+\index{TheAdventure.GameRenderer@{TheAdventure.GameRenderer}!LoadTexture@{LoadTexture}}
+\index{LoadTexture@{LoadTexture}!TheAdventure.GameRenderer@{TheAdventure.GameRenderer}}
+\doxysubsubsection{\texorpdfstring{LoadTexture()}{LoadTexture()}}
+{\footnotesize\ttfamily static int The\+Adventure.\+Game\+Renderer.\+Load\+Texture (\begin{DoxyParamCaption}\item[{string}]{file\+Name,  }\item[{out Texture\+Data}]{texture\+Data }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [static]}}
+
+
+
+Loads a texture from a file and stores it for rendering. 
+
+
+\begin{DoxyParams}{Parameters}
+{\em file\+Name} & The file path of the texture to load.\\
+\hline
+{\em texture\+Data} & Outputs the loaded texture data including dimensions.\\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+The ID of the loaded texture.
+\end{DoxyReturn}
+\Hypertarget{class_the_adventure_1_1_game_renderer_a2fc5e0b471ff3f94ad265c9565dd2090}\label{class_the_adventure_1_1_game_renderer_a2fc5e0b471ff3f94ad265c9565dd2090} 
+\index{TheAdventure.GameRenderer@{TheAdventure.GameRenderer}!RenderGameObject@{RenderGameObject}}
+\index{RenderGameObject@{RenderGameObject}!TheAdventure.GameRenderer@{TheAdventure.GameRenderer}}
+\doxysubsubsection{\texorpdfstring{RenderGameObject()}{RenderGameObject()}}
+{\footnotesize\ttfamily void The\+Adventure.\+Game\+Renderer.\+Render\+Game\+Object (\begin{DoxyParamCaption}\item[{Renderable\+Game\+Object}]{game\+Object }\end{DoxyParamCaption})}
+
+
+
+Renders a game object to the screen using its associated texture. 
+
+
+\begin{DoxyParams}{Parameters}
+{\em game\+Object} & The game object to render.\\
+\hline
+\end{DoxyParams}
+\Hypertarget{class_the_adventure_1_1_game_renderer_aa92c82cc1fbef4b4142fa2d1edf9a6a9}\label{class_the_adventure_1_1_game_renderer_aa92c82cc1fbef4b4142fa2d1edf9a6a9} 
+\index{TheAdventure.GameRenderer@{TheAdventure.GameRenderer}!RenderTexture@{RenderTexture}}
+\index{RenderTexture@{RenderTexture}!TheAdventure.GameRenderer@{TheAdventure.GameRenderer}}
+\doxysubsubsection{\texorpdfstring{RenderTexture()}{RenderTexture()}}
+{\footnotesize\ttfamily void The\+Adventure.\+Game\+Renderer.\+Render\+Texture (\begin{DoxyParamCaption}\item[{int}]{texture\+Id,  }\item[{Rectangle$<$ int $>$}]{src,  }\item[{Rectangle$<$ int $>$}]{dst }\end{DoxyParamCaption})}
+
+
+
+Renders a texture to the screen at specified source and destination rectangles. 
+
+
+\begin{DoxyParams}{Parameters}
+{\em texture\+Id} & The ID of the texture to render.\\
+\hline
+{\em src} & The source rectangle within the texture to render.\\
+\hline
+{\em dst} & The destination rectangle on the screen where the texture will be rendered.\\
+\hline
+\end{DoxyParams}
+
+
+The documentation for this class was generated from the following file\+:\begin{DoxyCompactItemize}
+\item 
+C\+:/\+Users/user/\+Rider\+Projects/\+The\+Adventure/Game\+Renderer.\+cs\end{DoxyCompactItemize}

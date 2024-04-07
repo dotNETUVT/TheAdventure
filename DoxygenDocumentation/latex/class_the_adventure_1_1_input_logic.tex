@@ -1,0 +1,84 @@
+\doxysection{The\+Adventure.\+Input\+Logic Class Reference}
+\hypertarget{class_the_adventure_1_1_input_logic}{}\label{class_the_adventure_1_1_input_logic}\index{TheAdventure.InputLogic@{TheAdventure.InputLogic}}
+
+
+Manages input handling for the game, including keyboard and mouse events.  
+
+
+\doxysubsubsection*{Public Member Functions}
+\begin{DoxyCompactItemize}
+\item 
+\mbox{\hyperlink{class_the_adventure_1_1_input_logic_ac9c4a7f0846d309aa2d093ea2a28dbf5}{Input\+Logic}} (Sdl sdl, \mbox{\hyperlink{class_the_adventure_1_1_game_window}{Game\+Window}} window, \mbox{\hyperlink{class_the_adventure_1_1_game_renderer}{Game\+Renderer}} renderer, \mbox{\hyperlink{class_the_adventure_1_1_game_logic}{Game\+Logic}} logic)
+\begin{DoxyCompactList}\small\item\em Initializes a new instance of the Input\+Logic class with necessary game components. \end{DoxyCompactList}\item 
+bool \mbox{\hyperlink{class_the_adventure_1_1_input_logic_a7abb324e3076a66803ad40ade16117dc}{Process\+Input}} ()
+\begin{DoxyCompactList}\small\item\em Processes all pending input events and updates the game state accordingly. \end{DoxyCompactList}\end{DoxyCompactItemize}
+\doxysubsubsection*{Private Attributes}
+\begin{DoxyCompactItemize}
+\item 
+\Hypertarget{class_the_adventure_1_1_input_logic_a2b25b3afd9b660b670fc6e90203464e3}\label{class_the_adventure_1_1_input_logic_a2b25b3afd9b660b670fc6e90203464e3} 
+Sdl {\bfseries \+\_\+sdl}
+\begin{DoxyCompactList}\small\item\em The SDL context for handling input. \end{DoxyCompactList}\item 
+\Hypertarget{class_the_adventure_1_1_input_logic_a03ba8be08ca4001bb732e69f0127a226}\label{class_the_adventure_1_1_input_logic_a03ba8be08ca4001bb732e69f0127a226} 
+\mbox{\hyperlink{class_the_adventure_1_1_game_logic}{Game\+Logic}} {\bfseries \+\_\+game\+Logic}
+\begin{DoxyCompactList}\small\item\em The game logic instance to update based on input. \end{DoxyCompactList}\item 
+\Hypertarget{class_the_adventure_1_1_input_logic_a9f1935ca8ded763f9a993ec57bf98b35}\label{class_the_adventure_1_1_input_logic_a9f1935ca8ded763f9a993ec57bf98b35} 
+\mbox{\hyperlink{class_the_adventure_1_1_game_window}{Game\+Window}} {\bfseries \+\_\+game\+Window}
+\begin{DoxyCompactList}\small\item\em The game window instance for managing input focus. \end{DoxyCompactList}\item 
+\Hypertarget{class_the_adventure_1_1_input_logic_ab2ead09a959681c507f619a6844405e1}\label{class_the_adventure_1_1_input_logic_ab2ead09a959681c507f619a6844405e1} 
+\mbox{\hyperlink{class_the_adventure_1_1_game_renderer}{Game\+Renderer}} {\bfseries \+\_\+renderer}
+\begin{DoxyCompactList}\small\item\em The renderer for potentially updating visual feedback based on input. \end{DoxyCompactList}\item 
+\Hypertarget{class_the_adventure_1_1_input_logic_a506fdb10cde4f37dfdee564d116dbed4}\label{class_the_adventure_1_1_input_logic_a506fdb10cde4f37dfdee564d116dbed4} 
+Date\+Time\+Offset {\bfseries \+\_\+last\+Update}
+\begin{DoxyCompactList}\small\item\em The timestamp of the last input update. \end{DoxyCompactList}\end{DoxyCompactItemize}
+
+
+\doxysubsection{Detailed Description}
+Manages input handling for the game, including keyboard and mouse events. 
+
+This class uses the Silk.\+NET.\+SDL library to process input events and update the game state accordingly. It supports keyboard and mouse input, translating these inputs into game actions such as moving the player or placing bombs. 
+
+\doxysubsection{Constructor \& Destructor Documentation}
+\Hypertarget{class_the_adventure_1_1_input_logic_ac9c4a7f0846d309aa2d093ea2a28dbf5}\label{class_the_adventure_1_1_input_logic_ac9c4a7f0846d309aa2d093ea2a28dbf5} 
+\index{TheAdventure.InputLogic@{TheAdventure.InputLogic}!InputLogic@{InputLogic}}
+\index{InputLogic@{InputLogic}!TheAdventure.InputLogic@{TheAdventure.InputLogic}}
+\doxysubsubsection{\texorpdfstring{InputLogic()}{InputLogic()}}
+{\footnotesize\ttfamily The\+Adventure.\+Input\+Logic.\+Input\+Logic (\begin{DoxyParamCaption}\item[{Sdl}]{sdl,  }\item[{\mbox{\hyperlink{class_the_adventure_1_1_game_window}{Game\+Window}}}]{window,  }\item[{\mbox{\hyperlink{class_the_adventure_1_1_game_renderer}{Game\+Renderer}}}]{renderer,  }\item[{\mbox{\hyperlink{class_the_adventure_1_1_game_logic}{Game\+Logic}}}]{logic }\end{DoxyParamCaption})}
+
+
+
+Initializes a new instance of the Input\+Logic class with necessary game components. 
+
+
+\begin{DoxyParams}{Parameters}
+{\em sdl} & The SDL context for handling input. \\
+\hline
+{\em window} & The game window for managing input focus. \\
+\hline
+{\em renderer} & The game renderer for updating visuals based on input. \\
+\hline
+{\em logic} & The game logic for updating game state based on input. \\
+\hline
+\end{DoxyParams}
+
+
+\doxysubsection{Member Function Documentation}
+\Hypertarget{class_the_adventure_1_1_input_logic_a7abb324e3076a66803ad40ade16117dc}\label{class_the_adventure_1_1_input_logic_a7abb324e3076a66803ad40ade16117dc} 
+\index{TheAdventure.InputLogic@{TheAdventure.InputLogic}!ProcessInput@{ProcessInput}}
+\index{ProcessInput@{ProcessInput}!TheAdventure.InputLogic@{TheAdventure.InputLogic}}
+\doxysubsubsection{\texorpdfstring{ProcessInput()}{ProcessInput()}}
+{\footnotesize\ttfamily bool The\+Adventure.\+Input\+Logic.\+Process\+Input (\begin{DoxyParamCaption}{ }\end{DoxyParamCaption})}
+
+
+
+Processes all pending input events and updates the game state accordingly. 
+
+This method polls for SDL events and handles them, translating keyboard and mouse inputs into game actions. It updates the game state through the Game\+Logic instance and tracks the time since the last input update for time-\/sensitive actions.
+
+\begin{DoxyReturn}{Returns}
+True if a quit event is received, indicating the game should close; false otherwise. 
+\end{DoxyReturn}
+
+
+The documentation for this class was generated from the following file\+:\begin{DoxyCompactItemize}
+\item 
+C\+:/\+Users/user/\+Rider\+Projects/\+The\+Adventure/Input\+Logic.\+cs\end{DoxyCompactItemize}

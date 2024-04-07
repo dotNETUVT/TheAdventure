@@ -1,0 +1,83 @@
+\doxysection{The\+Adventure.\+Game\+Window Class Reference}
+\hypertarget{class_the_adventure_1_1_game_window}{}\label{class_the_adventure_1_1_game_window}\index{TheAdventure.GameWindow@{TheAdventure.GameWindow}}
+
+
+Manages the creation, rendering, and destruction of the game window.  
+
+
+\doxysubsubsection*{Public Member Functions}
+\begin{DoxyCompactItemize}
+\item 
+\mbox{\hyperlink{class_the_adventure_1_1_game_window_aee8891a9e7179c5454fe086ea1436083}{Game\+Window}} (Sdl sdl)
+\begin{DoxyCompactList}\small\item\em Initializes a new instance of the Game\+Window class. \end{DoxyCompactList}\item 
+Int\+Ptr \mbox{\hyperlink{class_the_adventure_1_1_game_window_af71e9fdb30e81d1fcdf743070320d175}{Create\+Renderer}} ()
+\begin{DoxyCompactList}\small\item\em Creates a renderer for the window. \end{DoxyCompactList}\item 
+void \mbox{\hyperlink{class_the_adventure_1_1_game_window_a7503803c835f2f06a3d047ae1f8fe99b}{Destroy}} ()
+\begin{DoxyCompactList}\small\item\em Destroys the window. \end{DoxyCompactList}\end{DoxyCompactItemize}
+\doxysubsubsection*{Private Attributes}
+\begin{DoxyCompactItemize}
+\item 
+\Hypertarget{class_the_adventure_1_1_game_window_ab6af5a18d7280155c0682da22e4e9b23}\label{class_the_adventure_1_1_game_window_ab6af5a18d7280155c0682da22e4e9b23} 
+Int\+Ptr {\bfseries \+\_\+window}
+\begin{DoxyCompactList}\small\item\em The native window handle provided by SDL. \end{DoxyCompactList}\item 
+\Hypertarget{class_the_adventure_1_1_game_window_ab538fd76650aecaab846276d3af7e0de}\label{class_the_adventure_1_1_game_window_ab538fd76650aecaab846276d3af7e0de} 
+Sdl {\bfseries \+\_\+sdl}
+\begin{DoxyCompactList}\small\item\em The SDL context used for window operations. \end{DoxyCompactList}\end{DoxyCompactItemize}
+
+
+\doxysubsection{Detailed Description}
+Manages the creation, rendering, and destruction of the game window. 
+
+This class encapsulates the functionality provided by SDL for window management. It includes methods for creating the game window, creating a renderer for the window, and properly destroying the window upon game termination. 
+
+\doxysubsection{Constructor \& Destructor Documentation}
+\Hypertarget{class_the_adventure_1_1_game_window_aee8891a9e7179c5454fe086ea1436083}\label{class_the_adventure_1_1_game_window_aee8891a9e7179c5454fe086ea1436083} 
+\index{TheAdventure.GameWindow@{TheAdventure.GameWindow}!GameWindow@{GameWindow}}
+\index{GameWindow@{GameWindow}!TheAdventure.GameWindow@{TheAdventure.GameWindow}}
+\doxysubsubsection{\texorpdfstring{GameWindow()}{GameWindow()}}
+{\footnotesize\ttfamily The\+Adventure.\+Game\+Window.\+Game\+Window (\begin{DoxyParamCaption}\item[{Sdl}]{sdl }\end{DoxyParamCaption})}
+
+
+
+Initializes a new instance of the Game\+Window class. 
+
+This constructor creates the game window using specified SDL context. It sets up the window with predefined dimensions and flags. If the window creation fails, it throws an exception.
+
+
+\begin{DoxyParams}{Parameters}
+{\em sdl} & The SDL context to be used for window creation and management. \\
+\hline
+\end{DoxyParams}
+
+
+\doxysubsection{Member Function Documentation}
+\Hypertarget{class_the_adventure_1_1_game_window_af71e9fdb30e81d1fcdf743070320d175}\label{class_the_adventure_1_1_game_window_af71e9fdb30e81d1fcdf743070320d175} 
+\index{TheAdventure.GameWindow@{TheAdventure.GameWindow}!CreateRenderer@{CreateRenderer}}
+\index{CreateRenderer@{CreateRenderer}!TheAdventure.GameWindow@{TheAdventure.GameWindow}}
+\doxysubsubsection{\texorpdfstring{CreateRenderer()}{CreateRenderer()}}
+{\footnotesize\ttfamily Int\+Ptr The\+Adventure.\+Game\+Window.\+Create\+Renderer (\begin{DoxyParamCaption}{ }\end{DoxyParamCaption})}
+
+
+
+Creates a renderer for the window. 
+
+This method creates an SDL renderer for the window with specified flags. If the renderer creation fails, it throws an exception.
+
+\begin{DoxyReturn}{Returns}
+The pointer to the newly created renderer. 
+\end{DoxyReturn}
+\Hypertarget{class_the_adventure_1_1_game_window_a7503803c835f2f06a3d047ae1f8fe99b}\label{class_the_adventure_1_1_game_window_a7503803c835f2f06a3d047ae1f8fe99b} 
+\index{TheAdventure.GameWindow@{TheAdventure.GameWindow}!Destroy@{Destroy}}
+\index{Destroy@{Destroy}!TheAdventure.GameWindow@{TheAdventure.GameWindow}}
+\doxysubsubsection{\texorpdfstring{Destroy()}{Destroy()}}
+{\footnotesize\ttfamily void The\+Adventure.\+Game\+Window.\+Destroy (\begin{DoxyParamCaption}{ }\end{DoxyParamCaption})}
+
+
+
+Destroys the window. 
+
+This method properly disposes of the SDL window and releases any resources associated with it. It should be called when the game is closing or when the window is no longer needed. 
+
+The documentation for this class was generated from the following file\+:\begin{DoxyCompactItemize}
+\item 
+C\+:/\+Users/user/\+Rider\+Projects/\+The\+Adventure/Game\+Window.\+cs\end{DoxyCompactItemize}

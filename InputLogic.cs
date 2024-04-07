@@ -1,14 +1,33 @@
 using Silk.NET.SDL;
 
 namespace TheAdventure{
+    /// @brief Manages input handling for the game, including keyboard and mouse events.
+    /// 
+    /// This class uses the Silk.NET.SDL library to process input events and update the game state accordingly. It supports
+    /// keyboard and mouse input, translating these inputs into game actions such as moving the player or placing bombs.
     public unsafe class InputLogic
     {
+        /// The SDL context for handling input.
         private Sdl _sdl;
+        
+        /// The game logic instance to update based on input.
         private GameLogic _gameLogic;
+        
+        /// The game window instance for managing input focus.
         private GameWindow _gameWindow;
+        
+        /// The renderer for potentially updating visual feedback based on input.
         private GameRenderer _renderer;
+        
+        /// The timestamp of the last input update.
         private DateTimeOffset _lastUpdate;
 
+        /// @brief Initializes a new instance of the InputLogic class with necessary game components.
+        /// 
+        /// @param sdl The SDL context for handling input.
+        /// @param window The game window for managing input focus.
+        /// @param renderer The game renderer for updating visuals based on input.
+        /// @param logic The game logic for updating game state based on input.
         public InputLogic(Sdl sdl, GameWindow window, GameRenderer renderer, GameLogic logic){
             _sdl = sdl;
             _gameLogic = logic;
@@ -17,6 +36,12 @@ namespace TheAdventure{
             _lastUpdate = DateTimeOffset.UtcNow;
         }
 
+        /// @brief Processes all pending input events and updates the game state accordingly.
+        /// 
+        /// This method polls for SDL events and handles them, translating keyboard and mouse inputs into game actions. It updates
+        /// the game state through the GameLogic instance and tracks the time since the last input update for time-sensitive actions.
+        /// 
+        /// @return True if a quit event is received, indicating the game should close; false otherwise.
         public bool ProcessInput()
         {
             var currentTime = DateTimeOffset.UtcNow;

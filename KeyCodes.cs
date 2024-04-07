@@ -1,5 +1,9 @@
 namespace TheAdventure;
 
+/// @enum KeyCode
+/// @brief Represents key codes for keyboard input.
+/// 
+/// This enumeration covers a broad range of keyboard keys and is used to map physical key states to actions within the game.
 public enum KeyCode : UInt16
 {
     Unknown = 0,

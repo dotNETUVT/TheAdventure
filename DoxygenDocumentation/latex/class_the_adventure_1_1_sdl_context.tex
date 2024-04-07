@@ -1,0 +1,115 @@
+\doxysection{The\+Adventure.\+Sdl\+Context Class Reference}
+\hypertarget{class_the_adventure_1_1_sdl_context}{}\label{class_the_adventure_1_1_sdl_context}\index{TheAdventure.SdlContext@{TheAdventure.SdlContext}}
+
+
+Manages the loading and access of native SDL library functions.  
+
+
+Inheritance diagram for The\+Adventure.\+Sdl\+Context\+:\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[height=2.000000cm]{class_the_adventure_1_1_sdl_context}
+\end{center}
+\end{figure}
+\doxysubsubsection*{Public Member Functions}
+\begin{DoxyCompactItemize}
+\item 
+\mbox{\hyperlink{class_the_adventure_1_1_sdl_context_ac7d120594d9c71f15d502820ebf201ca}{Sdl\+Context}} ()
+\begin{DoxyCompactList}\small\item\em Constructs an {\ttfamily Sdl\+Context} and loads the SDL library. \end{DoxyCompactList}\item 
+Int\+Ptr \mbox{\hyperlink{class_the_adventure_1_1_sdl_context_a7ad4648ee5b4ae1e9e200f803b4063e8}{Get\+Proc\+Address}} (string proc, int? slot=null)
+\begin{DoxyCompactList}\small\item\em Retrieves the address of a function exported by the SDL library. \end{DoxyCompactList}\item 
+bool \mbox{\hyperlink{class_the_adventure_1_1_sdl_context_afafb3853d72decc95cdf1457443d0045}{Try\+Get\+Proc\+Address}} (string proc, \mbox{[}Unscoped\+Ref\mbox{]} out Int\+Ptr addr, int? slot=null)
+\begin{DoxyCompactList}\small\item\em Tries to retrieve the address of a function exported by the SDL library. \end{DoxyCompactList}\item 
+\Hypertarget{class_the_adventure_1_1_sdl_context_abd81bbe4942692788db3addade3cca3c}\label{class_the_adventure_1_1_sdl_context_abd81bbe4942692788db3addade3cca3c} 
+void {\bfseries Dispose} ()
+\begin{DoxyCompactList}\small\item\em Disposes of {\ttfamily Sdl\+Context}, freeing the loaded SDL library. \end{DoxyCompactList}\end{DoxyCompactItemize}
+\doxysubsubsection*{Private Member Functions}
+\begin{DoxyCompactItemize}
+\item 
+\Hypertarget{class_the_adventure_1_1_sdl_context_a199e2f5d7fb706b12f6dd32c22d0595f}\label{class_the_adventure_1_1_sdl_context_a199e2f5d7fb706b12f6dd32c22d0595f} 
+void {\bfseries Release\+Unmanaged\+Resources} ()
+\begin{DoxyCompactList}\small\item\em Releases unmanaged resources, specifically the loaded SDL library. \end{DoxyCompactList}\item 
+\Hypertarget{class_the_adventure_1_1_sdl_context_a5242ab70d0f9416a0233922c87692683}\label{class_the_adventure_1_1_sdl_context_a5242ab70d0f9416a0233922c87692683} 
+{\bfseries \texorpdfstring{$\sim$}{\string~}\+Sdl\+Context} ()
+\begin{DoxyCompactList}\small\item\em Finalizer for {\ttfamily Sdl\+Context} that ensures unmanaged resources are freed. \end{DoxyCompactList}\end{DoxyCompactItemize}
+\doxysubsubsection*{Private Attributes}
+\begin{DoxyCompactItemize}
+\item 
+\Hypertarget{class_the_adventure_1_1_sdl_context_a6f756448d724949814e33364c8328e45}\label{class_the_adventure_1_1_sdl_context_a6f756448d724949814e33364c8328e45} 
+readonly Int\+Ptr {\bfseries \+\_\+native\+Library}
+\begin{DoxyCompactList}\small\item\em Handle to the loaded native SDL library. \end{DoxyCompactList}\end{DoxyCompactItemize}
+
+
+\doxysubsection{Detailed Description}
+Manages the loading and access of native SDL library functions. 
+
+{\ttfamily Sdl\+Context} is responsible for loading the SDL library dynamically at runtime and providing access to its functions. It supports multiple platforms by loading the corresponding native library according to the running OS and architecture. This class implements {\ttfamily INative\+Context} to be used with Silk.\+NET for direct SDL interop calls. 
+
+\doxysubsection{Constructor \& Destructor Documentation}
+\Hypertarget{class_the_adventure_1_1_sdl_context_ac7d120594d9c71f15d502820ebf201ca}\label{class_the_adventure_1_1_sdl_context_ac7d120594d9c71f15d502820ebf201ca} 
+\index{TheAdventure.SdlContext@{TheAdventure.SdlContext}!SdlContext@{SdlContext}}
+\index{SdlContext@{SdlContext}!TheAdventure.SdlContext@{TheAdventure.SdlContext}}
+\doxysubsubsection{\texorpdfstring{SdlContext()}{SdlContext()}}
+{\footnotesize\ttfamily The\+Adventure.\+Sdl\+Context.\+Sdl\+Context (\begin{DoxyParamCaption}{ }\end{DoxyParamCaption})}
+
+
+
+Constructs an {\ttfamily Sdl\+Context} and loads the SDL library. 
+
+The constructor identifies the running OS and architecture to load the appropriate version of the SDL library. It supports Linux, mac\+OS, and Windows. ARM64 is supported except on Linux due to compatibility issues.
+
+
+\begin{DoxyExceptions}{Exceptions}
+{\em Platform\+Not\+Supported\+Exception} & Thrown when the operating system or architecture is not supported. \\
+\hline
+\end{DoxyExceptions}
+
+
+\doxysubsection{Member Function Documentation}
+\Hypertarget{class_the_adventure_1_1_sdl_context_a7ad4648ee5b4ae1e9e200f803b4063e8}\label{class_the_adventure_1_1_sdl_context_a7ad4648ee5b4ae1e9e200f803b4063e8} 
+\index{TheAdventure.SdlContext@{TheAdventure.SdlContext}!GetProcAddress@{GetProcAddress}}
+\index{GetProcAddress@{GetProcAddress}!TheAdventure.SdlContext@{TheAdventure.SdlContext}}
+\doxysubsubsection{\texorpdfstring{GetProcAddress()}{GetProcAddress()}}
+{\footnotesize\ttfamily Int\+Ptr The\+Adventure.\+Sdl\+Context.\+Get\+Proc\+Address (\begin{DoxyParamCaption}\item[{string}]{proc,  }\item[{int?}]{slot = {\ttfamily null} }\end{DoxyParamCaption})}
+
+
+
+Retrieves the address of a function exported by the SDL library. 
+
+
+\begin{DoxyParams}{Parameters}
+{\em proc} & The name of the SDL function to retrieve. \\
+\hline
+{\em slot} & Optional slot number, not used in this context. \\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+The address of the specified function, or Int\+Ptr.\+Zero if not found. 
+\end{DoxyReturn}
+\Hypertarget{class_the_adventure_1_1_sdl_context_afafb3853d72decc95cdf1457443d0045}\label{class_the_adventure_1_1_sdl_context_afafb3853d72decc95cdf1457443d0045} 
+\index{TheAdventure.SdlContext@{TheAdventure.SdlContext}!TryGetProcAddress@{TryGetProcAddress}}
+\index{TryGetProcAddress@{TryGetProcAddress}!TheAdventure.SdlContext@{TheAdventure.SdlContext}}
+\doxysubsubsection{\texorpdfstring{TryGetProcAddress()}{TryGetProcAddress()}}
+{\footnotesize\ttfamily bool The\+Adventure.\+Sdl\+Context.\+Try\+Get\+Proc\+Address (\begin{DoxyParamCaption}\item[{string}]{proc,  }\item[{\mbox{[}\+Unscoped\+Ref\mbox{]} out Int\+Ptr}]{addr,  }\item[{int?}]{slot = {\ttfamily null} }\end{DoxyParamCaption})}
+
+
+
+Tries to retrieve the address of a function exported by the SDL library. 
+
+
+\begin{DoxyParams}{Parameters}
+{\em proc} & The name of the SDL function to retrieve. \\
+\hline
+{\em addr} & Out parameter that receives the address of the function. \\
+\hline
+{\em slot} & Optional slot number, not used in this context. \\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+True if the function was found, otherwise false. 
+\end{DoxyReturn}
+
+
+The documentation for this class was generated from the following file\+:\begin{DoxyCompactItemize}
+\item 
+C\+:/\+Users/user/\+Rider\+Projects/\+The\+Adventure/Sdl\+Context.\+cs\end{DoxyCompactItemize}
