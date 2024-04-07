@@ -74,9 +74,9 @@ namespace TheAdventure
             return null;
         }
 
-        public void UpdatePlayerPosition(double up, double down, double left, double right, int timeSinceLastUpdateInMS)
+        public void UpdatePlayerPosition(double up, double down, double left, double right, double deltaTime)
         {
-            _player.UpdatePlayerPosition(up, down, left, right, timeSinceLastUpdateInMS);
+            _player.UpdatePlayerPosition(up, down, left, right, deltaTime);
             
         }
 

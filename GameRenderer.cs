@@ -118,13 +118,10 @@ namespace TheAdventure
 
             _gameLogic.RenderTerrain(this);
 
-            var timeSinceLastFrame = 0;
-            if (_lastFrameRenderedAt > DateTimeOffset.MinValue)
-            {
-                timeSinceLastFrame = (int)DateTimeOffset.UtcNow.Subtract(_lastFrameRenderedAt).TotalMilliseconds;
-            }
+            var timeSinceLastFrameInSeconds = (DateTimeOffset.UtcNow - _lastFrameRenderedAt).TotalSeconds;
+            var timeSinceLastFrameInMilliseconds = (int)(timeSinceLastFrameInSeconds * 1000); // Convert seconds to milliseconds
 
-            _gameLogic.RenderAllObjects(timeSinceLastFrame, this);
+            _gameLogic.RenderAllObjects(timeSinceLastFrameInMilliseconds, this);
 
             _lastFrameRenderedAt = DateTimeOffset.UtcNow;
 

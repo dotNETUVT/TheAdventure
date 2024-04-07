@@ -33,14 +33,12 @@ public class PlayerObject : GameObject
         _target = new Rectangle<int>(targetX, targetY, 48, 48);
     }
 
-    public void UpdatePlayerPosition(double up, double down, double left, double right, int time)
+    public void UpdatePlayerPosition(double up, double down, double left, double right, double deltaTime)
     {
-        var pixelsToMove = (time / 1000.0) * _pixelsPerSecond;
+        var pixelsToMove = deltaTime * _pixelsPerSecond;
 
-        X += (int)(right * pixelsToMove);
-        X -= (int)(left * pixelsToMove);
-        Y -= (int)(up * pixelsToMove);
-        Y += (int)(down * pixelsToMove);
+        X += (int)(right * pixelsToMove - left * pixelsToMove);
+        Y += (int)(down * pixelsToMove - up * pixelsToMove);
 
         UpdateScreenTarget();
     }

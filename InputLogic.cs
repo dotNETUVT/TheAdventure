@@ -146,19 +146,19 @@ namespace TheAdventure{
                 }
             }
 
-            var timeSinceLastUpdateInMS = (int)currentTime.Subtract(_lastUpdate).TotalMilliseconds;
-
+            var timeSinceLastUpdate = (DateTimeOffset.UtcNow - _lastUpdate).TotalSeconds;
+    
             if (_keyboardState[(int)Scancode.ScancodeUp] == 1){
-                _gameLogic.UpdatePlayerPosition(1.0, 0, 0, 0, timeSinceLastUpdateInMS);
+                _gameLogic.UpdatePlayerPosition(1.0, 0, 0, 0, timeSinceLastUpdate);
             }
             else if (_keyboardState[(int)Scancode.ScancodeDown] == 1){
-                _gameLogic.UpdatePlayerPosition(0, 1.0, 0, 0, timeSinceLastUpdateInMS);
+                _gameLogic.UpdatePlayerPosition(0, 1.0, 0, 0, timeSinceLastUpdate);
             }
             else if (_keyboardState[(int)Scancode.ScancodeLeft] == 1){
-                _gameLogic.UpdatePlayerPosition(0, 0, 1.0, 0, timeSinceLastUpdateInMS);
+                _gameLogic.UpdatePlayerPosition(0, 0, 1.0, 0, timeSinceLastUpdate);
             }
             else if (_keyboardState[(int)Scancode.ScancodeRight] == 1){
-                _gameLogic.UpdatePlayerPosition(0, 0, 0, 1.0, timeSinceLastUpdateInMS);
+                _gameLogic.UpdatePlayerPosition(0, 0, 0, 1.0, timeSinceLastUpdate);
             }
 
             _lastUpdate = currentTime;
