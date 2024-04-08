@@ -2,6 +2,7 @@ using System.Runtime.CompilerServices;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using Silk.NET.Maths;
+using TheAdventure.Models.MagicStones;
 
 namespace TheAdventure
 {
@@ -12,6 +13,7 @@ namespace TheAdventure
 
         private Level? _currentLevel;
         private PlayerObject _player;
+        private MagicStones _magicStones = new();
 
         public GameLogic()
         {
@@ -21,6 +23,22 @@ namespace TheAdventure
         public void LoadGameState()
         {
             _player = new PlayerObject(1000);
+
+            // generate 2-3 stones
+            Random rnd = new Random();
+            for (int i = 0; i < rnd.Next(2, 3); i++)
+            {
+                int xStone = rnd.Next(0, 500);
+                int yStone = rnd.Next(0, 500);
+
+                while (!_magicStones.verifyPosition(xStone, yStone))
+                {
+                    xStone = rnd.Next(0, 500);
+                    yStone = rnd.Next(0, 500);
+                }
+                _magicStones.addStone(xStone, yStone);
+            }
+
             var jsonSerializerOptions =  new JsonSerializerOptions(){ PropertyNameCaseInsensitive = true };
             var levelContent = File.ReadAllText(Path.Combine("Assets", "terrain.tmj"));
 
@@ -139,6 +157,7 @@ namespace TheAdventure
             }
 
             _player.Render(renderer);
+            _magicStones.renderStones(renderer);
         }
 
         private int _bombIds = 100;
