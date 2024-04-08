@@ -1,6 +1,7 @@
 using Silk.NET.SDL;
 
-namespace TheAdventure{
+namespace TheAdventure
+{
     public unsafe class InputLogic
     {
         private Sdl _sdl;
@@ -9,7 +10,8 @@ namespace TheAdventure{
         private GameRenderer _renderer;
         private DateTimeOffset _lastUpdate;
 
-        public InputLogic(Sdl sdl, GameWindow window, GameRenderer renderer, GameLogic logic){
+        public InputLogic(Sdl sdl, GameWindow window, GameRenderer renderer, GameLogic logic)
+        {
             _sdl = sdl;
             _gameLogic = logic;
             _gameWindow = window;
@@ -35,137 +37,141 @@ namespace TheAdventure{
                 switch (ev.Type)
                 {
                     case (uint)EventType.Windowevent:
-                    {
-                        switch (ev.Window.Event)
                         {
-                            case (byte)WindowEventID.Shown:
-                            case (byte)WindowEventID.Exposed:
+                            switch (ev.Window.Event)
                             {
-                                break;
-                            }
-                            case (byte)WindowEventID.Hidden:
-                            {
-                                break;
-                            }
-                            case (byte)WindowEventID.Moved:
-                            {
-                                break;
-                            }
-                            case (byte)WindowEventID.SizeChanged:
-                            {
-                                break;
-                            }
-                            case (byte)WindowEventID.Minimized:
-                            case (byte)WindowEventID.Maximized:
-                            case (byte)WindowEventID.Restored:
-                                break;
-                            case (byte)WindowEventID.Enter:
-                            {
-                                break;
-                            }
-                            case (byte)WindowEventID.Leave:
-                            {
-                                break;
-                            }
-                            case (byte)WindowEventID.FocusGained:
-                            {
-                                break;
-                            }
-                            case (byte)WindowEventID.FocusLost:
-                            {
-                                break;
-                            }
-                            case (byte)WindowEventID.Close:
-                            {
-                                break;
-                            }
-                            case (byte)WindowEventID.TakeFocus:
-                            {
-                                unsafe
-                                {
-                                    _sdl.SetWindowInputFocus(_sdl.GetWindowFromID(ev.Window.WindowID));
-                                }
+                                case (byte)WindowEventID.Shown:
+                                case (byte)WindowEventID.Exposed:
+                                    {
+                                        break;
+                                    }
+                                case (byte)WindowEventID.Hidden:
+                                    {
+                                        break;
+                                    }
+                                case (byte)WindowEventID.Moved:
+                                    {
+                                        break;
+                                    }
+                                case (byte)WindowEventID.SizeChanged:
+                                    {
+                                        break;
+                                    }
+                                case (byte)WindowEventID.Minimized:
+                                case (byte)WindowEventID.Maximized:
+                                case (byte)WindowEventID.Restored:
+                                    break;
+                                case (byte)WindowEventID.Enter:
+                                    {
+                                        break;
+                                    }
+                                case (byte)WindowEventID.Leave:
+                                    {
+                                        break;
+                                    }
+                                case (byte)WindowEventID.FocusGained:
+                                    {
+                                        break;
+                                    }
+                                case (byte)WindowEventID.FocusLost:
+                                    {
+                                        break;
+                                    }
+                                case (byte)WindowEventID.Close:
+                                    {
+                                        break;
+                                    }
+                                case (byte)WindowEventID.TakeFocus:
+                                    {
+                                        unsafe
+                                        {
+                                            _sdl.SetWindowInputFocus(_sdl.GetWindowFromID(ev.Window.WindowID));
+                                        }
 
-                                break;
+                                        break;
+                                    }
                             }
+
+                            break;
                         }
 
-                        break;
-                    }
-
                     case (uint)EventType.Fingermotion:
-                    {
-                        break;
-                    }
+                        {
+                            break;
+                        }
 
                     case (uint)EventType.Mousemotion:
-                    {
-                        break;
-                    }
+                        {
+                            break;
+                        }
 
                     case (uint)EventType.Fingerdown:
-                    {
-                        mouseButtonStates[(byte)MouseButton.Primary] = 1;
-                        break;
-                    }
+                        {
+                            mouseButtonStates[(byte)MouseButton.Primary] = 1;
+                            break;
+                        }
                     case (uint)EventType.Mousebuttondown:
-                    {
-                        mouseX = ev.Motion.X;
-                        mouseY = ev.Motion.Y;
-                        mouseButtonStates[ev.Button.Button] = 1;
-                        break;
-                    }
+                        {
+                            mouseX = ev.Motion.X;
+                            mouseY = ev.Motion.Y;
+                            mouseButtonStates[ev.Button.Button] = 1;
+                            break;
+                        }
 
                     case (uint)EventType.Fingerup:
-                    {
-                        mouseButtonStates[(byte)MouseButton.Primary] = 0;
-                        break;
-                    }
+                        {
+                            mouseButtonStates[(byte)MouseButton.Primary] = 0;
+                            break;
+                        }
 
                     case (uint)EventType.Mousebuttonup:
-                    {
-                        mouseButtonStates[ev.Button.Button] = 0;
-                        break;
-                    }
+                        {
+                            mouseButtonStates[ev.Button.Button] = 0;
+                            break;
+                        }
 
                     case (uint)EventType.Mousewheel:
-                    {
-                        break;
-                    }
+                        {
+                            break;
+                        }
 
                     case (uint)EventType.Keyup:
-                    {
-                        
-                        break;
-                    }
+                        {
+
+                            break;
+                        }
 
                     case (uint)EventType.Keydown:
-                    {
-                        break;
-                    }
+                        {
+                            break;
+                        }
                 }
             }
 
             var timeSinceLastUpdateInMS = (int)currentTime.Subtract(_lastUpdate).TotalMilliseconds;
 
-            if (_keyboardState[(int)Scancode.ScancodeUp] == 1){
-                _gameLogic.UpdatePlayerPosition(1.0, 0, 0, 0, timeSinceLastUpdateInMS);
-            }
-            else if (_keyboardState[(int)Scancode.ScancodeDown] == 1){
-                _gameLogic.UpdatePlayerPosition(0, 1.0, 0, 0, timeSinceLastUpdateInMS);
-            }
-            else if (_keyboardState[(int)Scancode.ScancodeLeft] == 1){
-                _gameLogic.UpdatePlayerPosition(0, 0, 1.0, 0, timeSinceLastUpdateInMS);
-            }
-            else if (_keyboardState[(int)Scancode.ScancodeRight] == 1){
-                _gameLogic.UpdatePlayerPosition(0, 0, 0, 1.0, timeSinceLastUpdateInMS);
-            }
+            double up = 0, down = 0, left = 0, right = 0;
+            double movementSpeed = 2.0; // Initial movement speed
+
+            // Check arrow keys
+            if (_keyboardState[(int)Scancode.ScancodeUp] == 1 || _keyboardState[(int)KeyCode.W] == 1)
+                up = 1.0;
+            else if (_keyboardState[(int)Scancode.ScancodeDown] == 1 || _keyboardState[(int)KeyCode.S] == 1)
+                down = 1.0;
+
+            if (_keyboardState[(int)Scancode.ScancodeLeft] == 1 || _keyboardState[(int)KeyCode.A] == 1)
+                left = 1.0;
+            else if (_keyboardState[(int)Scancode.ScancodeRight] == 1 || _keyboardState[(int)KeyCode.D] == 1)
+                right = 1.0;
+
+            _gameLogic.UpdatePlayerPosition(up, down, left, right, timeSinceLastUpdateInMS, movementSpeed);
+
+            // Add bomb on mouse click
+            if (mouseButtonStates[(byte)MouseButton.Primary] == 1)
+                _gameLogic.AddBomb(mouseX, mouseY);
 
             _lastUpdate = currentTime;
 
-            if (mouseButtonStates[(byte)MouseButton.Primary] == 1){
-                _gameLogic.AddBomb(mouseX, mouseY);
-            }
             return false;
         }
     }

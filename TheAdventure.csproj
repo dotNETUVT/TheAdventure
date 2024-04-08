@@ -44,6 +44,10 @@
       <Content Include="Assets\player.png">
         <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
       </Content>
+      <None Remove="Assets\player_flipped.png" />
+      <Content Include="Assets\player_flipped.png">
+        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      </Content>
       <None Remove="Assets\terrain.png" />
       <Content Include="Assets\terrain.png">
         <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
