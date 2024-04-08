@@ -148,24 +148,27 @@ namespace TheAdventure{
 
             var timeSinceLastUpdateInMS = (int)currentTime.Subtract(_lastUpdate).TotalMilliseconds;
 
-            if (_keyboardState[(int)Scancode.ScancodeUp] == 1){
-                _gameLogic.UpdatePlayerPosition(1.0, 0, 0, 0, timeSinceLastUpdateInMS);
-            }
-            else if (_keyboardState[(int)Scancode.ScancodeDown] == 1){
-                _gameLogic.UpdatePlayerPosition(0, 1.0, 0, 0, timeSinceLastUpdateInMS);
-            }
-            else if (_keyboardState[(int)Scancode.ScancodeLeft] == 1){
-                _gameLogic.UpdatePlayerPosition(0, 0, 1.0, 0, timeSinceLastUpdateInMS);
-            }
-            else if (_keyboardState[(int)Scancode.ScancodeRight] == 1){
-                _gameLogic.UpdatePlayerPosition(0, 0, 0, 1.0, timeSinceLastUpdateInMS);
-            }
+            double up = 0, down = 0, left = 0, right = 0;
+            double movementSpeed = 2.0; // Initial movement speed
+
+            if (_keyboardState[(int)Scancode.ScancodeUp] == 1)
+                up = 1.0;
+            else if (_keyboardState[(int)Scancode.ScancodeDown] == 1)
+                down = 1.0;
+
+            if (_keyboardState[(int)Scancode.ScancodeLeft] == 1)
+                left = 1.0;
+            else if (_keyboardState[(int)Scancode.ScancodeRight] == 1)
+                right = 1.0;
+
+            _gameLogic.UpdatePlayerPosition(up, down, left, right, timeSinceLastUpdateInMS, movementSpeed);
+
+            // Add bomb on mouse click
+            if (mouseButtonStates[(byte)MouseButton.Primary] == 1)
+                _gameLogic.AddBomb(mouseX, mouseY);
 
             _lastUpdate = currentTime;
 
-            if (mouseButtonStates[(byte)MouseButton.Primary] == 1){
-                _gameLogic.AddBomb(mouseX, mouseY);
-            }
             return false;
         }
     }

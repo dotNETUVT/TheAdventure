@@ -74,10 +74,22 @@ namespace TheAdventure
             return null;
         }
 
-        public void UpdatePlayerPosition(double up, double down, double left, double right, int timeSinceLastUpdateInMS)
+        public void UpdatePlayerPosition(double up, double down, double left, double right, int timeSinceLastUpdateInMS, double movementSpeed)
         {
+            // Calculate the length of the movement vector
+            double length = Math.Sqrt(up * up + down * down + left * left + right * right);
+
+            // If the length is greater than 0 (indicating movement),
+            // normalize the vector to ensure consistent speed
+            if (length > 0)
+            {
+                up *= movementSpeed / length;
+                down *= movementSpeed / length;
+                left *= movementSpeed / length;
+                right *= movementSpeed / length;
+            }
+
             _player.UpdatePlayerPosition(up, down, left, right, timeSinceLastUpdateInMS);
-            
         }
 
         public (int x, int y) GetPlayerCoordinates()
