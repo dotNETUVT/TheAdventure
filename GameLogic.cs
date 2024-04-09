@@ -24,21 +24,6 @@ namespace TheAdventure
         {
             _player = new PlayerObject(1000);
 
-            // generate 2-3 stones
-            Random rnd = new Random();
-            for (int i = 0; i < rnd.Next(2, 3); i++)
-            {
-                int xStone = rnd.Next(0, 500);
-                int yStone = rnd.Next(0, 500);
-
-                while (!_magicStones.verifyPosition(xStone, yStone))
-                {
-                    xStone = rnd.Next(0, 500);
-                    yStone = rnd.Next(0, 500);
-                }
-                _magicStones.addStone(xStone, yStone);
-            }
-
             var jsonSerializerOptions =  new JsonSerializerOptions(){ PropertyNameCaseInsensitive = true };
             var levelContent = File.ReadAllText(Path.Combine("Assets", "terrain.tmj"));
 
@@ -60,6 +45,24 @@ namespace TheAdventure
                 refTileSet.Set = tileSet;
             }
             _currentLevel = level;
+
+            // generate 2-3 stones
+            int levelWidth = _currentLevel.Width * 16;
+            int levelHeight = _currentLevel.Height * 16;
+            Random rnd = new Random();
+            for (int i = 0; i < rnd.Next(2, 3); i++)
+            {
+                int xStone = rnd.Next(0, levelWidth);
+                int yStone = rnd.Next(0, levelHeight);
+
+                while (!_magicStones.verifyPosition(xStone, yStone))
+                {
+                    xStone = rnd.Next(0, levelWidth);
+                    yStone = rnd.Next(0, levelHeight);
+                }
+                _magicStones.addStone(xStone, yStone);
+            }
+
         }
 
         public IEnumerable<RenderableGameObject> GetAllRenderableObjects()
