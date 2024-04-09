@@ -7,11 +7,11 @@ namespace TheAdventure
         private IntPtr _window;
         private Sdl _sdl;
 
-        public GameWindow(Sdl sdl)
+        public GameWindow(Sdl sdl, int width, int height)
         {
             _sdl = sdl;
             _window = (IntPtr)sdl.CreateWindow(
-                "The Adventure", Sdl.WindowposUndefined, Sdl.WindowposUndefined, 800, 800,
+                "The Adventure", Sdl.WindowposUndefined, Sdl.WindowposUndefined, width, height,
                 (uint)WindowFlags.Resizable /*| (uint)WindowFlags.AllowHighdpi*/
             );
 

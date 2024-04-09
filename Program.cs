@@ -7,6 +7,10 @@ public static class Program
 {
     public static void Main()
     {
+
+        var WINDOW_WIDTH = 960;
+        var WINDOW_HEIGHT = 640;
+
         var sdl = new Sdl(new SdlContext());
 
         ulong framesRenderedCounter = 0;
@@ -19,9 +23,9 @@ public static class Program
             throw new InvalidOperationException("Failed to initialize SDL.");
         }
 
-        var gameWindow = new GameWindow(sdl);
+        var gameWindow = new GameWindow(sdl, WINDOW_WIDTH, WINDOW_HEIGHT);
         var gameLogic = new GameLogic();
-        var gameRenderer = new GameRenderer(sdl, gameWindow, gameLogic);
+        var gameRenderer = new GameRenderer(sdl, gameWindow, gameLogic, WINDOW_WIDTH, WINDOW_HEIGHT);
         var inputLogic = new InputLogic(sdl, gameWindow, gameRenderer, gameLogic);
 
         gameLogic.LoadGameState();

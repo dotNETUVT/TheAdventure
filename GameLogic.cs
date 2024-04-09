@@ -21,6 +21,10 @@ namespace TheAdventure
         public void LoadGameState()
         {
             _player = new PlayerObject(1000);
+            _player.startAnimationLoop();
+
+            _gameObjects.Add(_player.Id, _player);
+
             var jsonSerializerOptions =  new JsonSerializerOptions(){ PropertyNameCaseInsensitive = true };
             var levelContent = File.ReadAllText(Path.Combine("Assets", "terrain.tmj"));
 
@@ -74,15 +78,20 @@ namespace TheAdventure
             return null;
         }
 
-        public void UpdatePlayerPosition(double up, double down, double left, double right, int timeSinceLastUpdateInMS)
+        public void UpdatePlayerPosition(double up, double down, double left, double right, int timeSinceLastUpdateInMS, string dir)
         {
-            _player.UpdatePlayerPosition(up, down, left, right, timeSinceLastUpdateInMS);
+            _player.UpdatePlayerPosition(up, down, left, right, timeSinceLastUpdateInMS, dir);
             
         }
 
         public (int x, int y) GetPlayerCoordinates()
         {
             return (_player.X, _player.Y);
+        }
+
+        public void SetPlayerIdleState()
+        {
+            _player.SetIdleState();
         }
 
         public void RenderTerrain(GameRenderer renderer)
@@ -145,7 +154,8 @@ namespace TheAdventure
 
         public void AddBomb(int x, int y)
         {
-            AnimatedGameObject bomb = new AnimatedGameObject("BombExploding.png", 2, _bombIds, 13, 13, 1, x, y);
+            AnimatedGameObject bomb = new AnimatedGameObject("bomb_explosion.png", _bombIds, 13, x, y);
+            bomb.setAnimationSpeed(2000 / 13);
             _gameObjects.Add(bomb.Id, bomb);
             ++_bombIds;
         }

@@ -14,7 +14,10 @@ public class RenderableGameObject : GameObject
     public RenderableGameObject(string fileName, int id):
         base(id)
     {
-        TextureId = GameRenderer.LoadTexture(fileName, out var textureData);
+        LoadTexture(fileName);
+    }
+    protected virtual void LoadTexture(string fileName){
+        TextureId = GameRenderer.LoadTexture(Path.Combine("Assets", fileName), out var textureData);
         TextureInformation = textureData;
         TextureSource = new Silk.NET.Maths.Rectangle<int>(0, 0, textureData.Width, textureData.Height);
         TextureDestination = new Silk.NET.Maths.Rectangle<int>(0, 0, textureData.Width, textureData.Height);

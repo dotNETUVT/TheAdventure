@@ -31,7 +31,7 @@ namespace TheAdventure
         private static GameRenderer? _singleton;
         private DateTimeOffset _lastFrameRenderedAt = DateTimeOffset.MinValue;
 
-        public GameRenderer(Sdl sdl, GameWindow gameWindow, GameLogic gameLogic)
+        public GameRenderer(Sdl sdl, GameWindow gameWindow, GameLogic gameLogic, int width, int height)
         {
             _window = gameWindow;
             _gameLogic = gameLogic;
@@ -40,8 +40,10 @@ namespace TheAdventure
             _textures = new Dictionary<int, IntPtr>();
             _textureData = new Dictionary<int, TextureData>();
             _camera = new GameCamera();
-            _camera.Width = 800;
-            _camera.Height = 600;
+            _camera.Width = width;
+            _camera.Height = height;
+            _camera.X = width / 2;
+            _camera.Y = height / 2;
 
             // TODO: Check if _singleton is not null, if it is, clear resources.
 
@@ -111,8 +113,7 @@ namespace TheAdventure
 
             // TODO: implement the soft margin;
 
-            _camera.X = playerPos.x;
-            _camera.Y = playerPos.y;
+            
 
             _sdl.RenderClear(_renderer);
 
