@@ -1,4 +1,5 @@
-﻿using System.Diagnostics;
+﻿using System;
+using System.Diagnostics;
 using Silk.NET.SDL;
 
 namespace TheAdventure;
@@ -11,6 +12,9 @@ public static class Program
 
         ulong framesRenderedCounter = 0;
         var timer = new Stopwatch();
+
+        var crowTimer = new Stopwatch();
+        crowTimer.Start();
 
         var sdlInitResult = sdl.Init(Sdl.InitVideo | Sdl.InitEvents | Sdl.InitTimer | Sdl.InitGamecontroller |
                                      Sdl.InitJoystick);
@@ -42,6 +46,13 @@ public static class Program
             gameRenderer.Render();
 
             ++framesRenderedCounter;
+
+            if (crowTimer.Elapsed.TotalSeconds >= 5)
+            {
+                gameRenderer.RenderCrow();
+                crowTimer.Restart();
+            }
+
             System.Threading.Thread.Sleep(TimeSpan.FromSeconds(0.041666666666667));
         }
 

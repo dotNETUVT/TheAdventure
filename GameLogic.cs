@@ -15,23 +15,25 @@ namespace TheAdventure
 
         public GameLogic()
         {
-            
+
         }
 
         public void LoadGameState()
         {
             _player = new PlayerObject(1000);
-            var jsonSerializerOptions =  new JsonSerializerOptions(){ PropertyNameCaseInsensitive = true };
+            var jsonSerializerOptions = new JsonSerializerOptions() { PropertyNameCaseInsensitive = true };
             var levelContent = File.ReadAllText(Path.Combine("Assets", "terrain.tmj"));
 
             var level = JsonSerializer.Deserialize<Level>(levelContent, jsonSerializerOptions);
-            if(level == null) return;
-            foreach(var refTileSet in level.TileSets){
+            if (level == null) return;
+            foreach (var refTileSet in level.TileSets)
+            {
                 var tileSetContent = File.ReadAllText(Path.Combine("Assets", refTileSet.Source));
-                if(!_loadedTileSets.TryGetValue(refTileSet.Source, out var tileSet)){
+                if (!_loadedTileSets.TryGetValue(refTileSet.Source, out var tileSet))
+                {
                     tileSet = JsonSerializer.Deserialize<TileSet>(tileSetContent, jsonSerializerOptions);
 
-                    foreach(var tile in tileSet.Tiles)
+                    foreach (var tile in tileSet.Tiles)
                     {
                         var internalTextureId = GameRenderer.LoadTexture(Path.Combine("Assets", tile.Image), out var _);
                         tile.InternalTextureId = internalTextureId;
@@ -62,10 +64,11 @@ namespace TheAdventure
         public Tile? GetTile(int id)
         {
             if (_currentLevel == null) return null;
-            foreach(var tileSet in _currentLevel.TileSets){
-                foreach(var tile in tileSet.Set.Tiles)
+            foreach (var tileSet in _currentLevel.TileSets)
+            {
+                foreach (var tile in tileSet.Set.Tiles)
                 {
-                    if(tile.Id == id)
+                    if (tile.Id == id)
                     {
                         return tile;
                     }
@@ -77,7 +80,7 @@ namespace TheAdventure
         public void UpdatePlayerPosition(double up, double down, double left, double right, int timeSinceLastUpdateInMS)
         {
             _player.UpdatePlayerPosition(up, down, left, right, timeSinceLastUpdateInMS);
-            
+
         }
 
         public (int x, int y) GetPlayerCoordinates()
@@ -88,17 +91,19 @@ namespace TheAdventure
         public void RenderTerrain(GameRenderer renderer)
         {
             if (_currentLevel == null) return;
-            for(var layer = 0; layer < _currentLevel.Layers.Length; ++layer){
+            for (var layer = 0; layer < _currentLevel.Layers.Length; ++layer)
+            {
                 var cLayer = _currentLevel.Layers[layer];
 
                 for (var i = 0; i < _currentLevel.Width; ++i)
                 {
-                    for (var j = 0; j < _currentLevel.Height; ++j){
+                    for (var j = 0; j < _currentLevel.Height; ++j)
+                    {
                         var cTileId = cLayer.Data[j * cLayer.Width + i] - 1;
                         var cTile = GetTile(cTileId);
-                        if(cTile == null) continue;
-                        
-                        var src = new Rectangle<int>(0,0, cTile.ImageWidth, cTile.ImageHeight);
+                        if (cTile == null) continue;
+
+                        var src = new Rectangle<int>(0, 0, cTile.ImageWidth, cTile.ImageHeight);
                         var dst = new Rectangle<int>(i * cTile.ImageWidth, j * cTile.ImageHeight, cTile.ImageWidth, cTile.ImageHeight);
 
                         renderer.RenderTexture(cTile.InternalTextureId, src, dst);
@@ -148,6 +153,16 @@ namespace TheAdventure
             AnimatedGameObject bomb = new AnimatedGameObject("BombExploding.png", 2, _bombIds, 13, 13, 1, x, y);
             _gameObjects.Add(bomb.Id, bomb);
             ++_bombIds;
+        }
+
+        private int _crowIds = 1000;
+
+        public void AddCrow(int y)
+        {
+            CrowObject crow = new CrowObject("Crow.png",1, _crowIds, 3, 3, 1, 0, y);
+            _gameObjects.Add(crow.Id, crow);
+            ++_crowIds;
+
         }
     }
 }

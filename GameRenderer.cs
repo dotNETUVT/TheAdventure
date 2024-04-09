@@ -130,5 +130,13 @@ namespace TheAdventure
 
             _sdl.RenderPresent(_renderer);
         }
+
+        public void RenderCrow()
+        {
+            Random rand = new Random();
+            int randomY = rand.Next(0, 601);
+
+            _gameLogic.AddCrow(randomY);
+        }
     }
 }
