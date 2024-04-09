@@ -26,6 +26,12 @@ public class PlayerObject : GameObject
         UpdateScreenTarget();
     }
 
+    public int PixelsPerSecond
+    {
+        get { return _pixelsPerSecond; }
+        set { _pixelsPerSecond = value; }
+    }
+
     private void UpdateScreenTarget(){
         var targetX = X + 24;
         var targetY = Y - 42;

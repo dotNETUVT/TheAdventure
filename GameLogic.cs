@@ -149,5 +149,9 @@ namespace TheAdventure
             _gameObjects.Add(bomb.Id, bomb);
             ++_bombIds;
         }
+
+        public void setPlayerSpeed(int speed) {
+           _player.PixelsPerSecond = speed;
+        }
     }
 }

@@ -8,7 +8,7 @@ namespace TheAdventure{
         private GameWindow _gameWindow;
         private GameRenderer _renderer;
         private DateTimeOffset _lastUpdate;
-
+        public int _lastKeyWasDown = 0;
         public InputLogic(Sdl sdl, GameWindow window, GameRenderer renderer, GameLogic logic){
             _sdl = sdl;
             _gameLogic = logic;
@@ -25,6 +25,8 @@ namespace TheAdventure{
             Event ev = new Event();
             var mouseX = 0;
             var mouseY = 0;
+
+            
             while (_sdl.PollEvent(ref ev) != 0)
             {
                 if (ev.Type == (uint)EventType.Quit)
@@ -135,13 +137,34 @@ namespace TheAdventure{
 
                     case (uint)EventType.Keyup:
                     {
-                        
-                        break;
-                    }
+
+                            var key = (KeyCode)ev.Key.Keysym.Scancode;
+                            var shiftPressed = (_keyboardState[(int)Scancode.ScancodeLshift] == 1) || (_keyboardState[(int)Scancode.ScancodeRshift] == 1);
+
+                            if (shiftPressed)
+                            {
+                                _gameLogic.setPlayerSpeed(220);
+                            }
+                            else
+                            {
+                                _gameLogic.setPlayerSpeed(128);
+                            }
+                            break;
+                        }
 
                     case (uint)EventType.Keydown:
                     {
-                        break;
+                            var key = (KeyCode)ev.Key.Keysym.Scancode;
+                            var shiftPressed = (_keyboardState[(int)Scancode.ScancodeLshift] == 1) || (_keyboardState[(int)Scancode.ScancodeRshift] == 1);
+
+                            if (shiftPressed)
+                            {
+                                _gameLogic.setPlayerSpeed(220);
+                            }
+                            else {
+                                _gameLogic.setPlayerSpeed(128);
+                                    }
+                            break;
                     }
                 }
             }
