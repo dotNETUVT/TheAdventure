@@ -36,16 +36,31 @@ namespace TheAdventure
             _window = gameWindow;
             _gameLogic = gameLogic;
             _sdl = sdl;
+
+            if(_singleton!=null) ClearResources();
+
             _renderer = (Renderer*)gameWindow.CreateRenderer();
             _textures = new Dictionary<int, IntPtr>();
             _textureData = new Dictionary<int, TextureData>();
             _camera = new GameCamera();
             _camera.Width = 800;
             _camera.Height = 600;
-
-            // TODO: Check if _singleton is not null, if it is, clear resources.
-
+   
             _singleton = this;
+        }
+
+        private void ClearResources()
+        {
+            foreach (var texture in _textures.Values)
+            {
+                _sdl.DestroyTexture((Texture*)texture);
+            }
+            _textures.Clear();
+            _textureData.Clear();
+            _sdl.DestroyRenderer(_renderer);
+            _sdl.RenderClear(_renderer);
+            _renderer = null;
+            
         }
 
         public static int LoadTexture(string fileName, out TextureData textureData)
@@ -130,5 +145,7 @@ namespace TheAdventure
 
             _sdl.RenderPresent(_renderer);
         }
+
+ 
     }
 }

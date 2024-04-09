@@ -14,8 +14,10 @@ public class AnimatedGameObject : RenderableGameObject
     private int _rowHeight = 0;
     private int _columnWidth = 0;
     private int _timePerFrame;
+    private bool _loop;
+    private bool _isPlaying = true;
 
-    public AnimatedGameObject(string fileName, int durationInSeconds, int id, int numberOfFrames, int numberOfColumns,int numberOfRows, int x, int y):
+    public AnimatedGameObject(string fileName, int durationInSeconds, int id, int numberOfFrames, int numberOfColumns,int numberOfRows, int x, int y, bool loop=false):
         base(fileName, id){
         _durationInSeconds = durationInSeconds;
         _numberOfFrames = numberOfFrames;
@@ -32,26 +34,51 @@ public class AnimatedGameObject : RenderableGameObject
 
         this.TextureDestination = new Silk.NET.Maths.Rectangle<int>(x - halfColumn, y - halfRow, _columnWidth, _rowHeight);
         this.TextureSource = new Silk.NET.Maths.Rectangle<int>(_currentColumn * _columnWidth, _currentRow * _rowHeight, _columnWidth, _rowHeight);
+
+        _loop = loop;
     }
 
-    public override bool Update(int timeSinceLastFrame){
-        
+    public void UpdateAnimationPosition(int x, int y)
+    {
+        var halfRow = _rowHeight / 2;
+        var halfColumn = _columnWidth / 2;
+        this.TextureDestination = new Silk.NET.Maths.Rectangle<int>(x - halfColumn, y - halfRow, _columnWidth, _rowHeight);
+
+    }
+
+    public override bool Update(int timeSinceLastFrame)
+    {
+        if (_loop && !_isPlaying)
+        {
+            return false;
+        }
 
         _timeSinceAnimationStart += timeSinceLastFrame;
 
+        if (_timeSinceAnimationStart > _durationInSeconds * 1000)
+            if (!_loop) return false;
+            else
+            {
+                _timeSinceAnimationStart = 0;
+                _currentRow = 0;
+                _currentColumn = 0;
+
+                _isPlaying = false;
+            }
+
         var currentFrame = _timeSinceAnimationStart / _timePerFrame;
 
-        if (_timeSinceAnimationStart > _durationInSeconds * 1000) return false;
-
         _currentRow = currentFrame / _numberOfColumns;
-        _currentColumn = currentFrame % _numberOfColumns; //- (_currentRow * _numberOfColumns);
+        _currentColumn = currentFrame % _numberOfColumns;
 
-        //Console.WriteLine($"{this.Id}: currentFrame: {currentFrame} currentRow: {_currentRow} currentColumn: {_currentColumn}");
+        if (_isPlaying)
+            this.TextureSource = new Silk.NET.Maths.Rectangle<int>(_currentColumn * _columnWidth, _currentRow * _rowHeight, _columnWidth, _rowHeight);
 
-        this.TextureSource = new Silk.NET.Maths.Rectangle<int>(_currentColumn * _columnWidth, _currentRow * _rowHeight, _columnWidth, _rowHeight);
-    
         return true;
     }
 
-    
+    public void ResumeAnimation()
+    {
+        _isPlaying = true;
+    }
 }

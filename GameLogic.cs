@@ -13,9 +13,9 @@ namespace TheAdventure
         private Level? _currentLevel;
         private PlayerObject _player;
 
+       
         public GameLogic()
         {
-            
         }
 
         public void LoadGameState()
@@ -148,6 +148,10 @@ namespace TheAdventure
             AnimatedGameObject bomb = new AnimatedGameObject("BombExploding.png", 2, _bombIds, 13, 13, 1, x, y);
             _gameObjects.Add(bomb.Id, bomb);
             ++_bombIds;
+        }
+        public PlayerObject GetPlayer()
+        {
+            return _player;
         }
     }
 }

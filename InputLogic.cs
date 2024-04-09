@@ -160,6 +160,14 @@ namespace TheAdventure{
             else if (_keyboardState[(int)Scancode.ScancodeRight] == 1){
                 _gameLogic.UpdatePlayerPosition(0, 0, 0, 1.0, timeSinceLastUpdateInMS);
             }
+            if (_keyboardState[(int)Scancode.ScancodeSpace] == 1)
+            {
+                _gameLogic.GetPlayer().Attack(true);
+            }
+            else
+            {
+                _gameLogic.GetPlayer().Attack(false);
+            }
 
             _lastUpdate = currentTime;
 
