@@ -1,4 +1,5 @@
 using Microsoft.VisualBasic;
+using Silk.NET.Maths;
 using TheAdventure;
 
 public class AnimatedGameObject : RenderableGameObject
@@ -32,6 +33,13 @@ public class AnimatedGameObject : RenderableGameObject
 
         this.TextureDestination = new Silk.NET.Maths.Rectangle<int>(x - halfColumn, y - halfRow, _columnWidth, _rowHeight);
         this.TextureSource = new Silk.NET.Maths.Rectangle<int>(_currentColumn * _columnWidth, _currentRow * _rowHeight, _columnWidth, _rowHeight);
+    }
+
+    //offset if needed for objects (eg. bomb)
+    public void updateOffset(int offsetX, int offsetY)
+    {
+        Silk.NET.Maths.Vector2D<int> translationVector = new Silk.NET.Maths.Vector2D<int>(offsetX, offsetY);
+        this.TextureDestination = this.TextureDestination.GetTranslated(translationVector);
     }
 
     public override bool Update(int timeSinceLastFrame){

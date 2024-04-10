@@ -30,6 +30,27 @@ namespace TheAdventure
         private static GameRenderer? _singleton;
         private DateTimeOffset _lastFrameRenderedAt = DateTimeOffset.MinValue;
 
+        private void ClearResources()
+        {
+            // empty the texture dict + texture data
+            foreach (var texturePtr in _textures.Values)
+            {
+                _sdl.DestroyTexture((Texture*)texturePtr);
+            }
+            _textures.Clear();
+            
+            _textureData.Clear();
+            _textureId = 0;
+
+            // if renderer was also created, delete it
+            if (_renderer != null)
+            {
+                _sdl.RenderClear(_renderer);
+                _sdl.DestroyRenderer(_renderer);
+                _renderer = null;
+            }
+        }
+
         public GameRenderer(Sdl sdl, GameWindow gameWindow, GameLogic gameLogic)
         {
             _window = gameWindow;
@@ -39,7 +60,10 @@ namespace TheAdventure
             _textures = new Dictionary<int, IntPtr>();
             _textureData = new Dictionary<int, TextureData>();
 
-            // TODO: Check if _singleton is not null, if it is, clear resources.
+            if(_singleton != null)
+            {
+                ClearResources();
+            }
 
             _singleton = this;
         }

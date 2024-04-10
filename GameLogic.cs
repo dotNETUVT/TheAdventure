@@ -121,11 +121,12 @@ namespace TheAdventure
             }
         }
 
-        private int _bombIds = 100;
+        private int _bombIds = 200; // in case more textures get added later
 
         public void AddBomb(int x, int y)
         {
             AnimatedGameObject bomb = new AnimatedGameObject("BombExploding.png", 2, _bombIds, 13, 13, 1, x, y);
+            bomb.updateOffset(1,-15); // offset of 15 to not place bomb under the cursor ( and x=1 to make it perfect :) )
             _gameObjects.Add(bomb.Id, bomb);
             ++_bombIds;
         }
