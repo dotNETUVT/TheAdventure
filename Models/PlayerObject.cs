@@ -1,5 +1,6 @@
 using Silk.NET.Maths;
 using TheAdventure;
+using TheAdventure.Models.Data;
 
 public class PlayerObject : GameObject
 {
@@ -42,6 +43,33 @@ public class PlayerObject : GameObject
         Y -= (int)(up * pixelsToMove);
         Y += (int)(down * pixelsToMove);
 
+        UpdateScreenTarget();
+    }
+
+    public bool IsCloseToBomb(Bomb bomb)
+    {
+        if (!bomb.HasExploded)
+        {
+            return false;
+        }
+        
+        var BombX = bomb.TextureDestination.Origin.X;
+        var BombY = bomb.TextureDestination.Origin.Y;
+        var BombWidth = bomb.TextureInformation.Width;
+        var BombHeight = bomb.TextureInformation.Height;
+
+        
+        if ((X + 48 > BombX && X + 48 < BombX + BombWidth) && (Y - 48 > BombY && Y - 48 < BombY + BombHeight))
+        {
+            return true;
+        }
+        return false;
+    }
+
+    public void Respawn()
+    {
+        X = 0;
+        Y = 0;
         UpdateScreenTarget();
     }
 

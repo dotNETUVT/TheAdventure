@@ -3,17 +3,17 @@ using TheAdventure;
 
 public class AnimatedGameObject : RenderableGameObject
 {
-    private int _durationInSeconds;
-    private int _numberOfColumns;
-    private int _numberOfRows;
-    private int _numberOfFrames;
-    private int _timeSinceAnimationStart = 0;
+    protected int _durationInSeconds;
+    protected int _numberOfColumns;
+    protected int _numberOfRows;
+    protected int _numberOfFrames;
+    protected int _timeSinceAnimationStart = 0;
 
-    private int _currentRow = 0;
-    private int _currentColumn = 0;
-    private int _rowHeight = 0;
-    private int _columnWidth = 0;
-    private int _timePerFrame;
+    protected int _currentRow = 0;
+    protected int _currentColumn = 0;
+    protected int _rowHeight = 0;
+    protected int _columnWidth = 0;
+    protected int _timePerFrame;
 
     public AnimatedGameObject(string fileName, int durationInSeconds, int id, int numberOfFrames, int numberOfColumns,int numberOfRows, int x, int y):
         base(fileName, id){

@@ -2,6 +2,7 @@ using System.Runtime.CompilerServices;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using Silk.NET.Maths;
+using TheAdventure.Models.Data;
 
 namespace TheAdventure
 {
@@ -126,6 +127,13 @@ namespace TheAdventure
                 if (gameObject.Update(timeSinceLastFrame))
                 {
                     gameObject.Render(renderer);
+
+                    
+                    if (gameObject is Bomb bomb && _player.IsCloseToBomb(bomb))
+                    {
+                        _player.Render(renderer);
+                        _player.Respawn();
+                    }
                 }
                 else
                 {
@@ -145,7 +153,7 @@ namespace TheAdventure
 
         public void AddBomb(int x, int y)
         {
-            AnimatedGameObject bomb = new AnimatedGameObject("BombExploding.png", 2, _bombIds, 13, 13, 1, x, y);
+            Bomb bomb = new Bomb("BombExploding.png", 1, _bombIds, 13, 13, 1, x, y);
             _gameObjects.Add(bomb.Id, bomb);
             ++_bombIds;
         }
