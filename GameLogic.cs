@@ -129,14 +129,15 @@ namespace TheAdventure
                     gameObject.Render(renderer);
 
                     
+                    
+                }
+                else
+                {
                     if (gameObject is Bomb bomb && _player.IsCloseToBomb(bomb))
                     {
                         _player.Render(renderer);
                         _player.Respawn();
                     }
-                }
-                else
-                {
                     itemsToRemove.Add(gameObject.Id);
                 }
             }
