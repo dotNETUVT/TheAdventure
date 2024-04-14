@@ -166,6 +166,30 @@ namespace TheAdventure{
             {
                 _gameLogic.AddBomb(_gameLogic.GetPlayerCoordinates().x, _gameLogic.GetPlayerCoordinates().y, _renderer);
             }
+            else if (_keyboardState[(int)Scancode.ScancodeD] == 1)
+
+            {
+                _gameLogic.UpdatePrincessPosition(0, 0, 0, 1.0, timeSinceLastUpdateInMS);
+
+            }
+            else if (_keyboardState[(int)Scancode.ScancodeA] == 1)
+
+            {
+                _gameLogic.UpdatePrincessPosition(0, 0, 1.0, 0, timeSinceLastUpdateInMS);
+
+            }
+            else if (_keyboardState[(int)Scancode.ScancodeS] == 1)
+
+            {
+                _gameLogic.UpdatePrincessPosition(0, 1.0, 0, 0, timeSinceLastUpdateInMS);
+
+            }
+            else if (_keyboardState[(int)Scancode.ScancodeW] == 1)
+
+            {
+                _gameLogic.UpdatePrincessPosition(1.0, 0, 0, 0, timeSinceLastUpdateInMS);
+
+            }
 
             _lastUpdate = currentTime;
 

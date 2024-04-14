@@ -19,8 +19,8 @@ public class GirlObject : GameObject
 
     // Offset player sprite to have world position at x=24px y=42px
 
-    private Rectangle<int> _source = new Rectangle<int>(0, 0, 48, 48);
-    private Rectangle<int> _target = new Rectangle<int>(0, 0, 48, 48);
+    private Rectangle<int> _source = new Rectangle<int>(0, 0, 20, 20);
+    private Rectangle<int> _target = new Rectangle<int>(0, 0, 20, 20);
     private int _textureId;
     private int _pixelsPerSecond = 128;
 
@@ -37,9 +37,9 @@ public class GirlObject : GameObject
     private void UpdateScreenTarget()
     {
         var targetX = X - 24;
-        var targetY = Y - 48 + 6; //Y - 42;
+        var targetY = Y - 24 + 6; //Y - 42;
 
-        _target = new Rectangle<int>(targetX, targetY, 48, 48);
+        _target = new Rectangle<int>(targetX, targetY, 20, 20);
     }
 
     public void UpdatePlayerPosition(double up, double down, double left, double right, int time)

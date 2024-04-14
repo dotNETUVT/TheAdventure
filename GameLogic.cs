@@ -45,7 +45,7 @@ namespace TheAdventure
             }
             _currentLevel = level;
             _player = new PlayerObject(1000, 24, 24, _currentLevel.TileWidth * _currentLevel.Width, _currentLevel.TileHeight * _currentLevel.Height);
-            _girl = new GirlObject(900, 24, 24, _currentLevel.TileWidth * _currentLevel.Width, _currentLevel.TileHeight * _currentLevel.Height);
+            _girl = new GirlObject(900, 100, 100, _currentLevel.TileWidth * _currentLevel.Width, _currentLevel.TileHeight * _currentLevel.Height);
         }
 
         public Rectangle<int> GetWorldBoundingBox(){
@@ -87,6 +87,12 @@ namespace TheAdventure
         {
 
             _player.UpdatePlayerPosition(up, down, left, right, timeSinceLastUpdateInMS);
+            //_girl.UpdatePlayerPosition(up, down, left, right, timeSinceLastUpdateInMS);
+
+        }
+        public void UpdatePrincessPosition(double up, double down, double left, double right, int timeSinceLastUpdateInMS)
+        {
+
             _girl.UpdatePlayerPosition(up, down, left, right, timeSinceLastUpdateInMS);
 
         }
@@ -150,6 +156,7 @@ namespace TheAdventure
             }
 
             _player.Render(renderer);
+            _girl.Render(renderer);
         }
 
         private int _bombIds = 100;
