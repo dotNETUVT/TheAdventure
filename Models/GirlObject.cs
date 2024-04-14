@@ -1,7 +1,7 @@
-using Silk.NET.Maths;
+﻿using Silk.NET.Maths;
 using TheAdventure;
 
-public class PlayerObject : GameObject
+public class GirlObject : GameObject
 {
     /// <summary>
     /// Player X position in world coordinates.
@@ -11,24 +11,22 @@ public class PlayerObject : GameObject
     /// <summary>
     /// Player Y position in world coordinates.
     /// </summary>
-    /// 
-   
     public int Y { get; set; }
 
-    public int WorldWidth {get;set;}
+    public int WorldWidth { get; set; }
 
-    public int WorldHeight {get;set;}
+    public int WorldHeight { get; set; }
 
     // Offset player sprite to have world position at x=24px y=42px
 
     private Rectangle<int> _source = new Rectangle<int>(0, 0, 48, 48);
-    private Rectangle<int> _target = new Rectangle<int>(0,0,48,48);
+    private Rectangle<int> _target = new Rectangle<int>(0, 0, 48, 48);
     private int _textureId;
     private int _pixelsPerSecond = 128;
 
-    public PlayerObject(int id, int x, int y, int worldWidth, int worldHeight) : base(id)
+    public GirlObject(int id, int x, int y, int worldWidth, int worldHeight) : base(id)
     {
-        _textureId = GameRenderer.LoadTexture(Path.Combine("Assets", "player.png"), out var textureData);
+        _textureId = GameRenderer.LoadTexture(Path.Combine("Assets", "princess.png"), out var textureData);
         X = x;
         Y = y;
         WorldWidth = worldWidth;
@@ -36,7 +34,8 @@ public class PlayerObject : GameObject
         UpdateScreenTarget();
     }
 
-    private void UpdateScreenTarget(){
+    private void UpdateScreenTarget()
+    {
         var targetX = X - 24;
         var targetY = Y - 48 + 6; //Y - 42;
 
@@ -54,13 +53,14 @@ public class PlayerObject : GameObject
 
         if (X < 10) { X = 10; }
         if (Y < 24) { Y = 24; }
-        if (X > WorldWidth - 10) { X = WorldWidth - 10;}
-        if (Y > WorldHeight - 6) { Y = WorldHeight - 6;}
+        if (X > WorldWidth - 10) { X = WorldWidth - 10; }
+        if (Y > WorldHeight - 6) { Y = WorldHeight - 6; }
 
         UpdateScreenTarget();
     }
 
-    public void Render(GameRenderer renderer){
+    public void Render(GameRenderer renderer)
+    {
         renderer.RenderTexture(_textureId, _source, _target);
     }
 }

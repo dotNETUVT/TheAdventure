@@ -22,6 +22,7 @@ namespace TheAdventure{
             var currentTime = DateTimeOffset.UtcNow;
             ReadOnlySpan<byte> _keyboardState = new(_sdl.GetKeyboardState(null), (int)KeyCode.Count);
             Span<byte> mouseButtonStates = stackalloc byte[(int)MouseButton.Count];
+          
             Event ev = new Event();
             var mouseX = 0;
             var mouseY = 0;
@@ -105,27 +106,27 @@ namespace TheAdventure{
 
                     case (uint)EventType.Fingerdown:
                     {
-                        mouseButtonStates[(byte)MouseButton.Primary] = 1;
-                        break;
+                            mouseButtonStates[(byte)MouseButton.Primary] = 1;
+                            break;
                     }
                     case (uint)EventType.Mousebuttondown:
                     {
-                        mouseX = ev.Motion.X;
-                        mouseY = ev.Motion.Y;
-                        mouseButtonStates[ev.Button.Button] = 1;
-                        break;
+                            mouseX = ev.Motion.X;
+                            mouseY = ev.Motion.Y;
+                            mouseButtonStates[ev.Button.Button] = 1;
+                            break;
                     }
 
                     case (uint)EventType.Fingerup:
                     {
-                        mouseButtonStates[(byte)MouseButton.Primary] = 0;
-                        break;
+                            mouseButtonStates[(byte)MouseButton.Primary] = 0;
+                            break;
                     }
 
                     case (uint)EventType.Mousebuttonup:
                     {
-                        mouseButtonStates[ev.Button.Button] = 0;
-                        break;
+                            mouseButtonStates[ev.Button.Button] = 0;
+                            break;
                     }
 
                     case (uint)EventType.Mousewheel:
@@ -141,7 +142,7 @@ namespace TheAdventure{
 
                     case (uint)EventType.Keydown:
                     {
-                        break;
+                            break;
                     }
                 }
             }
@@ -159,11 +160,17 @@ namespace TheAdventure{
             }
             else if (_keyboardState[(int)Scancode.ScancodeRight] == 1){
                 _gameLogic.UpdatePlayerPosition(0, 0, 0, 1.0, timeSinceLastUpdateInMS);
+
+            }
+            else if (_keyboardState[(int)Scancode.ScancodeSpace] == 1)
+            {
+                _gameLogic.AddBomb(_gameLogic.GetPlayerCoordinates().x, _gameLogic.GetPlayerCoordinates().y, _renderer);
             }
 
             _lastUpdate = currentTime;
 
-            if (mouseButtonStates[(byte)MouseButton.Primary] == 1){
+            if (mouseButtonStates[(byte)MouseButton.Primary] == 1)
+            {
                 _gameLogic.AddBomb(mouseX, mouseY, _renderer);
             }
             return false;

@@ -13,6 +13,7 @@ namespace TheAdventure
 
         private Level? _currentLevel;
         private PlayerObject _player;
+        private GirlObject _girl;
 
         public GameLogic()
         {
@@ -44,6 +45,7 @@ namespace TheAdventure
             }
             _currentLevel = level;
             _player = new PlayerObject(1000, 24, 24, _currentLevel.TileWidth * _currentLevel.Width, _currentLevel.TileHeight * _currentLevel.Height);
+            _girl = new GirlObject(900, 24, 24, _currentLevel.TileWidth * _currentLevel.Width, _currentLevel.TileHeight * _currentLevel.Height);
         }
 
         public Rectangle<int> GetWorldBoundingBox(){
@@ -85,7 +87,8 @@ namespace TheAdventure
         {
 
             _player.UpdatePlayerPosition(up, down, left, right, timeSinceLastUpdateInMS);
-            
+            _girl.UpdatePlayerPosition(up, down, left, right, timeSinceLastUpdateInMS);
+
         }
 
         public (int x, int y) GetPlayerCoordinates()
@@ -162,6 +165,7 @@ namespace TheAdventure
         public void AddBomb(int x, int y, GameRenderer renderer)
         {
             var translated = renderer.TranslateFromScreenToWorldCoordinates(x, y);
+           // Console.WriteLine($"Translated Coordinates: ({translated.X}, {translated.Y})");
             AnimatedGameObject bomb = new AnimatedGameObject("BombExploding.png", 2, _bombIds, 13, 13, 1, translated.X, translated.Y);
             _gameObjects.Add(bomb.Id, bomb);
             ++_bombIds;
