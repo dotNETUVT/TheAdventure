@@ -63,6 +63,17 @@ namespace TheAdventure
             };
             _player = new PlayerObject(spriteSheet, 100, 100);
 
+            Random random = new Random();
+            int treeCount = random.Next(16, 24);
+            for (var i = 0; i < treeCount; i++)
+            {
+                int type = random.Next(1, 9);
+                int x = random.Next(16, level.Width * level.TileWidth - 16);
+                int y = random.Next(32, level.Height * level.TileHeight - 32);
+
+                AddTree(type, x, y);
+            }
+            
             _renderer.SetWorldBounds(new Rectangle<int>(0, 0, _currentLevel.Width * _currentLevel.TileWidth,
                 _currentLevel.Height * _currentLevel.TileHeight));
         }
@@ -80,7 +91,7 @@ namespace TheAdventure
 
             _player.UpdatePlayerPosition(up ? 1.0 : 0.0, down ? 1.0 : 0.0, left ? 1.0 : 0.0, right ? 1.0 : 0.0,
                 _currentLevel.Width * _currentLevel.TileWidth, _currentLevel.Height * _currentLevel.TileHeight,
-                secsSinceLastFrame);
+                secsSinceLastFrame, _gameObjects);
 
             var itemsToRemove = new List<int>();
             itemsToRemove.AddRange(GetAllTemporaryGameObjects().Where(gameObject => gameObject.IsExpired)
@@ -193,6 +204,13 @@ namespace TheAdventure
             spriteSheet.ActivateAnimation("Explode");
             TemporaryGameObject bomb = new(spriteSheet, 2.1, (translated.X, translated.Y));
             _gameObjects.Add(bomb.Id, bomb);
+        }
+        
+        private void AddTree(int type, int x, int y)
+        {
+            SpriteSheet spriteSheet = new(_renderer, Path.Combine("Assets", "tree_00" + type.ToString() + ".png"), 1, 1, 32, 64, (16, 32));
+            RenderableGameObject tree = new(spriteSheet, (x, y));
+            _gameObjects.Add(tree.Id, tree);
         }
     }
 }

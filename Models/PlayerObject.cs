@@ -13,7 +13,7 @@ public class PlayerObject : RenderableGameObject
     }
 
     public void UpdatePlayerPosition(double up, double down, double left, double right, int width, int height,
-        double time)
+        double time, Dictionary<int, GameObject> gameObjects)
     {
         var pixelsToMove = time * _pixelsPerSecond;
 
@@ -43,6 +43,36 @@ public class PlayerObject : RenderableGameObject
             y = height - 6;
         }
 
+        foreach (int i in gameObjects.Keys)
+        {
+            if (gameObjects[i] is RenderableGameObject)
+            {
+                string collision = CollidesWith((RenderableGameObject)gameObjects[i]);
+                if (collision != "")
+                {
+                    x = Position.X;
+                    y = Position.Y;
+
+                    if (collision == "left")
+                    {
+                        x -= 1;
+                    }
+                    else if (collision == "right")
+                    {
+                        x += 1;
+                    }
+                    else if (collision == "up")
+                    {
+                        y -= 1;
+                    }
+                    else if (collision == "down")
+                    {
+                        y += 1;
+                    }
+                }
+            }
+        }
+        
         Position = (x, y);
     }
 }

@@ -23,4 +23,33 @@ public class RenderableGameObject : GameObject
     {
         SpriteSheet.Render(renderer, Position, Angle, RotationCenter);
     }
+    
+    public virtual string CollidesWith(RenderableGameObject other)
+    {
+        if (Position.X >= other.Position.X - other.SpriteSheet.FrameWidth / 2 &&
+            Position.X <= other.Position.X + other.SpriteSheet.FrameWidth / 2 &&
+            Position.Y >= other.Position.Y - other.SpriteSheet.FrameHeight / 2 &&
+            Position.Y <= other.Position.Y + other.SpriteSheet.FrameHeight / 2 + 5
+           )
+        {
+            if (Position.X < other.Position.X)
+            {
+                return "left";
+            }
+            if (Position.X > other.Position.X)
+            {
+                return "right";
+            }
+            if (Position.Y < other.Position.Y)
+            {
+                return "up";
+            }
+            if (Position.Y > other.Position.Y)
+            {
+                return "down";
+            }
+        }
+
+        return "";
+    }
 }
