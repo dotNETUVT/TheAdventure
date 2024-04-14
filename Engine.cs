@@ -2,6 +2,7 @@ using System.Text.Json;
 using Silk.NET.Maths;
 using Silk.NET.SDL;
 using TheAdventure.Models;
+using System.Drawing;
 
 namespace TheAdventure
 {
@@ -18,12 +19,24 @@ namespace TheAdventure
         private DateTimeOffset _lastUpdate = DateTimeOffset.Now;
         private DateTimeOffset _lastPlayerUpdate = DateTimeOffset.Now;
 
+        private static Dictionary<int, List<int>> _treeDimensions;
+
         public Engine(GameRenderer renderer, Input input)
         {
             _renderer = renderer;
             _input = input;
 
             _input.OnMouseClick += (_, coords) => AddBomb(coords.x, coords.y);
+            
+            _treeDimensions = new Dictionary<int, List<int>>();
+            _treeDimensions.Add(1, new List<int> { 22, 53 });
+            _treeDimensions.Add(2, new List<int> { 32, 41 });
+            _treeDimensions.Add(3, new List<int> { 28, 49 });
+            _treeDimensions.Add(4, new List<int> { 32, 31 });
+            _treeDimensions.Add(5, new List<int> { 26, 59 });
+            _treeDimensions.Add(6, new List<int> { 32, 61 });
+            _treeDimensions.Add(7, new List<int> { 32, 51 });
+            _treeDimensions.Add(8, new List<int> { 31, 39 });
         }
 
         public void InitializeWorld()
@@ -208,8 +221,11 @@ namespace TheAdventure
         
         private void AddTree(int type, int x, int y)
         {
-            SpriteSheet spriteSheet = new(_renderer, Path.Combine("Assets", "tree_00" + type.ToString() + ".png"), 1, 1, 32, 64, (16, 32));
-            RenderableGameObject tree = new(spriteSheet, (x, y));
+            String path = Path.Combine("Assets", "tree_00" + type.ToString() + ".png");
+        
+            SpriteSheet spriteSheet = new SpriteSheet(_renderer, path, 1, 1, _treeDimensions[type][0], _treeDimensions[type][1], (_treeDimensions[type][0]/2, _treeDimensions[type][1]/2));
+            RenderableGameObject tree = new RenderableGameObject(spriteSheet, (x, y));
+        
             _gameObjects.Add(tree.Id, tree);
         }
     }
