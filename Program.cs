@@ -9,9 +9,6 @@ public static class Program
     {
         var sdl = new Sdl(new SdlContext());
 
-        ulong framesRenderedCounter = 0;
-        var timer = new Stopwatch();
-
         var sdlInitResult = sdl.Init(Sdl.InitVideo | Sdl.InitEvents | Sdl.InitTimer | Sdl.InitGamecontroller |
                                      Sdl.InitJoystick);
         if (sdlInitResult < 0)
@@ -19,33 +16,24 @@ public static class Program
             throw new InvalidOperationException("Failed to initialize SDL.");
         }
 
-        var gameWindow = new GameWindow(sdl);
-        var gameLogic = new GameLogic();
-        var gameRenderer = new GameRenderer(sdl, gameWindow, gameLogic);
-        var inputLogic = new InputLogic(sdl, gameWindow, gameRenderer, gameLogic);
-
-        gameLogic.LoadGameState();
-
-        bool quit = false;
-        while (!quit)
+        using (var window = new GameWindow(sdl, 800, 480))
         {
-            quit = inputLogic.ProcessInput();
-            if(quit) break;
-            gameLogic.ProcessFrame();
-            
-            #region Frame Timer
-            var elapsed = timer.Elapsed;
-            timer.Restart();
-            #endregion
+            var renderer = new GameRenderer(sdl, window);
+            var input = new Input(sdl, window, renderer);
+            var engine = new Engine(renderer, input);
 
-            // game.render(renderer, RenderEvent{ elapsed, framesRenderedCounter++ });
-            gameRenderer.Render();
+            engine.InitializeWorld();
 
-            ++framesRenderedCounter;
-            System.Threading.Thread.Sleep(TimeSpan.FromSeconds(0.041666666666667));
+            bool quit = false;
+            while (!quit)
+            {
+                quit = input.ProcessInput();
+                if (quit) break;
+                
+                engine.ProcessFrame();
+                engine.RenderFrame();
+            }
         }
-
-        gameWindow.Destroy();
 
         sdl.Quit();
     }
