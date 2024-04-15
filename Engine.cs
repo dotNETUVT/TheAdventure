@@ -1,3 +1,4 @@
+using System.Diagnostics;
 using System.Text.Json;
 using Silk.NET.Maths;
 using Silk.NET.SDL;
@@ -77,8 +78,11 @@ namespace TheAdventure
             bool down = _input.IsDownPressed();
             bool left = _input.IsLeftPressed();
             bool right = _input.IsRightPressed();
+            bool space = _input.IsSpacePressed();
 
-            _player.UpdatePlayerPosition(up ? 1.0 : 0.0, down ? 1.0 : 0.0, left ? 1.0 : 0.0, right ? 1.0 : 0.0,
+            // Debug.Print("Up: {0}, Down: {1}, Left: {2}, Right: {3}, Space: {4}", up, down, left, right, space);
+
+            _player.UpdatePlayerPosition(up ? 1.0 : 0.0, down ? 1.0 : 0.0, left ? 1.0 : 0.0, right ? 1.0 : 0.0, space ? 1.0 : 0.0,
                 _currentLevel.Width * _currentLevel.TileWidth, _currentLevel.Height * _currentLevel.TileHeight,
                 secsSinceLastFrame);
 

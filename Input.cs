@@ -7,6 +7,8 @@ namespace TheAdventure
         private Sdl _sdl;
         private GameWindow _gameWindow;
         private GameRenderer _renderer;
+
+        // bool _spaceBarPressed = false;
         
         byte[] _mouseButtonStates = new byte[(int)MouseButton.Count];
         
@@ -41,6 +43,12 @@ namespace TheAdventure
         {
             ReadOnlySpan<byte> _keyboardState = new(_sdl.GetKeyboardState(null), (int)KeyCode.Count);
             return _keyboardState[(int)KeyCode.Down] == 1;
+        }
+
+        public bool IsSpacePressed()
+        {             
+            ReadOnlySpan<byte> _keyboardState = new(_sdl.GetKeyboardState(null), (int)KeyCode.Count);
+            return _keyboardState[(int)KeyCode.Space] == 1;
         }
         
         public bool ProcessInput()
