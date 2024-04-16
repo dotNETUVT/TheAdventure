@@ -43,6 +43,7 @@ namespace TheAdventure
             return _keyboardState[(int)KeyCode.Down] == 1;
         }
         
+        
         public bool ProcessInput()
         {
             var currentTime = DateTimeOffset.UtcNow;

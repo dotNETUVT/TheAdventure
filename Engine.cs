@@ -56,10 +56,43 @@ namespace TheAdventure
             SpriteSheet spriteSheet = new(_renderer, Path.Combine("Assets", "player.png"), 10, 6, 48, 48, (24, 42));
             spriteSheet.Animations["IdleDown"] = new SpriteSheet.Animation()
             {
-                StartFrame = (0, 0),
-                EndFrame = (0, 5),
-                DurationMs = 1000,
+                StartFrame = (3, 0),
+                EndFrame = (3, 5),
+                DurationMs = 600,
                 Loop = true
+            };
+            spriteSheet.Animations["WalkingDown"] = new SpriteSheet.Animation()
+            {
+                StartFrame = (3, 0),
+                EndFrame = (3, 5),
+                DurationMs = 600,
+                Loop = true
+            };
+            spriteSheet.Animations["WalkingUp"] = new SpriteSheet.Animation {
+                StartFrame = (5, 0), 
+                EndFrame = (5, 5),   
+                DurationMs = 600,
+                Loop = true
+            };
+        
+            spriteSheet.Animations["WalkingLeft"] = new SpriteSheet.Animation {
+                StartFrame = (1, 0), 
+                EndFrame = (1, 3),   
+                DurationMs = 600,
+                Loop = true,
+                Flip = RendererFlip.Horizontal
+            };
+            spriteSheet.Animations["WalkingRight"] = new SpriteSheet.Animation {
+                StartFrame = (4, 0), 
+                EndFrame = (4, 3),   
+                DurationMs = 600,
+                Loop = true
+            };
+            spriteSheet.Animations["Falling"] = new SpriteSheet.Animation {
+                StartFrame = (9, 0), 
+                EndFrame = (9, 2),   
+                DurationMs = 600,
+                Loop = false
             };
             _player = new PlayerObject(spriteSheet, 100, 100);
 
@@ -77,7 +110,6 @@ namespace TheAdventure
             bool down = _input.IsDownPressed();
             bool left = _input.IsLeftPressed();
             bool right = _input.IsRightPressed();
-
             _player.UpdatePlayerPosition(up ? 1.0 : 0.0, down ? 1.0 : 0.0, left ? 1.0 : 0.0, right ? 1.0 : 0.0,
                 _currentLevel.Width * _currentLevel.TileWidth, _currentLevel.Height * _currentLevel.TileHeight,
                 secsSinceLastFrame);
