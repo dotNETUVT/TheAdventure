@@ -17,7 +17,7 @@ namespace TheAdventure
         private PlayerObject _player;
         private GirlObject _girl;
         private FlowerObject _flower;
-        private List<FlowerObject> flowerList = new List<FlowerObject>();
+      
         
 
         public GameLogic()
@@ -33,20 +33,7 @@ namespace TheAdventure
             Random random = new Random();
             int j = 0;
             
-            for (int i = 0; i < random.Next(2, 5); i++)
-            {
-
-
-                int xFlower = random.Next(200, 500);
-                int yFlower = random.Next(200, 500);
-
-                FlowerObject newFlower1 = new FlowerObject(j, xFlower, yFlower );
-                flowerList.Add(newFlower1);
-                j = j + 1;
-
-
-
-            }
+           
 
     
 
@@ -70,9 +57,9 @@ namespace TheAdventure
             }
             _currentLevel = level;
             _player = new PlayerObject(1000, 24, 24, _currentLevel.TileWidth * _currentLevel.Width, _currentLevel.TileHeight * _currentLevel.Height);
-            _flower = new FlowerObject(1001, 24, 24);
+           
             _girl = new GirlObject(900, 100, 100, _currentLevel.TileWidth * _currentLevel.Width, _currentLevel.TileHeight * _currentLevel.Height);
-           // FlowerObject newFlower = new FlowerObject(j, 200, 200);
+           
 
         }
 
@@ -115,7 +102,7 @@ namespace TheAdventure
         {
 
             _player.UpdatePlayerPosition(up, down, left, right, timeSinceLastUpdateInMS);
-            //_girl.UpdatePlayerPosition(up, down, left, right, timeSinceLastUpdateInMS);
+            
 
         }
         public void UpdatePrincessPosition(double up, double down, double left, double right, int timeSinceLastUpdateInMS)
@@ -182,11 +169,7 @@ namespace TheAdventure
             {
                 _gameObjects.Remove(item);
             }
-            foreach(FlowerObject flowerpower in flowerList)
-            {
-                flowerpower.Render(renderer);
-
-            }
+          
             _flower.Render(renderer);
             _player.Render(renderer);
             _girl.Render(renderer);
@@ -209,7 +192,6 @@ namespace TheAdventure
         public void AddBomb(int x, int y, GameRenderer renderer)
         {
             var translated = renderer.TranslateFromScreenToWorldCoordinates(x, y);
-           // Console.WriteLine($"Translated Coordinates: ({translated.X}, {translated.Y})");
             AnimatedGameObject bomb = new AnimatedGameObject("BombExploding.png", 2, _bombIds, 13, 13, 1, translated.X, translated.Y);
             _gameObjects.Add(bomb.Id, bomb);
             ++_bombIds;
