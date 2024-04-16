@@ -139,7 +139,7 @@ namespace TheAdventure
                 Loop = true
             };
           
-            _player = new PlayerObject(spriteSheet, 100, 100);
+            _player = new PlayerObject(spriteSheet, 100, 100, @"..\..\..\Models\walk.wav");
 
             _renderer.SetWorldBounds(new Rectangle<int>(0, 0, _currentLevel.Width * _currentLevel.TileWidth,
                 _currentLevel.Height * _currentLevel.TileHeight));

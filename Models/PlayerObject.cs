@@ -7,11 +7,13 @@ namespace TheAdventure.Models;
 public class PlayerObject : RenderableGameObject
 {
     private int _pixelsPerSecond = 192;
+    private SoundPlayer _moveSoundPlayer;
    
 
-    public PlayerObject(SpriteSheet spriteSheet, int x, int y) : base(spriteSheet, (x, y))
+    public PlayerObject(SpriteSheet spriteSheet, int x, int y,string soundFilePath) : base(spriteSheet, (x, y))
     {
         SpriteSheet.ActivateAnimation("IdleDown");
+        _moveSoundPlayer = new SoundPlayer(soundFilePath);
     }
 
     public void UpdatePlayerPosition(double up, double down, double left, double right, int width, int height,
@@ -64,7 +66,14 @@ public class PlayerObject : RenderableGameObject
         {
             SpriteSheet.ActivateAnimation("IdleDown"); 
         }
-
+        if (up > 0 || down > 0 || left > 0 || right > 0)
+        {
+            _moveSoundPlayer.Play();
+        }   
+        else
+        {
+            _moveSoundPlayer.Stop();
+        }
 
         Position = (x, y);
     }
