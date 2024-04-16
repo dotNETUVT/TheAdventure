@@ -54,6 +54,7 @@ namespace TheAdventure
 
             _currentLevel = level;
             SpriteSheet spriteSheet = new(_renderer, Path.Combine("Assets", "player.png"), 10, 6, 48, 48, (24, 42));
+            
             spriteSheet.Animations["IdleDown"] = new SpriteSheet.Animation()
             {
                 StartFrame = (0, 0),
@@ -61,8 +62,74 @@ namespace TheAdventure
                 DurationMs = 1000,
                 Loop = true
             };
+            
+            // adaugam animatia de mers in dreapta
+            spriteSheet.Animations["WalkRight"] = new SpriteSheet.Animation()
+            {
+                StartFrame = (4, 0),
+                EndFrame = (4, 5),
+                DurationMs = 1000,
+                Loop = true
+            };
+            
+            // adaugam animatia de mers in stanga obtinuta prin oglindirea animatiei de mers in dreapta
+            spriteSheet.Animations["WalkLeft"] = new SpriteSheet.Animation()
+            {
+                StartFrame = (4, 0),
+                EndFrame = (4, 5),
+                DurationMs = 1000,
+                Loop = true,
+                Flip = RendererFlip.Horizontal
+            };
+            
+            // adaugam animatia de mers in sus
+            spriteSheet.Animations["WalkUp"] = new SpriteSheet.Animation()
+            {
+                StartFrame = (5, 0),
+                EndFrame = (5, 5),
+                DurationMs = 1000,
+                Loop = true
+            };
+            
+            // adaugam animatia de mers in jos
+            spriteSheet.Animations["WalkDown"] = new SpriteSheet.Animation()
+            {
+                StartFrame = (3, 0),
+                EndFrame = (3, 5),
+                DurationMs = 1000,
+                Loop = true
+            };
+            
+            // adaugam animatia de idle in stanga
+            spriteSheet.Animations["IdleLeft"] = new SpriteSheet.Animation()
+            {
+                StartFrame = (1, 0),
+                EndFrame = (1, 5),
+                DurationMs = 1000,
+                Loop = true,
+                Flip = RendererFlip.Horizontal
+            };
+            
+            // adaugam animatia de idle in dreapta
+            spriteSheet.Animations["IdleRight"] = new SpriteSheet.Animation()
+            {
+                StartFrame = (1, 0),
+                EndFrame = (1, 5),
+                DurationMs = 1000,
+                Loop = true
+            };
+            
+            // adaugam animatia de idle in sus
+            spriteSheet.Animations["IdleUp"] = new SpriteSheet.Animation()
+            {
+                StartFrame = (2, 0),
+                EndFrame = (2, 5),
+                DurationMs = 1000,
+                Loop = true
+            };
+            
             _player = new PlayerObject(spriteSheet, 100, 100);
-
+            
             _renderer.SetWorldBounds(new Rectangle<int>(0, 0, _currentLevel.Width * _currentLevel.TileWidth,
                 _currentLevel.Height * _currentLevel.TileHeight));
         }
