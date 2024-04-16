@@ -1,8 +1,10 @@
+using System;
 using System.Runtime.CompilerServices;
 using System.Security.Cryptography;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using Silk.NET.Maths;
+using Silk.NET.SDL;
 
 namespace TheAdventure
 {
@@ -14,17 +16,40 @@ namespace TheAdventure
         private Level? _currentLevel;
         private PlayerObject _player;
         private GirlObject _girl;
+        private FlowerObject _flower;
+        private List<FlowerObject> flowerList = new List<FlowerObject>();
+        
 
         public GameLogic()
         {
-            
+
         }
 
         public void LoadGameState()
         {
-            
-            var jsonSerializerOptions =  new JsonSerializerOptions(){ PropertyNameCaseInsensitive = true };
+
+            var jsonSerializerOptions = new JsonSerializerOptions() { PropertyNameCaseInsensitive = true };
             var levelContent = File.ReadAllText(Path.Combine("Assets", "terrain.tmj"));
+            Random random = new Random();
+            int j = 0;
+            
+            for (int i = 0; i < random.Next(2, 5); i++)
+            {
+
+
+                int xFlower = random.Next(200, 500);
+                int yFlower = random.Next(200, 500);
+
+                FlowerObject newFlower1 = new FlowerObject(j, xFlower, yFlower );
+                flowerList.Add(newFlower1);
+                j = j + 1;
+
+
+
+            }
+
+    
+
 
             var level = JsonSerializer.Deserialize<Level>(levelContent, jsonSerializerOptions);
             if(level == null) return;
@@ -45,7 +70,10 @@ namespace TheAdventure
             }
             _currentLevel = level;
             _player = new PlayerObject(1000, 24, 24, _currentLevel.TileWidth * _currentLevel.Width, _currentLevel.TileHeight * _currentLevel.Height);
+            _flower = new FlowerObject(1001, 24, 24);
             _girl = new GirlObject(900, 100, 100, _currentLevel.TileWidth * _currentLevel.Width, _currentLevel.TileHeight * _currentLevel.Height);
+           // FlowerObject newFlower = new FlowerObject(j, 200, 200);
+
         }
 
         public Rectangle<int> GetWorldBoundingBox(){
@@ -154,9 +182,18 @@ namespace TheAdventure
             {
                 _gameObjects.Remove(item);
             }
+            foreach(FlowerObject flowerpower in flowerList)
+            {
+                flowerpower.Render(renderer);
 
+            }
+            _flower.Render(renderer);
             _player.Render(renderer);
             _girl.Render(renderer);
+           
+
+
+            
         }
 
         private int _bombIds = 100;

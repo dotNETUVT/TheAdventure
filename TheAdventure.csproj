@@ -55,6 +55,9 @@
     </ItemGroup>
 
     <ItemGroup>
+      <None Update="Assets\flower.png">
+        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      </None>
       <None Update="Assets\girl.png">
         <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
       </None>
