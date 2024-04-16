@@ -2,7 +2,7 @@ using Silk.NET.SDL;
 
 namespace TheAdventure;
 
-public unsafe class GameWindow : IDisposable
+public unsafe class GameWindow : IDisposable 
 {
     private IntPtr _window;
     private Sdl _sdl;

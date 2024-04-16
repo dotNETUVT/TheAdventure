@@ -11,14 +11,14 @@ namespace TheAdventure
         byte[] _mouseButtonStates = new byte[(int)MouseButton.Count];
         
         public EventHandler<(int x, int y)> OnMouseClick;
-        
+
         public Input(Sdl sdl, GameWindow window, GameRenderer renderer)
         {
             _sdl = sdl;
             _gameWindow = window;
             _renderer = renderer;
         }
-
+        // arrows press
         public bool IsLeftPressed()
         {
             ReadOnlySpan<byte> _keyboardState = new(_sdl.GetKeyboardState(null), (int)KeyCode.Count);
@@ -42,7 +42,30 @@ namespace TheAdventure
             ReadOnlySpan<byte> _keyboardState = new(_sdl.GetKeyboardState(null), (int)KeyCode.Count);
             return _keyboardState[(int)KeyCode.Down] == 1;
         }
+
+        // W A S D press
+        public bool IsWPressed()
+        {
+            ReadOnlySpan<byte> _keyboardState = new(_sdl.GetKeyboardState(null), (int)KeyCode.Count);
+            return _keyboardState[(int)KeyCode.W] == 1;
+        }
+        public bool IsAPressed()
+        {
+            ReadOnlySpan<byte> _keyboardState = new(_sdl.GetKeyboardState(null), (int)KeyCode.Count);
+            return _keyboardState[(int)KeyCode.A] == 1;
+        }
+        public bool IsSPressed()
+        {
+            ReadOnlySpan<byte> _keyboardState = new(_sdl.GetKeyboardState(null), (int)KeyCode.Count);
+            return _keyboardState[(int)KeyCode.S] == 1;
+        }
+        public bool IsDPressed()
+        {
+            ReadOnlySpan<byte> _keyboardState = new(_sdl.GetKeyboardState(null), (int)KeyCode.Count);
+            return _keyboardState[(int)KeyCode.D] == 1;
+        }
         
+
         public bool ProcessInput()
         {
             var currentTime = DateTimeOffset.UtcNow;

@@ -2,6 +2,7 @@ using Silk.NET.SDL;
 
 namespace TheAdventure.Models;
 
+// bombele
 public class TemporaryGameObject : RenderableGameObject
 {
     public double Ttl { get; init; }

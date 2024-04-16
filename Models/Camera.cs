@@ -1,4 +1,4 @@
-using Silk.NET.Maths;
+﻿using Silk.NET.Maths;
 
 
 /// <summary>
@@ -60,17 +60,60 @@ public class Camera
         _y = marginTop;
     }
 
-    public void LookAt(int x, int y)
+    //public void LookAt(int x, int y)
+    //{
+    //    if (_gameWorld.Contains(new Vector2D<int>(_x, y)))
+    //    {
+    //        _y = y;
+    //    }
+
+    //    if (_gameWorld.Contains(new Vector2D<int>(x, _y)))
+    //    {
+    //        _x = x;
+    //    }
+    //}
+
+    public int LookAt(int x1, int y1, int x2, int y2)
     {
-        if (_gameWorld.Contains(new Vector2D<int>(_x, y)))
+        //Console.WriteLine("1: " + x1 + " " + y1 + " 2: " + x2 + " " + y2);
+        int centerX = (x1 + x2) / 2;
+        int centerY = (y1 + y2) / 2;
+        // Opreste camera daca nu s-ar mai vedea decat un player
+        if (y1 - y2 >= (Height - 40))
         {
-            _y = y;
+            // player1 - nu se mai poate misca in jos
+            // player2 - nu se mai poate misca in sus
+            return 11;
+        }
+        if (y2 - y1 >= (Height - 40))
+        {
+            // player1 - nu se mai poate misca in sus
+            // player2 - nu se mai poate misca in jos
+            return 12;
+        }
+        if (x1 - x2 >= (Width - 40))
+        {
+            // player1 - nu se mai poate misca in dreapta
+            // player2 - nu se mai poate misca in stanga
+            return 22;
+        }
+        if (x2 - x1 >= (Width - 40))
+        {
+            // player1 - nu se mai poate misca in stanga
+            // player2 - nu se mai poate misca in dreapta
+            return 21;
         }
 
-        if (_gameWorld.Contains(new Vector2D<int>(x, _y)))
+        // Mutam pozitia camerei daca totul e bine
+        if (_gameWorld.Contains(new Vector2D<int>(_x, centerY)))
         {
-            _x = x;
+            _y = centerY;
         }
+        if(_gameWorld.Contains(new Vector2D<int>(centerX, _y)))
+        {
+            _x = centerX;
+        }
+        return 0;
     }
 
     /// <summary>

@@ -21,7 +21,9 @@ public class SpriteSheet
     public int FrameHeight { get; set; }
     public (int OffsetX, int OffsetY) FrameCenter { get; set; }
 
+    // care animatie este activa
     public Animation? ActiveAnimation { get; private set; }
+    // lista de animayii
     public Dictionary<string, Animation> Animations { get; init; } = new();
 
     private int _textureId;
@@ -51,6 +53,7 @@ public class SpriteSheet
     {
         if (ActiveAnimation == null)
         {
+            // radam primul frame
             renderer.RenderTexture(_textureId, new Rectangle<int>(0, 0, FrameWidth, FrameHeight),
                 new Rectangle<int>(dest.X - FrameCenter.OffsetX, dest.Y - FrameCenter.OffsetY, FrameWidth, FrameHeight),
                 RendererFlip.None, angle, rotationCenter);
@@ -65,6 +68,7 @@ public class SpriteSheet
             {
                 if (ActiveAnimation.Loop)
                 {
+                    // daca animatia trebuie sa se repete
                     _animationStart = DateTimeOffset.Now;
                     currentFrame = 0;
                 }

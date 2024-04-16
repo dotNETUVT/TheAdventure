@@ -22,6 +22,7 @@ public static class Program
             var input = new Input(sdl, window, renderer);
             var engine = new Engine(renderer, input);
 
+            // incarca datele din lume
             engine.InitializeWorld();
 
             bool quit = false;
@@ -30,7 +31,9 @@ public static class Program
                 quit = input.ProcessInput();
                 if (quit) break;
                 
+                // procesarea frame
                 engine.ProcessFrame();
+                // randare frame
                 engine.RenderFrame();
             }
         }

@@ -11,7 +11,7 @@ namespace TheAdventure
         private readonly Dictionary<string, TileSet> _loadedTileSets = new();
 
         private Level? _currentLevel;
-        private PlayerObject _player;
+        private PlayerObject _player1, _player2;
         private GameRenderer _renderer;
         private Input _input;
 
@@ -53,20 +53,22 @@ namespace TheAdventure
             }
 
             _currentLevel = level;
-            SpriteSheet spriteSheet = new(_renderer, Path.Combine("Assets", "player.png"), 10, 6, 48, 48, (24, 42));
-            spriteSheet.Animations["IdleDown"] = new SpriteSheet.Animation()
+            SpriteSheet spriteSheetPlayer = new(_renderer, Path.Combine("Assets", "player.png"), 10, 6, 48, 48, (24, 42));
+
+            spriteSheetPlayer.Animations["IdleDown"] = new SpriteSheet.Animation()
             {
                 StartFrame = (0, 0),
                 EndFrame = (0, 5),
                 DurationMs = 1000,
                 Loop = true
             };
-            _player = new PlayerObject(spriteSheet, 100, 100);
-
+            _player1 = new PlayerObject(spriteSheetPlayer, 0, 0);
+            _player2 = new PlayerObject(spriteSheetPlayer, 0, 50);
             _renderer.SetWorldBounds(new Rectangle<int>(0, 0, _currentLevel.Width * _currentLevel.TileWidth,
                 _currentLevel.Height * _currentLevel.TileHeight));
         }
 
+        // pregatiri pentru randare
         public void ProcessFrame()
         {
             var currentTime = DateTimeOffset.Now;
@@ -78,10 +80,25 @@ namespace TheAdventure
             bool left = _input.IsLeftPressed();
             bool right = _input.IsRightPressed();
 
-            _player.UpdatePlayerPosition(up ? 1.0 : 0.0, down ? 1.0 : 0.0, left ? 1.0 : 0.0, right ? 1.0 : 0.0,
+            _player1.UpdatePlayerPosition(up ? 1.0 : 0.0, down ? 1.0 : 0.0, left ? 1.0 : 0.0, right ? 1.0 : 0.0,
                 _currentLevel.Width * _currentLevel.TileWidth, _currentLevel.Height * _currentLevel.TileHeight,
                 secsSinceLastFrame);
 
+            // Player 2 press
+            up = _input.IsWPressed();
+            down = _input.IsSPressed();
+            left = _input.IsAPressed();
+            right = _input.IsDPressed();
+
+            _player2.UpdatePlayerPosition(up ? 1.0 : 0.0, down ? 1.0 : 0.0, left ? 1.0 : 0.0, right ? 1.0 : 0.0,
+                _currentLevel.Width * _currentLevel.TileWidth, _currentLevel.Height * _currentLevel.TileHeight,
+                secsSinceLastFrame);
+
+            // adaugam in lista de playeri
+            _renderer.AddPlayer(_player1);
+            _renderer.AddPlayer(_player2);
+
+            // verificam daca e exprata animatia
             var itemsToRemove = new List<int>();
             itemsToRemove.AddRange(GetAllTemporaryGameObjects().Where(gameObject => gameObject.IsExpired)
                 .Select(gameObject => gameObject.Id).ToList());
@@ -97,7 +114,8 @@ namespace TheAdventure
             _renderer.SetDrawColor(0, 0, 0, 255);
             _renderer.ClearScreen();
             
-            _renderer.CameraLookAt(_player.Position.X, _player.Position.Y);
+            // mutam camera in functie de ambii jucatori
+            _renderer.CameraLookAt(_player1.Position.X, _player1.Position.Y, _player2.Position.X, _player2.Position.Y);
 
             RenderTerrain();
             RenderAllObjects();
@@ -176,7 +194,8 @@ namespace TheAdventure
                 gameObject.Render(_renderer);
             }
 
-            _player.Render(_renderer);
+            _player1.Render(_renderer);
+            _player2.Render(_renderer);
         }
 
         private void AddBomb(int x, int y)
@@ -190,6 +209,7 @@ namespace TheAdventure
                 DurationMs = 2000,
                 Loop = false
             };
+
             spriteSheet.ActivateAnimation("Explode");
             TemporaryGameObject bomb = new(spriteSheet, 2.1, (translated.X, translated.Y));
             _gameObjects.Add(bomb.Id, bomb);

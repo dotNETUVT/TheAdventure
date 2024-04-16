@@ -12,11 +12,13 @@ public unsafe class GameRenderer
     private Sdl _sdl;
     private Renderer* _renderer;
     private GameWindow _window;
-    private Camera _camera;
+    private Camera _camera; // doar el cunoste camera
 
     private Dictionary<int, IntPtr> _textures = new();
     private Dictionary<int, TextureInfo> _textureData = new();
     private int _textureId;
+
+    private List<PlayerObject> _players = new List<PlayerObject>();
 
     public GameRenderer(Sdl sdl, GameWindow window)
     {
@@ -30,15 +32,58 @@ public unsafe class GameRenderer
         _camera = new Camera(windowSize.Width, windowSize.Height);
     }
 
+    public void AddPlayer(PlayerObject player)
+    {
+        _players.Add(player);
+    }
+
+    // magrinile lumii
     public void SetWorldBounds(Rectangle<int> bounds)
     {
         _camera.SetWorldBounds(bounds);
     }
 
-    public void CameraLookAt(int x, int y)
+    // puntul in care se uita camera
+    public void CameraLookAt(int x1, int y1, int x2, int y2)
     {
-        _camera.LookAt(x, y);
+        int result = _camera.LookAt(x1, y1, x2, y2);
+        if (result == 11)
+        {
+            // player1 - nu se mai poate misca in jos
+            // player2 - nu se mai poate misca in sus
+            _players[0].canMoveDown = false;
+            _players[1].canMoveUp = false;
+        }
+        else if (result == 12)
+        {
+            _players[1].canMoveDown = false;
+            _players[0].canMoveUp = false;
+        }
+        else if (result == 21)
+        {
+            // player1 - nu se mai poate misca in stanga
+            // player2 - nu se mai poate misca in dreapta
+            _players[0].canMoveLeft = false;
+            _players[1].canMoveRight = false;
+        }
+        else if (result == 22)
+        {
+            _players[1].canMoveLeft = false;
+            _players[0].canMoveRight = false;
+        }
+        else
+        {
+            // pot merge oricum
+            foreach (PlayerObject player in _players)
+            {
+                player.canMoveUp = true;
+                player.canMoveDown = true;
+                player.canMoveLeft = true;
+                player.canMoveRight = true;
+            }
+        }
     }
+
 
     public int LoadTexture(string fileName, out TextureInfo textureInfo)
     {
@@ -66,6 +111,7 @@ public unsafe class GameRenderer
         return _textureId++;
     }
 
+    // flip - pentru a anima caracterul sa mearga in stanga
     public void RenderTexture(int textureId, Rectangle<int> src, Rectangle<int> dst,
         RendererFlip flip = RendererFlip.None, double angle = 0.0, Point center = default)
     {
