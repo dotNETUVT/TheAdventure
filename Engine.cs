@@ -17,7 +17,10 @@ namespace TheAdventure
 
         private DateTimeOffset _lastUpdate = DateTimeOffset.Now;
         private DateTimeOffset _lastPlayerUpdate = DateTimeOffset.Now;
-
+        
+        private Dictionary<int,Coin> _coins = new Dictionary<int, Coin>();
+        private Random _random = new Random();
+        
         public Engine(GameRenderer renderer, Input input)
         {
             _renderer = renderer;
@@ -26,6 +29,53 @@ namespace TheAdventure
             _input.OnMouseClick += (_, coords) => AddBomb(coords.x, coords.y);
         }
 
+      
+        public void GenerateCoins(int numberOfCoins)
+        {
+            // Resolve the asset path correctly.
+            string assetPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, @"..\..\..\Models\Coin.png");
+            assetPath = Path.GetFullPath(assetPath);
+
+            // Check if the asset file exists to avoid runtime errors.
+            if (!File.Exists(assetPath))
+            {
+                Console.WriteLine($"Asset file not found: {assetPath}");
+                return;
+            }
+            else
+            {
+                Console.WriteLine($"Asset file found: {assetPath}");
+            }
+
+            
+            SpriteSheet coinSpriteSheet = new(_renderer, assetPath, 1, 1, 32, 32, (16, 16));
+           
+            
+            if (_currentLevel == null || _currentLevel.Width <= 0 || _currentLevel.TileWidth <= 0 || _currentLevel.Height <= 0 || _currentLevel.TileHeight <= 0)
+            {
+                Console.WriteLine("Invalid level dimensions, unable to place coins.");
+                return;
+            }
+
+            
+            for (int i = 0; i < numberOfCoins; i++)
+            {
+                int x = _random.Next(10, _currentLevel.Width * _currentLevel.TileWidth);
+                int y = _random.Next(10, _currentLevel.Height * _currentLevel.TileHeight);
+                coinSpriteSheet.Animations["Idle"] = new SpriteSheet.Animation {
+                    StartFrame = (0, 0),
+                    EndFrame = (0, 0),
+                    DurationMs = 1000,
+                    Loop = true
+                };
+
+                Coin coin = new Coin(coinSpriteSheet, x, y);
+                _coins.Add(coin.Id, coin); 
+            }
+        }
+
+
+      
         public void InitializeWorld()
         {
             var jsonSerializerOptions = new JsonSerializerOptions() { PropertyNameCaseInsensitive = true };
@@ -98,6 +148,7 @@ namespace TheAdventure
 
             _renderer.SetWorldBounds(new Rectangle<int>(0, 0, _currentLevel.Width * _currentLevel.TileWidth,
                 _currentLevel.Height * _currentLevel.TileHeight));
+           GenerateCoins(_random.Next(5, 15));
         }
 
         public void ProcessFrame()
@@ -121,6 +172,19 @@ namespace TheAdventure
             foreach (var gameObject in itemsToRemove)
             {
                 _gameObjects.Remove(gameObject);
+            }
+            
+            var coinsToRemove = new List<int>();
+            foreach (var coin in _coins.Values)
+            {
+                if(_player.Position.X== coin.Position.X && _player.Position.Y==coin.Position.Y)
+                {
+                    coinsToRemove.Add(coin.Id);
+                }
+            }
+            foreach (var coin in coinsToRemove)
+            {
+                _coins.Remove(coin);
             }
         }
 
@@ -209,6 +273,11 @@ namespace TheAdventure
             }
 
             _player.Render(_renderer);
+            foreach (var coin in _coins.Values)
+            {
+                coin.Render(_renderer);
+            }
+            
         }
 
         private void AddBomb(int x, int y)
