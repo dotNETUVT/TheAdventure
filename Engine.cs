@@ -23,7 +23,10 @@ namespace TheAdventure
             _renderer = renderer;
             _input = input;
 
-            _input.OnMouseClick += (_, coords) => AddBomb(coords.x, coords.y);
+            _input.OnUseButton += (_, _) => AddBomb();
+            _input.OnLeftMouseClick += (_, coords) => PlayerSlashAnimation(coords.x, coords.y);
+            _input.NewDirectionKey += (_, direction) => PlayerMovementAnimation(direction);
+            _input.AllMovementOff += (_, idle) => PlayerIdleAnimation(idle);
         }
 
         public void InitializeWorld()
@@ -61,6 +64,99 @@ namespace TheAdventure
                 DurationMs = 1000,
                 Loop = true
             };
+            spriteSheet.Animations["IdleUp"] = new SpriteSheet.Animation()
+            {
+                StartFrame = (2, 0),
+                EndFrame = (2, 5),
+                DurationMs = 1000,
+                Loop = true
+            };
+            spriteSheet.Animations["IdleRight"] = new SpriteSheet.Animation()
+            {
+                StartFrame = (1, 0),
+                EndFrame = (1, 5),
+                DurationMs = 1000,
+                Loop = true
+            };
+            spriteSheet.Animations["IdleLeft"] = new SpriteSheet.Animation()
+            {
+                StartFrame = (1, 0),
+                EndFrame = (1, 5),
+                DurationMs = 1000,
+                Loop = true,
+                Flip = RendererFlip.Horizontal
+            };
+
+            spriteSheet.Animations["SlashUp"] = new SpriteSheet.Animation()
+            {
+                StartFrame = (8, 0),
+                EndFrame = (8, 3),
+                DurationMs = 300,
+                Loop = false,
+                Flip = RendererFlip.None
+            };
+
+            spriteSheet.Animations["SlashDown"] = new SpriteSheet.Animation()
+            {
+                StartFrame = (6, 0),
+                EndFrame = (6, 3),
+                DurationMs = 300,
+                Loop = false,
+                Flip = RendererFlip.None
+            };
+
+            spriteSheet.Animations["SlashRight"] = new SpriteSheet.Animation()
+            {
+                StartFrame = (7, 0),
+                EndFrame = (7, 3),
+                DurationMs = 300,
+                Loop = false,
+                Flip = RendererFlip.None
+            };
+
+            spriteSheet.Animations["SlashLeft"] = new SpriteSheet.Animation()
+            {
+                StartFrame = (7, 0),
+                EndFrame = (7, 3),
+                DurationMs = 300,
+                Loop = false,
+                Flip = RendererFlip.Horizontal
+            };
+
+            spriteSheet.Animations["WalkUp"] = new SpriteSheet.Animation()
+            {
+                StartFrame = (5, 0),
+                EndFrame = (5, 5),
+                DurationMs = 300,
+                Loop = true,
+                Flip = RendererFlip.None
+            };
+            spriteSheet.Animations["WalkDown"] = new SpriteSheet.Animation()
+            {
+                StartFrame = (3, 0),
+                EndFrame = (3, 5),
+                DurationMs = 300,
+                Loop = true,
+                Flip = RendererFlip.None
+            };
+            spriteSheet.Animations["WalkRight"] = new SpriteSheet.Animation()
+            {
+                StartFrame = (4, 0),
+                EndFrame = (4, 5),
+                DurationMs = 300,
+                Loop = true,
+                Flip = RendererFlip.None
+            };
+            spriteSheet.Animations["WalkLeft"] = new SpriteSheet.Animation()
+            {
+                StartFrame = (4, 0),
+                EndFrame = (4, 5),
+                DurationMs = 300,
+                Loop = true,
+                Flip = RendererFlip.Horizontal
+            };
+
+
             _player = new PlayerObject(spriteSheet, 100, 100);
 
             _renderer.SetWorldBounds(new Rectangle<int>(0, 0, _currentLevel.Width * _currentLevel.TileWidth,
@@ -77,6 +173,7 @@ namespace TheAdventure
             bool down = _input.IsDownPressed();
             bool left = _input.IsLeftPressed();
             bool right = _input.IsRightPressed();
+
 
             _player.UpdatePlayerPosition(up ? 1.0 : 0.0, down ? 1.0 : 0.0, left ? 1.0 : 0.0, right ? 1.0 : 0.0,
                 _currentLevel.Width * _currentLevel.TileWidth, _currentLevel.Height * _currentLevel.TileHeight,
@@ -96,7 +193,7 @@ namespace TheAdventure
         {
             _renderer.SetDrawColor(0, 0, 0, 255);
             _renderer.ClearScreen();
-            
+
             _renderer.CameraLookAt(_player.Position.X, _player.Position.Y);
 
             RenderTerrain();
@@ -179,9 +276,8 @@ namespace TheAdventure
             _player.Render(_renderer);
         }
 
-        private void AddBomb(int x, int y)
+        private void AddBomb()
         {
-            var translated = _renderer.TranslateFromScreenToWorldCoordinates(x, y);
             SpriteSheet spriteSheet = new(_renderer, "BombExploding.png", 1, 13, 32, 64, (16, 48));
             spriteSheet.Animations["Explode"] = new SpriteSheet.Animation()
             {
@@ -191,8 +287,80 @@ namespace TheAdventure
                 Loop = false
             };
             spriteSheet.ActivateAnimation("Explode");
-            TemporaryGameObject bomb = new(spriteSheet, 2.1, (translated.X, translated.Y));
+            TemporaryGameObject bomb = new(spriteSheet, 2.1, (_player.Position.X, _player.Position.Y));
             _gameObjects.Add(bomb.Id, bomb);
+        }
+
+        private void PlayerSlashAnimation(int x, int y)
+        {
+            
+            var mouseWorldX = _renderer.TranslateFromScreenToWorldCoordinates(x, y).X;
+            var mouseWorldY = _renderer.TranslateFromScreenToWorldCoordinates(x, y).Y;
+            double Angle = Math.Acos(1.0 *
+                                     (mouseWorldX - _player.Position.X) /
+                                     Math.Sqrt(
+                                         Math.Pow(mouseWorldX - _player.Position.X, 2) +
+                                         Math.Pow(mouseWorldY - _player.Position.Y, 2)));
+            if (mouseWorldY > _player.Position.Y)
+            {
+                if (Angle > Math.PI / 4 && Angle <= 3 * Math.PI / 4)
+                    _player.SpriteSheet.ActivateAnimation("SlashDown");
+                if (Angle > 3 * Math.PI / 4)
+                    _player.SpriteSheet.ActivateAnimation("SlashLeft");
+                if (Angle <= Math.PI / 4)
+                    _player.SpriteSheet.ActivateAnimation("SlashRight");
+            }
+            else
+            {
+                if (Angle > Math.PI / 4 && Angle <= 3 * Math.PI / 4)
+                    _player.SpriteSheet.ActivateAnimation("SlashUp");
+                if (Angle > 3 * Math.PI / 4)
+                    _player.SpriteSheet.ActivateAnimation("SlashLeft");
+                if (Angle <= Math.PI / 4)
+                    _player.SpriteSheet.ActivateAnimation("SlashRight");
+            }
+        }
+
+        private void PlayerMovementAnimation(int direction)
+        {
+            // Console.Write("playerMovementAnim: \n");
+            // Console.Write("lastDir " + _player.lastDirection + "\n");
+            // Console.Write("dir " + direction + "\n");
+            switch (direction)
+            {
+                case 0:
+                    _player.SpriteSheet.ActivateAnimation("WalkUp");
+                    break;
+                case 1:
+                    _player.SpriteSheet.ActivateAnimation("WalkRight");
+                    break;
+                case 2:
+                    _player.SpriteSheet.ActivateAnimation("WalkDown");
+                    break;
+                case 3:
+                    _player.SpriteSheet.ActivateAnimation("WalkLeft");
+                    break;
+            }
+        }
+
+        private void PlayerIdleAnimation(bool idle)
+        {
+            if (idle)
+                switch (_player.lastDirection)
+                {
+                    case 0:
+                        _player.SpriteSheet.ActivateAnimation("IdleUp");
+                        break;
+                    case 1:
+                        _player.SpriteSheet.ActivateAnimation("IdleRight");
+                        break;
+                    case 2:
+                        _player.SpriteSheet.ActivateAnimation("IdleDown");
+                        break;
+                    case 3:
+                        _player.SpriteSheet.ActivateAnimation("IdleLeft");
+                        break;
+                }
         }
     }
 }
