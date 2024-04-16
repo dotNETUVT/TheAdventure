@@ -138,12 +138,7 @@ namespace TheAdventure
                 DurationMs = 600,
                 Loop = true
             };
-            spriteSheet.Animations["Falling"] = new SpriteSheet.Animation {
-                StartFrame = (9, 0), 
-                EndFrame = (9, 2),   
-                DurationMs = 600,
-                Loop = false
-            };
+          
             _player = new PlayerObject(spriteSheet, 100, 100);
 
             _renderer.SetWorldBounds(new Rectangle<int>(0, 0, _currentLevel.Width * _currentLevel.TileWidth,
@@ -165,22 +160,19 @@ namespace TheAdventure
                 _currentLevel.Width * _currentLevel.TileWidth, _currentLevel.Height * _currentLevel.TileHeight,
                 secsSinceLastFrame);
 
-            var itemsToRemove = new List<int>();
-            itemsToRemove.AddRange(GetAllTemporaryGameObjects().Where(gameObject => gameObject.IsExpired)
-                .Select(gameObject => gameObject.Id).ToList());
-
-            foreach (var gameObject in itemsToRemove)
-            {
-                _gameObjects.Remove(gameObject);
-            }
-            
             var coinsToRemove = new List<int>();
             foreach (var coin in _coins.Values)
             {
-                if(_player.Position.X== coin.Position.X && _player.Position.Y==coin.Position.Y)
+                
+                var playerBox = new Rectangle<float>(_player.Position.X, _player.Position.Y, _player.SpriteSheet.FrameWidth, _player.SpriteSheet.FrameHeight);
+                var coinBox = new Rectangle<float>(coin.Position.X, coin.Position.Y, coin.SpriteSheet.FrameWidth, coin.SpriteSheet.FrameHeight);
+            
+                
+                if (playerBox.Contains(coinBox)||coinBox.Contains(playerBox))
                 {
                     coinsToRemove.Add(coin.Id);
                 }
+               
             }
             foreach (var coin in coinsToRemove)
             {
