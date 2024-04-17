@@ -27,9 +27,31 @@ public class PlayerObject : GameObject
     }
 
     private void UpdateScreenTarget(){
-        var targetX = X + 24;
-        var targetY = Y - 42;
-
+        var targetX = -18;
+        var targetY = -24;
+        if (X+24 >= -18 && Y-42 >= -24 && Y - 42 <= 600 && X + 24 <= 930) {
+            targetX = X + 24;
+            targetY = Y - 42;
+        } else if(X+24 < -18 || Y-42 < -24) {
+            if (X+24 < -18) {
+                targetX = -18;
+                X = -42;
+            } else { targetX = X + 24; }
+            if (Y-42 < 0) { 
+                targetY = -24;
+                Y = 18;
+            } else { targetY = Y - 42; }
+        } else if(Y - 42 > 600 || X + 24 > 930) {
+            if (Y - 42 > 600){
+                targetY = 600;
+                Y = 642;
+            } else { targetY = Y - 42; }
+            if (X+ 24 > 930) {
+                targetX = 930;
+                X = 906;
+            } else {targetX = X + 24; }
+        }
+        Console.WriteLine("targetX: "+targetX+", targetY: "+targetY);
         _target = new Rectangle<int>(targetX, targetY, 48, 48);
     }
 

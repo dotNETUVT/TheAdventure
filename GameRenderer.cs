@@ -42,7 +42,7 @@ namespace TheAdventure
             _camera = new GameCamera();
             _camera.Width = 800;
             _camera.Height = 600;
-
+           
             // TODO: Check if _singleton is not null, if it is, clear resources.
 
             _singleton = this;

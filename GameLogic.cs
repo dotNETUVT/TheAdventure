@@ -15,7 +15,7 @@ namespace TheAdventure
 
         public GameLogic()
         {
-            
+
         }
 
         public void LoadGameState()
