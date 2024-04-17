@@ -7,16 +7,18 @@ namespace TheAdventure
         private Sdl _sdl;
         private GameWindow _gameWindow;
         private GameRenderer _renderer;
+        private MusicPlayer _musicPlayer;
         
         byte[] _mouseButtonStates = new byte[(int)MouseButton.Count];
         
         public EventHandler<(int x, int y)> OnMouseClick;
         
-        public Input(Sdl sdl, GameWindow window, GameRenderer renderer)
+        public Input(Sdl sdl, GameWindow window, GameRenderer renderer, MusicPlayer musicPlayer)
         {
             _sdl = sdl;
             _gameWindow = window;
             _renderer = renderer;
+            _musicPlayer = musicPlayer;
         }
 
         public bool IsLeftPressed()
@@ -170,7 +172,20 @@ namespace TheAdventure
 
                     case (uint)EventType.Keydown:
                     {
-                        break;
+                            if ((uint)ev.Key.Keysym.Scancode == (uint)Scancode.ScancodeP)
+                            {
+                                if (_musicPlayer.IsPlaying)
+                                {
+                                    _musicPlayer.Pause();
+                                    Console.WriteLine("Music paused. Press 'P' to resume...");
+                                }
+                                else
+                                {
+                                    _musicPlayer.Resume();
+                                    Console.WriteLine("Music resumed. Press 'P' to pause...");
+                                }
+                            }
+                            break;
                     }
                 }
             }

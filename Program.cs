@@ -7,6 +7,9 @@ public static class Program
 {
     public static void Main()
     {
+        MusicPlayer player = new MusicPlayer("TownTheme.wav");
+        player.Play();
+
         var sdl = new Sdl(new SdlContext());
 
         var sdlInitResult = sdl.Init(Sdl.InitVideo | Sdl.InitEvents | Sdl.InitTimer | Sdl.InitGamecontroller |
@@ -19,7 +22,7 @@ public static class Program
         using (var window = new GameWindow(sdl, 800, 480))
         {
             var renderer = new GameRenderer(sdl, window);
-            var input = new Input(sdl, window, renderer);
+            var input = new Input(sdl, window, renderer, player);
             var engine = new Engine(renderer, input);
 
             engine.InitializeWorld();
