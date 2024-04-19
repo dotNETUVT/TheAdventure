@@ -1,0 +1,47 @@
+{
+  "version": 2,
+  "dgSpecHash": "u7nOB3+GWykmo3tMl5i7DCE7a3ZEcGBMBH9aKciNX+9fGIQI/zEiI6QAuB3BT7iLCPJTDgzclRXo3pIkW4ZbQA==",
+  "success": true,
+  "projectFilePath": "C:\\Users\\PeaPo\\OneDrive\\Desktop\\TheAdventure-main\\TheAdventure.csproj",
+  "expectedPackageFiles": [
+    "C:\\Users\\PeaPo\\.nuget\\packages\\microsoft.csharp\\4.7.0\\microsoft.csharp.4.7.0.nupkg.sha512",
+    "C:\\Users\\PeaPo\\.nuget\\packages\\microsoft.dotnet.platformabstractions\\3.1.6\\microsoft.dotnet.platformabstractions.3.1.6.nupkg.sha512",
+    "C:\\Users\\PeaPo\\.nuget\\packages\\microsoft.extensions.dependencymodel\\8.0.0\\microsoft.extensions.dependencymodel.8.0.0.nupkg.sha512",
+    "C:\\Users\\PeaPo\\.nuget\\packages\\silk.net.core\\2.20.0\\silk.net.core.2.20.0.nupkg.sha512",
+    "C:\\Users\\PeaPo\\.nuget\\packages\\silk.net.input.common\\2.20.0\\silk.net.input.common.2.20.0.nupkg.sha512",
+    "C:\\Users\\PeaPo\\.nuget\\packages\\silk.net.input.sdl\\2.20.0\\silk.net.input.sdl.2.20.0.nupkg.sha512",
+    "C:\\Users\\PeaPo\\.nuget\\packages\\silk.net.maths\\2.20.0\\silk.net.maths.2.20.0.nupkg.sha512",
+    "C:\\Users\\PeaPo\\.nuget\\packages\\silk.net.sdl\\2.20.0\\silk.net.sdl.2.20.0.nupkg.sha512",
+    "C:\\Users\\PeaPo\\.nuget\\packages\\silk.net.windowing.common\\2.20.0\\silk.net.windowing.common.2.20.0.nupkg.sha512",
+    "C:\\Users\\PeaPo\\.nuget\\packages\\silk.net.windowing.sdl\\2.20.0\\silk.net.windowing.sdl.2.20.0.nupkg.sha512",
+    "C:\\Users\\PeaPo\\.nuget\\packages\\sixlabors.imagesharp\\3.1.3\\sixlabors.imagesharp.3.1.3.nupkg.sha512",
+    "C:\\Users\\PeaPo\\.nuget\\packages\\system.memory\\4.5.5\\system.memory.4.5.5.nupkg.sha512",
+    "C:\\Users\\PeaPo\\.nuget\\packages\\system.numerics.vectors\\4.5.0\\system.numerics.vectors.4.5.0.nupkg.sha512",
+    "C:\\Users\\PeaPo\\.nuget\\packages\\system.runtime.compilerservices.unsafe\\6.0.0\\system.runtime.compilerservices.unsafe.6.0.0.nupkg.sha512",
+    "C:\\Users\\PeaPo\\.nuget\\packages\\system.text.encodings.web\\8.0.0\\system.text.encodings.web.8.0.0.nupkg.sha512",
+    "C:\\Users\\PeaPo\\.nuget\\packages\\system.text.json\\8.0.0\\system.text.json.8.0.0.nupkg.sha512",
+    "C:\\Users\\PeaPo\\.nuget\\packages\\ultz.native.sdl\\2.28.4\\ultz.native.sdl.2.28.4.nupkg.sha512"
+  ],
+  "logs": [
+    {
+      "code": "NU1902",
+      "level": "Warning",
+      "warningLevel": 1,
+      "message": "Package 'SixLabors.ImageSharp' 3.1.3 has a known moderate severity vulnerability, https://github.com/advisories/GHSA-5x7m-6737-26cr",
+      "libraryId": "SixLabors.ImageSharp",
+      "targetGraphs": [
+        "net8.0"
+      ]
+    },
+    {
+      "code": "NU1902",
+      "level": "Warning",
+      "warningLevel": 1,
+      "message": "Package 'SixLabors.ImageSharp' 3.1.3 has a known moderate severity vulnerability, https://github.com/advisories/GHSA-g85r-6x2q-45w7",
+      "libraryId": "SixLabors.ImageSharp",
+      "targetGraphs": [
+        "net8.0"
+      ]
+    }
+  ]
+}
