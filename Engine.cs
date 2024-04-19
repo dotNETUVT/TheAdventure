@@ -12,6 +12,8 @@ namespace TheAdventure
 
         private Level? _currentLevel;
         private PlayerObject _player;
+        private DogObject _dog;
+        private CatObject _cat;
         private GameRenderer _renderer;
         private Input _input;
 
@@ -63,8 +65,185 @@ namespace TheAdventure
             };
             _player = new PlayerObject(spriteSheet, 100, 100);
 
+            // Create the sprites animations and instanciate the 3 posible companions
+            // to interact with the player during the adventure
+            InitializeCompanions();
+
             _renderer.SetWorldBounds(new Rectangle<int>(0, 0, _currentLevel.Width * _currentLevel.TileWidth,
                 _currentLevel.Height * _currentLevel.TileHeight));
+        }
+
+        public void InitializeCompanions()
+        {
+
+            SpriteSheet dogSheet = new(_renderer, Path.Combine("Assets", "dog.png"), 9, 4, 32, 32, (24, 16));
+            dogSheet.Animations["Idle"] = new SpriteSheet.Animation()
+            {
+                StartFrame = (6, 0),
+                EndFrame = (6, 2),
+                DurationMs = 1000,
+                Loop = true
+            };
+
+            dogSheet.Animations["LeftMove"] = new SpriteSheet.Animation()
+            {
+                StartFrame = (3, 0),
+                EndFrame = (3, 3),
+                DurationMs = 1000,
+                Loop = true
+            };
+
+            dogSheet.Animations["RightMove"] = new SpriteSheet.Animation()
+            {
+                StartFrame = (8, 0),
+                EndFrame = (8, 2),
+                DurationMs = 1000,
+                Loop = true
+            };
+
+            dogSheet.Animations["UpMove"] = new SpriteSheet.Animation()
+            {
+                StartFrame = (2, 0),
+                EndFrame = (2, 3),
+                DurationMs = 1000,
+                Loop = true
+            };
+
+            dogSheet.Animations["DownMove"] = new SpriteSheet.Animation()
+            {
+                StartFrame = (0, 0),
+                EndFrame = (0, 3),
+                DurationMs = 1000,
+                Loop = true
+            };
+
+            SpriteSheet catSheet = new(_renderer, Path.Combine("Assets", "cat.png"), 8, 4, 32, 32, (24, 16));
+            catSheet.Animations["Idle"] = new SpriteSheet.Animation()
+            {
+                StartFrame = (5, 0),
+                EndFrame = (5, 3),
+                DurationMs = 1000,
+                Loop = true
+            };
+
+            catSheet.Animations["LeftMove"] = new SpriteSheet.Animation()
+            {
+                StartFrame = (3, 1),
+                EndFrame = (3, 3),
+                DurationMs = 1000,
+                Loop = true
+            };
+
+            catSheet.Animations["RightMove"] = new SpriteSheet.Animation()
+            {
+                StartFrame = (1, 1),
+                EndFrame = (1, 3),
+                DurationMs = 1000,
+                Loop = true
+            };
+
+            catSheet.Animations["UpMove"] = new SpriteSheet.Animation()
+            {
+                StartFrame = (2, 0),
+                EndFrame = (2, 3),
+                DurationMs = 1000,
+                Loop = true
+            };
+
+            catSheet.Animations["DownMove"] = new SpriteSheet.Animation()
+            {
+                StartFrame = (0, 0),
+                EndFrame = (0, 3),
+                DurationMs = 1000,
+                Loop = true
+            };
+
+
+            _dog = new DogObject(dogSheet, 200, 200);
+            _cat = new CatObject(catSheet, 300, 200);
+        }
+
+        public void ProcessCompanion(bool up, bool down, bool left, bool right, double secsSinceLastFrame, int levelWidth, int levelHeight)
+        {
+            //---------------------------------------------------------------------------------------------------------
+            bool addCompanionKey = _input.IsFKeyPressed();
+
+            if (addCompanionKey)
+            {
+                // print the distance between the player and the dog in X and Y
+                Console.WriteLine("Distance between player and dog: " + (_player.Position.X - _dog.Position.X) + " " + (_player.Position.Y - _dog.Position.Y));
+                Console.WriteLine("Distance between player and cat: " + (_player.Position.X - _cat.Position.X) + " " + (_player.Position.Y - _cat.Position.Y));
+            }
+
+            if (addCompanionKey && _player.nearACompanion(_dog) && !_player.GetHasCompanion())
+            {
+                Console.WriteLine("Player adopted a dog companion! ***");
+                _player.SetHasCompanion(true, _dog);
+                _dog.SetWildAnimal(false);
+                _dog.SetFollowingPosition(_player.Position.X, _player.Position.Y);
+            }
+            else if (addCompanionKey && _player.nearACompanion(_cat) && !_player.GetHasCompanion())
+            {
+                Console.WriteLine("Player adopted a cat companion! ***");
+                _player.SetHasCompanion(true, _cat);
+                _cat.SetWildAnimal(false);
+                _cat.SetFollowingPosition(_player.Position.X, _player.Position.Y);
+            }
+
+            if (!_dog.IsWildAnimal())
+            {
+                _dog.SwitchAnimations(up, down, left, right);
+                _dog.UpdateCompanionPosition(up ? 1.0 : 0.0, down ? 1.0 : 0.0, left ? 1.0 : 0.0, right ? 1.0 : 0.0,
+                _currentLevel.Width * _currentLevel.TileWidth, _currentLevel.Height * _currentLevel.TileHeight,
+                secsSinceLastFrame);
+                _dog.SetDirection(left ? -1 : right ? 1 : 0, up ? 1 : down ? -1 : 0);
+                _dog.SetFollowingPosition(_player.Position.X, _player.Position.Y);
+            }
+
+            if (!_cat.IsWildAnimal())
+            {
+                _cat.SwitchAnimations(up, down, left, right);
+                _cat.UpdateCompanionPosition(up ? 1.0 : 0.0, down ? 1.0 : 0.0, left ? 1.0 : 0.0, right ? 1.0 : 0.0,
+                _currentLevel.Width * _currentLevel.TileWidth, _currentLevel.Height * _currentLevel.TileHeight,
+                secsSinceLastFrame);
+                _cat.SetDirection(left ? -1 : right ? 1 : 0, up ? 1 : down ? -1 : 0);
+                _cat.SetFollowingPosition(_player.Position.X, _player.Position.Y);
+            }
+
+            //---------------------------------------------------------------------------------------------------------
+
+            // if the player press again F when a companion is following him, the companion becomes wild animal
+
+            bool removeCompanionKey = _input.IsXKeyPressed();
+
+            if (removeCompanionKey && _player.GetHasCompanion())
+            {
+                Console.WriteLine("Remove companion key pressed ! ***  | "); // + _player.nearACompanion()+ " | " + ;
+
+                _player.GetCompanion().SetWildAnimal(true);
+                _player.SetHasCompanion(false, null);
+
+
+
+                //if (!_dog.IsWildAnimal() && _player.nearACompanion(_dog))
+                
+                // if()
+                // {
+                //     Console.WriteLine("Player released the dog companion! ***");
+                //     _player.SetHasCompanion(false);
+                //     _dog.SetWildAnimal(true);
+                // }
+                // else if (!_cat.IsWildAnimal() && _player.nearACompanion(_cat))
+                // {
+                //     Console.WriteLine("Player released the cat companion! ***");
+                //     _player.SetHasCompanion(false);
+                //     _cat.SetWildAnimal(true);
+                // }
+
+            }
+
+
+
         }
 
         public void ProcessFrame()
@@ -82,6 +261,8 @@ namespace TheAdventure
                 _currentLevel.Width * _currentLevel.TileWidth, _currentLevel.Height * _currentLevel.TileHeight,
                 secsSinceLastFrame);
 
+            ProcessCompanion(up, down, left, right, secsSinceLastFrame, _currentLevel.Width * _currentLevel.TileWidth, _currentLevel.Height * _currentLevel.TileHeight);
+
             var itemsToRemove = new List<int>();
             itemsToRemove.AddRange(GetAllTemporaryGameObjects().Where(gameObject => gameObject.IsExpired)
                 .Select(gameObject => gameObject.Id).ToList());
@@ -96,7 +277,7 @@ namespace TheAdventure
         {
             _renderer.SetDrawColor(0, 0, 0, 255);
             _renderer.ClearScreen();
-            
+
             _renderer.CameraLookAt(_player.Position.X, _player.Position.Y);
 
             RenderTerrain();
@@ -177,6 +358,8 @@ namespace TheAdventure
             }
 
             _player.Render(_renderer);
+            _dog.Render(_renderer);
+            _cat.Render(_renderer);
         }
 
         private void AddBomb(int x, int y)

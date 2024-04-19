@@ -16,6 +16,17 @@
     </ItemGroup>
 
     <ItemGroup>
+      
+      <None Remove="Assets\dog.png" />
+      <Content Include="Assets\dog.png">
+        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      </Content>
+      
+      <None Remove="Assets\cat.png" />
+      <Content Include="Assets\cat.png">
+        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      </Content>
+      
       <None Remove="BombExploding.png" />
       <Content Include="BombExploding.png">
         <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>

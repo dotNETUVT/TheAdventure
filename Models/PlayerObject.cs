@@ -6,6 +6,8 @@ namespace TheAdventure.Models;
 public class PlayerObject : RenderableGameObject
 {
     private int _pixelsPerSecond = 192;
+    private bool hasCompanion = false;
+    private CompanionObject companion;
 
     public PlayerObject(SpriteSheet spriteSheet, int x, int y) : base(spriteSheet, (x, y))
     {
@@ -44,5 +46,40 @@ public class PlayerObject : RenderableGameObject
         }
 
         Position = (x, y);
+    }
+
+    public bool nearACompanion(CompanionObject companion)
+    {   
+
+        if(hasCompanion)
+            return false;
+
+        if(!companion.IsWildAnimal())
+            return false;
+
+        int distanceX = Position.X - companion.Position.X;
+        int distanceY = Position.Y - companion.Position.Y;
+
+
+        if ( (distanceX < 30 && distanceX > -30) && (distanceY < 30 && distanceY > -30) ){
+            Console.WriteLine("Player is near a companion: " + companion.Position.X + " " + companion.Position.Y);
+            return true;
+        }
+        
+        return false;
+    }
+
+
+    public void SetHasCompanion(bool hasCompanion, CompanionObject? companion){
+        this.hasCompanion = hasCompanion;
+        this.companion = companion;
+    }
+
+    public bool GetHasCompanion(){
+        return hasCompanion;
+    }
+
+    public CompanionObject GetCompanion(){
+        return companion;
     }
 }
