@@ -12,6 +12,7 @@ namespace TheAdventure
 
         private Level? _currentLevel;
         private PlayerObject _player;
+        private PlayerObject _player2;
         private GameRenderer _renderer;
         private Input _input;
 
@@ -62,6 +63,7 @@ namespace TheAdventure
                 Loop = true
             };
             _player = new PlayerObject(spriteSheet, 100, 100);
+            _player2 = new PlayerObject(spriteSheet, 130, 130);
 
             _renderer.SetWorldBounds(new Rectangle<int>(0, 0, _currentLevel.Width * _currentLevel.TileWidth,
                 _currentLevel.Height * _currentLevel.TileHeight));
@@ -82,6 +84,15 @@ namespace TheAdventure
                 _currentLevel.Width * _currentLevel.TileWidth, _currentLevel.Height * _currentLevel.TileHeight,
                 secsSinceLastFrame);
 
+
+            bool p2up = _input.P2IsUpPressed();
+            bool p2down = _input.P2IsDownPressed();
+            bool p2left = _input.P2IsLeftPressed();
+            bool p2right = _input.P2IsRightPressed();
+
+            _player2.UpdatePlayerPosition(p2up ? 1.0 : 0.0, p2down ? 1.0 : 0.0, p2left ? 1.0 : 0.0, p2right ? 1.0 : 0.0,
+                _currentLevel.Width * _currentLevel.TileWidth, _currentLevel.Height * _currentLevel.TileHeight,
+                secsSinceLastFrame);
             var itemsToRemove = new List<int>();
             itemsToRemove.AddRange(GetAllTemporaryGameObjects().Where(gameObject => gameObject.IsExpired)
                 .Select(gameObject => gameObject.Id).ToList());
@@ -96,7 +107,7 @@ namespace TheAdventure
         {
             _renderer.SetDrawColor(0, 0, 0, 255);
             _renderer.ClearScreen();
-            
+
             _renderer.CameraLookAt(_player.Position.X, _player.Position.Y);
 
             RenderTerrain();
@@ -177,6 +188,7 @@ namespace TheAdventure
             }
 
             _player.Render(_renderer);
+            _player2.Render(_renderer);
         }
 
         private void AddBomb(int x, int y)
