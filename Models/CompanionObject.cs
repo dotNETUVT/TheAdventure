@@ -30,8 +30,6 @@ public class CompanionObject : RenderableGameObject
     public void SetWildAnimal(bool wild)
     {
         _isWildAnimal = wild;
-        // if (!_isWildAnimal)
-        // SpriteSheet.ActivateAnimation("Following");
     }
 
     public virtual void SwitchAnimations(bool up, bool down, bool left, bool right)

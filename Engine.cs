@@ -168,23 +168,14 @@ namespace TheAdventure
             //---------------------------------------------------------------------------------------------------------
             bool addCompanionKey = _input.IsFKeyPressed();
 
-            if (addCompanionKey)
-            {
-                // print the distance between the player and the dog in X and Y
-                Console.WriteLine("Distance between player and dog: " + (_player.Position.X - _dog.Position.X) + " " + (_player.Position.Y - _dog.Position.Y));
-                Console.WriteLine("Distance between player and cat: " + (_player.Position.X - _cat.Position.X) + " " + (_player.Position.Y - _cat.Position.Y));
-            }
-
             if (addCompanionKey && _player.nearACompanion(_dog) && !_player.GetHasCompanion())
             {
-                Console.WriteLine("Player adopted a dog companion! ***");
                 _player.SetHasCompanion(true, _dog);
                 _dog.SetWildAnimal(false);
                 _dog.SetFollowingPosition(_player.Position.X, _player.Position.Y);
             }
             else if (addCompanionKey && _player.nearACompanion(_cat) && !_player.GetHasCompanion())
             {
-                Console.WriteLine("Player adopted a cat companion! ***");
                 _player.SetHasCompanion(true, _cat);
                 _cat.SetWildAnimal(false);
                 _cat.SetFollowingPosition(_player.Position.X, _player.Position.Y);
@@ -218,31 +209,10 @@ namespace TheAdventure
 
             if (removeCompanionKey && _player.GetHasCompanion())
             {
-                Console.WriteLine("Remove companion key pressed ! ***  | "); // + _player.nearACompanion()+ " | " + ;
-
                 _player.GetCompanion().SetWildAnimal(true);
                 _player.SetHasCompanion(false, null);
 
-
-
-                //if (!_dog.IsWildAnimal() && _player.nearACompanion(_dog))
-                
-                // if()
-                // {
-                //     Console.WriteLine("Player released the dog companion! ***");
-                //     _player.SetHasCompanion(false);
-                //     _dog.SetWildAnimal(true);
-                // }
-                // else if (!_cat.IsWildAnimal() && _player.nearACompanion(_cat))
-                // {
-                //     Console.WriteLine("Player released the cat companion! ***");
-                //     _player.SetHasCompanion(false);
-                //     _cat.SetWildAnimal(true);
-                // }
-
             }
-
-
 
         }
 

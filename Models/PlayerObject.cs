@@ -62,7 +62,6 @@ public class PlayerObject : RenderableGameObject
 
 
         if ( (distanceX < 30 && distanceX > -30) && (distanceY < 30 && distanceY > -30) ){
-            Console.WriteLine("Player is near a companion: " + companion.Position.X + " " + companion.Position.Y);
             return true;
         }
         
