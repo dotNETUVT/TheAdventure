@@ -4,6 +4,22 @@ namespace TheAdventure
 {
     public unsafe class Input
     {
+        // list with the original Konami code, to compare with the user input
+        private List<KeyCode> konamiCode = new List<KeyCode>
+        {
+            KeyCode.Up, KeyCode.Up,
+            KeyCode.Down, KeyCode.Down,
+            KeyCode.Left, KeyCode.Right,
+            KeyCode.Left, KeyCode.Right,
+            KeyCode.B, KeyCode.A
+        };
+        // list to save the keys pressed by the user
+        private List<KeyCode> pressedKeys = new List<KeyCode>();
+
+        // event to be triggered when the Konami code is entered
+        public event EventHandler OnKonamiCode;
+
+
         private Sdl _sdl;
         private GameWindow _gameWindow;
         private GameRenderer _renderer;
@@ -18,6 +34,33 @@ namespace TheAdventure
             _gameWindow = window;
             _renderer = renderer;
         }
+
+
+        private bool CheckKonamiCode()
+        {
+            //if length doesnt match return false
+            if (pressedKeys.Count < konamiCode.Count)
+            {
+                return false;
+            }
+
+            // verify if the keys pressed by the user match the Konami code
+            for (int i = 0; i < konamiCode.Count; i++)
+            {
+                if (pressedKeys[i] != konamiCode[i])
+                {   
+                    // empty the list of pressed keys if the user makes a mistake
+                    pressedKeys.Clear();
+                    // return false if the user makes a mistake
+                    return false;
+                }
+            }
+
+            // if all keys were pressed in the correct order, empty the list of pressed keys
+            // and return true
+            return true;
+        }
+
 
         public bool IsLeftPressed()
         {
@@ -170,6 +213,18 @@ namespace TheAdventure
 
                     case (uint)EventType.Keydown:
                     {
+
+                        // get the pressed key
+                        KeyCode pressedKey = (KeyCode) ev.Key.Keysym.Sym;
+
+                        pressedKeys.Add(pressedKey);
+
+                        if(CheckKonamiCode())
+                        {   
+                            // trigger the event if the Konami code was entered correctly
+                            OnKonamiCode?.Invoke(this, EventArgs.Empty);
+                        }
+
                         break;
                     }
                 }
