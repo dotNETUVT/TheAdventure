@@ -14,8 +14,12 @@ public unsafe class GameRenderer
     private GameWindow _window;
     private Camera _camera;
 
+    //could we bundle these into a single object?
+
     private Dictionary<int, IntPtr> _textures = new();
     private Dictionary<int, TextureInfo> _textureData = new();
+    private Dictionary<int, string> _textureFilePaths = new();
+
     private int _textureId;
 
     public GameRenderer(Sdl sdl, GameWindow window)
@@ -42,28 +46,37 @@ public unsafe class GameRenderer
 
     public int LoadTexture(string fileName, out TextureInfo textureInfo)
     {
-        using (var fStream = new FileStream(fileName, FileMode.Open))
+        if (!_textureFilePaths.ContainsValue(fileName))
         {
-            var image = Image.Load<Rgba32>(fStream);
-            textureInfo = new TextureInfo()
+            using (var fStream = new FileStream(fileName, FileMode.Open))
             {
-                Width = image.Width,
-                Height = image.Height
-            };
-            var imageRAWData = new byte[textureInfo.Width * textureInfo.Height * 4];
-            image.CopyPixelDataTo(imageRAWData.AsSpan());
-            fixed (byte* data = imageRAWData)
-            {
-                var imageSurface = _sdl.CreateRGBSurfaceWithFormatFrom(data, textureInfo.Width,
-                    textureInfo.Height, 8, textureInfo.Width * 4, (uint)PixelFormatEnum.Rgba32);
-                var imageTexture = _sdl.CreateTextureFromSurface(_renderer, imageSurface);
-                _sdl.FreeSurface(imageSurface);
-                _textureData[_textureId] = textureInfo;
-                _textures[_textureId] = (IntPtr)imageTexture;
+                var image = Image.Load<Rgba32>(fStream);
+                textureInfo = new TextureInfo()
+                {
+                    Width = image.Width,
+                    Height = image.Height
+                };
+                var imageRAWData = new byte[textureInfo.Width * textureInfo.Height * 4];
+                image.CopyPixelDataTo(imageRAWData.AsSpan());
+                fixed (byte* data = imageRAWData)
+                {
+                    var imageSurface = _sdl.CreateRGBSurfaceWithFormatFrom(data, textureInfo.Width,
+                        textureInfo.Height, 8, textureInfo.Width * 4, (uint)PixelFormatEnum.Rgba32);
+                    var imageTexture = _sdl.CreateTextureFromSurface(_renderer, imageSurface);
+                    _sdl.FreeSurface(imageSurface);
+                    _textureData[_textureId] = textureInfo;
+                    _textures[_textureId] = (IntPtr)imageTexture;
+                    _textureFilePaths[_textureId] = fileName;
+                }
             }
+            return _textureId++;
         }
 
-        return _textureId++;
+        var textureId = _textureFilePaths.FirstOrDefault(x => x.Value == fileName).Key;
+
+        textureInfo = _textureData[textureId];
+
+        return textureId;
     }
 
     public void RenderTexture(int textureId, Rectangle<int> src, Rectangle<int> dst,
