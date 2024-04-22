@@ -106,5 +106,6 @@ public unsafe class GameRenderer
     internal int GetScreenHeight()
     {
         return _window.Size.Height;
+
     }
 }

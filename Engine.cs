@@ -206,6 +206,7 @@ namespace TheAdventure
 
 
         int randomX = _random.Next(0, screenWidth);
+
         int randomY = _random.Next(0, screenHeight);
 
  
