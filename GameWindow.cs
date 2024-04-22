@@ -1,5 +1,4 @@
 using Silk.NET.SDL;
-
 namespace TheAdventure
 {
     public unsafe class GameWindow

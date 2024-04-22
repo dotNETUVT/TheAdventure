@@ -161,6 +161,14 @@ namespace TheAdventure{
                 _gameLogic.UpdatePlayerPosition(0, 0, 0, 1.0, timeSinceLastUpdateInMS);
             }
 
+            if (_keyboardState[(int)Scancode.ScancodeE] == 1)
+            {
+                _gameLogic.Player.IsInteracting = true;
+            }
+            else
+            {
+                _gameLogic.Player.IsInteracting = false;
+            }
             _lastUpdate = currentTime;
 
             if (mouseButtonStates[(byte)MouseButton.Primary] == 1){

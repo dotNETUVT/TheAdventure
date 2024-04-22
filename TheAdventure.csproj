@@ -48,6 +48,8 @@
     </ItemGroup>
 
     <ItemGroup>
+      <PackageReference Include="sdl2_ttf.nuget" Version="2.22.0" />
+      <PackageReference Include="sdl2_ttf.v140.redist" Version="2.0.14" />
       <PackageReference Include="Silk.NET.Maths" Version="2.20.0" />
       <PackageReference Include="Silk.NET.SDL" Version="2.20.0" />
       <PackageReference Include="SixLabors.ImageSharp" Version="3.1.3" />

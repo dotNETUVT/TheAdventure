@@ -4,4 +4,6 @@ public class GameObject
     public GameObject(int id){
         Id = id;
     }    
+
+    public virtual void Update() { }
 }

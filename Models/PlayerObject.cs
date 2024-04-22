@@ -1,3 +1,4 @@
+using kbradu;
 using Silk.NET.Maths;
 using TheAdventure;
 
@@ -13,6 +14,8 @@ public class PlayerObject : GameObject
     /// </summary>
     public int Y { get; set; }
 
+    public List<Coin> pocket { get; set; }
+
     // Offset player sprite to have world position at x=24px y=42px
 
     private Rectangle<int> _source = new Rectangle<int>(0, 0, 48, 48);
@@ -20,9 +23,15 @@ public class PlayerObject : GameObject
     private int _textureId;
     private int _pixelsPerSecond = 128;
 
+    /// <summary>
+    /// Does E key is pressed?
+    /// </summary>
+    public bool IsInteracting { get; set; } = false;
+
     public PlayerObject(int id) : base(id)
     {
         _textureId = GameRenderer.LoadTexture(Path.Combine("Assets", "player.png"), out var textureData);
+        pocket = new();
         UpdateScreenTarget();
     }
 
@@ -45,6 +54,12 @@ public class PlayerObject : GameObject
         UpdateScreenTarget();
     }
 
+    public override void Update()
+    {
+        // string currentCoins = $"Gold coins [{pocket.Count(x => x.Type == MaterialType.Gold)}] | Silver coins [{pocket.Count(x => x.Type == MaterialType.Silver)}]";
+        // Console.WriteLine(currentCoins);
+    
+    }
     public void Render(GameRenderer renderer){
         renderer.RenderTexture(_textureId, _source, _target);
     }

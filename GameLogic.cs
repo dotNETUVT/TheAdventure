@@ -1,6 +1,8 @@
 using System.Text.Json;
 using kbradu;
 using Silk.NET.Maths;
+using Silk.NET.SDL;
+using static System.Net.Mime.MediaTypeNames;
 
 namespace TheAdventure
 {
@@ -11,6 +13,8 @@ namespace TheAdventure
         private Level? _currentLevel;
         private PlayerObject _player;
 
+
+        public PlayerObject Player => _player;
         public GameLogic()
         {
             
@@ -53,7 +57,7 @@ namespace TheAdventure
                 int randX = 10 + rng.Next(900);
                 int randY = 10 + rng.Next(600);
                 var material = rng.Next() > 0.3 ? MaterialType.Silver : MaterialType.Gold;
-                level.ChestSets[i] = new kbradu.ChestObject(id, randX, randY, 3 + rng.Next(10), material);
+                level.ChestSets[i] = new kbradu.ChestObject(id, randX, randY, 3 + rng.Next(10), material, _player);
                 _gameObjects.Add(id, level.ChestSets[i]);
             }
 
@@ -73,6 +77,12 @@ namespace TheAdventure
 
         public void ProcessFrame()
         {
+            foreach (var item in _gameObjects)
+            {
+                item.Value.Update();
+            }
+
+            _player.Update();
         }
 
         public Tile? GetTile(int id)
@@ -154,6 +164,7 @@ namespace TheAdventure
             }
 
             _player.Render(renderer);
+
         }
 
         private int _bombIds = 100;

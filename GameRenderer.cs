@@ -131,5 +131,7 @@ namespace TheAdventure
 
             _sdl.RenderPresent(_renderer);
         }
+
+ 
     }
 }
