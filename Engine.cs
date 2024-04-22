@@ -19,6 +19,8 @@ namespace TheAdventure
         private DateTimeOffset _lastUpdate = DateTimeOffset.Now;
         private DateTimeOffset _lastPlayerUpdate = DateTimeOffset.Now;
 
+        private readonly Random _random = new Random();
+
         public Engine(GameRenderer renderer, Input input)
         {
             _renderer = renderer;
@@ -85,6 +87,8 @@ namespace TheAdventure
             _player.UpdatePlayerPosition(up ? 1.0 : 0.0, down ? 1.0 : 0.0, left ? 1.0 : 0.0, right ? 1.0 : 0.0,
                 _currentLevel.Width * _currentLevel.TileWidth, _currentLevel.Height * _currentLevel.TileHeight,
                 secsSinceLastFrame);
+
+            GenerateRandomRain();
 
             var itemsToRemove = new List<int>();
             itemsToRemove.AddRange(GetAllTemporaryGameObjects().Where(gameObject => gameObject.IsExpired)
@@ -186,19 +190,37 @@ namespace TheAdventure
         private void AddBomb(int x, int y)
         {
             var translated = _renderer.TranslateFromScreenToWorldCoordinates(x, y);
-            /*SpriteSheet spriteSheet = new(_renderer, "BombExploding.png", 1, 13, 32, 64, (16, 48));
-            spriteSheet.Animations["Explode"] = new SpriteSheet.Animation()
-            {
-                StartFrame = (0, 0),
-                EndFrame = (0, 12),
-                DurationMs = 2000,
-                Loop = false
-            };*/
             var spriteSheet = SpriteSheet.LoadSpriteSheet("bomb.json", "Assets", _renderer);
             if(spriteSheet != null){
                 spriteSheet.ActivateAnimation("Explode");
                 TemporaryGameObject bomb = new(spriteSheet, 2.1, (translated.X, translated.Y));
                 _gameObjects.Add(bomb.Id, bomb);
+            }
+        }
+
+         private void GenerateRandomRain()
+    {
+
+        int screenWidth = _renderer.GetScreenWidth();
+        int screenHeight = _renderer.GetScreenHeight();
+
+
+        int randomX = _random.Next(0, screenWidth);
+        int randomY = _random.Next(0, screenHeight);
+
+ 
+        AddRain(randomX, randomY);
+    }
+
+        private void AddRain(int x, int y)
+        {
+            var translated = _renderer.TranslateFromScreenToWorldCoordinates(x, y);
+            var spriteSheet = SpriteSheet.LoadSpriteSheet("rain.json", "Assets", _renderer);
+            if (spriteSheet != null)
+            {
+                spriteSheet.ActivateAnimation("RainAnimation1");
+                TemporaryGameObject rain = new(spriteSheet, 2.1, (translated.X, translated.Y));
+                _gameObjects.Add(rain.Id, rain);
             }
         }
     }

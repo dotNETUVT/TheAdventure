@@ -1,0 +1,25 @@
+{
+    "rowCount": 1,
+    "columnCount": 4, 
+    "frameWidth": 32, 
+    "frameHeight": 32, 
+    "frameCenter": {
+        "offsetX": 8, 
+        "offsetY": 16 
+    },
+    "fileName": "rain.png", 
+    "animations": {
+        "RainAnimation1": {
+            "startFrame": {
+                "row": 0,
+                "col": 0 
+            },
+            "endFrame": {
+                "row": 0,
+                "col": 3 
+            },
+            "durationMs": 800, 
+            "loop": true
+        }
+    }
+}
