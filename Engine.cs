@@ -2,7 +2,6 @@ using System.Text.Json;
 using Silk.NET.Maths;
 using Silk.NET.SDL;
 using TheAdventure.Models;
-using TheAdventure.Models.Data;
 
 namespace TheAdventure
 {
@@ -18,7 +17,10 @@ namespace TheAdventure
 
         private DateTimeOffset _lastUpdate = DateTimeOffset.Now;
         private DateTimeOffset _lastPlayerUpdate = DateTimeOffset.Now;
-
+        
+        private Dictionary<int,Flower> _Flowers = new Dictionary<int, Flower>();
+        private Random _random = new Random();
+        
         public Engine(GameRenderer renderer, Input input)
         {
             _renderer = renderer;
@@ -27,6 +29,53 @@ namespace TheAdventure
             _input.OnMouseClick += (_, coords) => AddBomb(coords.x, coords.y);
         }
 
+      
+        public void GenerateFlowers(int numberOfFlowers)
+        {
+            // Resolve the asset path correctly.
+            string assetPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, @"../../../Models/Flower.png");
+            assetPath = Path.GetFullPath(assetPath);
+
+            // Check if the asset file exists to avoid runtime errors.
+            if (!File.Exists(assetPath))
+            {
+                Console.WriteLine($"Asset file not found: {assetPath}");
+                return;
+            }
+            else
+            {
+                Console.WriteLine($"Asset file found: {assetPath}");
+            }
+
+            
+            SpriteSheet FlowerSpriteSheet = new(_renderer, assetPath, 1, 1, 32, 32, (16, 16));
+           
+            
+            if (_currentLevel == null || _currentLevel.Width <= 0 || _currentLevel.TileWidth <= 0 || _currentLevel.Height <= 0 || _currentLevel.TileHeight <= 0)
+            {
+                Console.WriteLine("Invalid level dimensions, unable to place Flowers.");
+                return;
+            }
+
+            
+            for (int i = 0; i < numberOfFlowers; i++)
+            {
+                int x = _random.Next(10, _currentLevel.Width * _currentLevel.TileWidth);
+                int y = _random.Next(10, _currentLevel.Height * _currentLevel.TileHeight);
+                FlowerSpriteSheet.Animations["Idle"] = new SpriteSheet.Animation {
+                    StartFrame = (0, 0),
+                    EndFrame = (0, 0),
+                    DurationMs = 1000,
+                    Loop = true
+                };
+
+                Flower flower = new Flower(FlowerSpriteSheet, x, y);
+                _Flowers.Add(flower.Id, flower); 
+            }
+        }
+
+
+      
         public void InitializeWorld()
         {
             var jsonSerializerOptions = new JsonSerializerOptions() { PropertyNameCaseInsensitive = true };
@@ -54,21 +103,47 @@ namespace TheAdventure
             }
 
             _currentLevel = level;
-            /*SpriteSheet spriteSheet = new(_renderer, Path.Combine("Assets", "player.png"), 10, 6, 48, 48, new FrameOffset() { OffsetX = 24, OffsetY = 42 });
+            SpriteSheet spriteSheet = new(_renderer, Path.Combine("Assets", "player.png"), 10, 6, 48, 48, (24, 42));
             spriteSheet.Animations["IdleDown"] = new SpriteSheet.Animation()
             {
-                StartFrame = new FramePosition(),//(0, 0),
-                EndFrame = new FramePosition() { Row = 0, Col = 5 },
-                DurationMs = 1000,
+                StartFrame = (3, 0),
+                EndFrame = (3, 5),
+                DurationMs = 600,
                 Loop = true
             };
-            */
-            var spriteSheet = SpriteSheet.LoadSpriteSheet("player.json", "Assets", _renderer);
-            if(spriteSheet != null){
-                _player = new PlayerObject(spriteSheet, 100, 100);
-            }
+            spriteSheet.Animations["WalkingDown"] = new SpriteSheet.Animation()
+            {
+                StartFrame = (3, 0),
+                EndFrame = (3, 5),
+                DurationMs = 600,
+                Loop = true
+            };
+            spriteSheet.Animations["WalkingUp"] = new SpriteSheet.Animation {
+                StartFrame = (5, 0), 
+                EndFrame = (5, 5),   
+                DurationMs = 600,
+                Loop = true
+            };
+        
+            spriteSheet.Animations["WalkingLeft"] = new SpriteSheet.Animation {
+                StartFrame = (1, 0), 
+                EndFrame = (1, 3),   
+                DurationMs = 600,
+                Loop = true,
+                Flip = RendererFlip.Horizontal
+            };
+            spriteSheet.Animations["WalkingRight"] = new SpriteSheet.Animation {
+                StartFrame = (4, 0), 
+                EndFrame = (4, 3),   
+                DurationMs = 600,
+                Loop = true
+            };
+          
+            _player = new PlayerObject(spriteSheet, 100, 100);
+
             _renderer.SetWorldBounds(new Rectangle<int>(0, 0, _currentLevel.Width * _currentLevel.TileWidth,
                 _currentLevel.Height * _currentLevel.TileHeight));
+           GenerateFlowers(_random.Next(5, 15));
         }
 
         public void ProcessFrame()
@@ -81,18 +156,27 @@ namespace TheAdventure
             bool down = _input.IsDownPressed();
             bool left = _input.IsLeftPressed();
             bool right = _input.IsRightPressed();
-
             _player.UpdatePlayerPosition(up ? 1.0 : 0.0, down ? 1.0 : 0.0, left ? 1.0 : 0.0, right ? 1.0 : 0.0,
                 _currentLevel.Width * _currentLevel.TileWidth, _currentLevel.Height * _currentLevel.TileHeight,
                 secsSinceLastFrame);
 
-            var itemsToRemove = new List<int>();
-            itemsToRemove.AddRange(GetAllTemporaryGameObjects().Where(gameObject => gameObject.IsExpired)
-                .Select(gameObject => gameObject.Id).ToList());
-
-            foreach (var gameObject in itemsToRemove)
+            var FlowersToRemove = new List<int>();
+            foreach (var Flower in _Flowers.Values)
             {
-                _gameObjects.Remove(gameObject);
+                
+                var playerBox = new Rectangle<float>(_player.Position.X, _player.Position.Y, _player.SpriteSheet.FrameWidth, _player.SpriteSheet.FrameHeight);
+                var FlowerBox = new Rectangle<float>(Flower.Position.X, Flower.Position.Y, Flower.SpriteSheet.FrameWidth, Flower.SpriteSheet.FrameHeight);
+            
+                
+                if (playerBox.Contains(FlowerBox)||FlowerBox.Contains(playerBox))
+                {
+                    FlowersToRemove.Add(Flower.Id);
+                }
+               
+            }
+            foreach (var Flower in FlowersToRemove)
+            {
+                _Flowers.Remove(Flower);
             }
         }
 
@@ -181,25 +265,28 @@ namespace TheAdventure
             }
 
             _player.Render(_renderer);
+            foreach (var Flower in _Flowers.Values)
+            {
+                Flower.Render(_renderer);
+            }
+            
         }
 
         private void AddBomb(int x, int y)
         {
             var translated = _renderer.TranslateFromScreenToWorldCoordinates(x, y);
-            /*SpriteSheet spriteSheet = new(_renderer, "BombExploding.png", 1, 13, 32, 64, (16, 48));
+            SpriteSheet spriteSheet = new(_renderer, "BombExploding.png", 1, 13, 32, 64, (16, 48));
             spriteSheet.Animations["Explode"] = new SpriteSheet.Animation()
             {
                 StartFrame = (0, 0),
                 EndFrame = (0, 12),
                 DurationMs = 2000,
                 Loop = false
-            };*/
-            var spriteSheet = SpriteSheet.LoadSpriteSheet("bomb.json", "Assets", _renderer);
-            if(spriteSheet != null){
-                spriteSheet.ActivateAnimation("Explode");
-                TemporaryGameObject bomb = new(spriteSheet, 2.1, (translated.X, translated.Y));
-                _gameObjects.Add(bomb.Id, bomb);
-            }
+            };
+            spriteSheet.ActivateAnimation("Explode");
+            TemporaryGameObject bomb = new(spriteSheet, 2.1, (translated.X, translated.Y),
+                "Assets/Explosion.wav");
+            _gameObjects.Add(bomb.Id, bomb);
         }
     }
 }

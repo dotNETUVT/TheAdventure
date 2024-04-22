@@ -9,6 +9,7 @@
     </PropertyGroup>
 
     <ItemGroup>
+      <PackageReference Include="NAudio" Version="2.2.1" />
       <PackageReference Include="Silk.NET.Input.Sdl" Version="2.20.0" />
       <PackageReference Include="Silk.NET.SDL" Version="2.20.0" />
       <PackageReference Include="Silk.NET.Windowing.Sdl" Version="2.20.0" />
@@ -16,8 +17,8 @@
     </ItemGroup>
 
     <ItemGroup>
-      <None Remove="Assets\BombExploding.png" />
-      <Content Include="Assets\BombExploding.png">
+      <None Remove="BombExploding.png" />
+      <Content Include="BombExploding.png">
         <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
       </Content>
       <None Remove="Assets\grass.tsj" />
