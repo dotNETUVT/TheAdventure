@@ -13,6 +13,7 @@ namespace TheAdventure
 
         private Level? _currentLevel;
         private PlayerObject _player;
+        private SecondPlayerObject _secondPlayer;
         private GameRenderer _renderer;
         private Input _input;
 
@@ -67,6 +68,11 @@ namespace TheAdventure
             if(spriteSheet != null){
                 _player = new PlayerObject(spriteSheet, 100, 100);
             }
+            var spriteSheetSecondPlayer = SpriteSheet.LoadSpriteSheet("player.json", "Assets", _renderer);
+            if (spriteSheet != null)
+            {
+                _secondPlayer = new SecondPlayerObject(spriteSheetSecondPlayer, 150, 100);
+            }
             _renderer.SetWorldBounds(new Rectangle<int>(0, 0, _currentLevel.Width * _currentLevel.TileWidth,
                 _currentLevel.Height * _currentLevel.TileHeight));
         }
@@ -82,7 +88,15 @@ namespace TheAdventure
             bool left = _input.IsLeftPressed();
             bool right = _input.IsRightPressed();
 
+            bool wKey = _input.IsWPressed();
+            bool aKey = _input.IsAPressed();
+            bool sKey = _input.IsSPressed();
+            bool dKey = _input.IsDPressed();
+
             _player.UpdatePlayerPosition(up ? 1.0 : 0.0, down ? 1.0 : 0.0, left ? 1.0 : 0.0, right ? 1.0 : 0.0,
+                _currentLevel.Width * _currentLevel.TileWidth, _currentLevel.Height * _currentLevel.TileHeight,
+                secsSinceLastFrame);
+            _secondPlayer.UpdateSecondPlayerPosition(wKey ? 1.0 : 0.0, aKey ? 1.0 : 0.0, sKey ? 1.0 : 0.0, dKey ? 1.0 : 0.0,
                 _currentLevel.Width * _currentLevel.TileWidth, _currentLevel.Height * _currentLevel.TileHeight,
                 secsSinceLastFrame);
 
@@ -102,6 +116,8 @@ namespace TheAdventure
             _renderer.ClearScreen();
             
             _renderer.CameraLookAt(_player.Position.X, _player.Position.Y);
+
+            _renderer.CameraLookAt(_secondPlayer.Position.X, _secondPlayer.Position.Y);
 
             RenderTerrain();
             RenderAllObjects();
@@ -181,6 +197,7 @@ namespace TheAdventure
             }
 
             _player.Render(_renderer);
+            _secondPlayer.Render(_renderer);
         }
 
         private void AddBomb(int x, int y)
