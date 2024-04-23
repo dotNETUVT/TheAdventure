@@ -51,7 +51,6 @@ public class PlayerObject : GameObject
                 X = 906;
             } else {targetX = X + 24; }
         }
-        Console.WriteLine("targetX: "+targetX+", targetY: "+targetY);
         _target = new Rectangle<int>(targetX, targetY, 48, 48);
     }
 

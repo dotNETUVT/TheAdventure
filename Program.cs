@@ -46,7 +46,7 @@ public static class Program
         }
 
         gameWindow.Destroy();
-
+        
         sdl.Quit();
     }
 }

@@ -160,11 +160,18 @@ namespace TheAdventure{
             else if (_keyboardState[(int)Scancode.ScancodeRight] == 1){
                 _gameLogic.UpdatePlayerPosition(0, 0, 0, 1.0, timeSinceLastUpdateInMS);
             }
+            else if (_keyboardState[(int)Scancode.Scancode1] == 1)
+            {
+                _gameLogic.setMode(1);
+            }
+            else if (_keyboardState[(int)Scancode.Scancode0] == 1) {
+                _gameLogic.setMode(0);
+            }
 
             _lastUpdate = currentTime;
 
             if (mouseButtonStates[(byte)MouseButton.Primary] == 1){
-                _gameLogic.AddBomb(mouseX, mouseY);
+                _gameLogic.AddGameObject(mouseX, mouseY);
             }
             return false;
         }

@@ -12,6 +12,7 @@ namespace TheAdventure
 
         private Level? _currentLevel;
         private PlayerObject _player;
+        private int _mode;
 
         public GameLogic()
         {
@@ -42,6 +43,7 @@ namespace TheAdventure
                 refTileSet.Set = tileSet;
             }
             _currentLevel = level;
+            this._mode = 0;
         }
 
         public IEnumerable<RenderableGameObject> GetAllRenderableObjects()
@@ -74,6 +76,10 @@ namespace TheAdventure
             return null;
         }
 
+        public void setMode(int mode)
+        {
+            this._mode = mode;
+        }
         public void UpdatePlayerPosition(double up, double down, double left, double right, int timeSinceLastUpdateInMS)
         {
             _player.UpdatePlayerPosition(up, down, left, right, timeSinceLastUpdateInMS);
@@ -142,12 +148,26 @@ namespace TheAdventure
         }
 
         private int _bombIds = 100;
+        private int _roseIds = 100;
+
+        public void AddGameObject(int x, int y)
+        {
+            if (this._mode == 0) { AddBomb(x, y); }
+            else if(this._mode == 1) {  AddRose(x, y); }
+        }
 
         public void AddBomb(int x, int y)
         {
             AnimatedGameObject bomb = new AnimatedGameObject("BombExploding.png", 2, _bombIds, 13, 13, 1, x, y);
             _gameObjects.Add(bomb.Id, bomb);
             ++_bombIds;
+        }
+
+        public void AddRose(int x, int y)
+        {
+            AnimatedGameObject rose = new AnimatedGameObject("RoseBlooming.png", 3, _roseIds, 6, 6, 1, x, y);
+            _gameObjects.Add(rose.Id, rose);
+            ++_roseIds;
         }
     }
 }

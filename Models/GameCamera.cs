@@ -25,9 +25,9 @@ public class GameCamera
     {
         // In screen coordinates x = width / 2, y = height / 2.
         var vector = new Vector2D<int>(0, 0);
-        if (X + 24 >= Width - 30)
+        if (X + 24 >= Width - 24)
         {
-            vector.X = Width - 55  - X;
+            vector.X = Width - 54  - X;
         } 
         var newDestination = textureDestination.GetTranslated(vector);
         return newDestination;
