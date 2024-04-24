@@ -1,0 +1,66 @@
+{
+    "rowCount" : 4,
+    "columnCount" : 9,
+    "frameWidth" : 32,
+    "frameHeight" : 64,
+    "frameCenter" : {
+        "offsetX" : 16,
+        "offsetY" : 48
+    },
+    "fileName" : "zombie_skeleton.png",
+    "animations" : {
+        "MoveLeft": {
+            "startFrame" : {
+                "row" : 1,
+                "col" : 0
+            },
+            "endFrame" : {
+                "row" : 1,
+                "col" : 2
+            },
+            "durationMs" : 1000,
+            "loop" : true,
+            "flip" : 0
+        },
+        "MoveRight": {
+            "startFrame" : {
+                "row" : 2,
+                "col" : 0
+            },
+            "endFrame" : {
+                "row" : 2,
+                "col" : 2
+            },
+            "durationMs" : 1000,
+            "loop" : true,
+            "flip" : 0
+        },
+        "MoveDown": {
+            "startFrame" : {
+                "row" : 0,
+                "col" : 0
+            },
+            "endFrame" : {
+                "row" : 0,
+                "col" : 2
+            },
+            "durationMs" : 1000,
+            "loop" : true,
+            "flip" : 0
+        },
+        "MoveUp": {
+            "startFrame" : {
+                "row" : 3,
+                "col" : 0
+            },
+            "endFrame" : {
+                "row" : 3,
+                "col" : 2
+            },
+            "durationMs" : 1000,
+            "loop" : true,
+            "flip" : 0
+        }
+    }
+    
+}

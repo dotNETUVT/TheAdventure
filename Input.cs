@@ -257,5 +257,9 @@ namespace TheAdventure
 
             return false;
         }
+        public Boolean IsKonamiCodeEntered()
+        {
+            return _konamiCodeEntered;
+        }
     }
 }

@@ -13,6 +13,9 @@ namespace TheAdventure
 
         private Level? _currentLevel;
         private PlayerObject _player;
+
+        private List<EnemyObject> _enemies = new();
+
         private GameRenderer _renderer;
         private Input _input;
 
@@ -86,6 +89,15 @@ namespace TheAdventure
             _player.UpdatePlayerPosition(up ? 1.0 : 0.0, down ? 1.0 : 0.0, left ? 1.0 : 0.0, right ? 1.0 : 0.0,
                 _currentLevel.Width * _currentLevel.TileWidth, _currentLevel.Height * _currentLevel.TileHeight,
                 secsSinceLastFrame);
+            
+            // render enemies if konami code is entered
+            if(_input.IsKonamiCodeEntered()){
+                foreach(var enemy in _enemies){
+                    enemy.UpdateEnemyPosition((_player.Position.X, _player.Position.Y), secsSinceLastFrame);
+                }
+            }
+
+
 
             var itemsToRemove = new List<int>();
             itemsToRemove.AddRange(GetAllTemporaryGameObjects().Where(gameObject => gameObject.IsExpired)
@@ -95,6 +107,7 @@ namespace TheAdventure
             {
                 _gameObjects.Remove(gameObject);
             }
+            
         }
 
         public void RenderFrame()
@@ -182,6 +195,11 @@ namespace TheAdventure
             }
 
             _player.Render(_renderer);
+
+            foreach (var enemy in _enemies )
+            {
+                enemy.Render(_renderer);
+            }
         }
 
         private void AddBomb(int x, int y)
@@ -207,6 +225,38 @@ namespace TheAdventure
         {
 
             Console.WriteLine("Konami code entered!");
+
+            // now we can add a bunch of enemies that will follow the player
+
+            var zombieSheet = SpriteSheet.LoadSpriteSheet("zombie.json", "Assets", _renderer);
+            var skeletonSheet = SpriteSheet.LoadSpriteSheet("skeleton.json", "Assets", _renderer);
+
+            if(zombieSheet != null && skeletonSheet != null){
+                for (var i = 0; i < 15; i++)
+                {
+                    
+                    // random position
+                    int npcX = new Random().Next(0, _currentLevel.Width * _currentLevel.TileWidth);
+                    int npcY = new Random().Next(0, _currentLevel.Height * _currentLevel.TileHeight);
+
+                    // random number: 1 or 0 
+                    var enemy = new Random().Next(0, 2);
+                    
+                    EnemyObject npc;
+
+                    if(enemy == 0){
+                        npc = new ZombieObject(zombieSheet, npcX, npcY);
+                    }else{
+                        npc = new SkeletonObject(skeletonSheet, npcX, npcY);
+                    }
+
+                    _enemies.Add(npc);
+                    _gameObjects.Add(npc.Id, npc);
+
+                }
+            }
+
+
         }
     }
 }
