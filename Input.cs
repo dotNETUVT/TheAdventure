@@ -11,15 +11,15 @@ namespace TheAdventure
             KeyCode.Down, KeyCode.Down,
             KeyCode.Left, KeyCode.Right,
             KeyCode.Left, KeyCode.Right,
-            KeyCode.B, KeyCode.A
+            KeyCode.KpZero, KeyCode.KpNine // B, A Keys 
         };
         // list to save the keys pressed by the user
         private List<KeyCode> pressedKeys = new List<KeyCode>();
 
         // event to be triggered when the Konami code is entered
         public event EventHandler OnKonamiCode;
-
-
+        // flag to check if the Konami code was entered
+        private Boolean _konamiCodeEntered = false;
         private Sdl _sdl;
         private GameWindow _gameWindow;
         private GameRenderer _renderer;
@@ -37,27 +37,42 @@ namespace TheAdventure
 
 
         private bool CheckKonamiCode()
-        {
-            //if length doesnt match return false
+        {   
+            // if the user makes a mistake, clear the list of pressed keys and return false
+            int keyIndex = pressedKeys.Count - 1;
+            if(pressedKeys[keyIndex] != konamiCode[keyIndex])
+            {   
+                pressedKeys.Clear();
+                return false;
+            }
+
+            // if length doesnt match return false
             if (pressedKeys.Count < konamiCode.Count)
-            {
+            {   
+                Console.WriteLine($"Pressed keys: {pressedKeys.Count} - Konami code: {konamiCode.Count}");
                 return false;
             }
 
             // verify if the keys pressed by the user match the Konami code
             for (int i = 0; i < konamiCode.Count; i++)
-            {
+            {   
+
                 if (pressedKeys[i] != konamiCode[i])
                 {   
+                    Console.WriteLine();
                     // empty the list of pressed keys if the user makes a mistake
                     pressedKeys.Clear();
                     // return false if the user makes a mistake
                     return false;
                 }
+
+                Console.Write($"Key {i} matches: {pressedKeys[i]} ");
             }
 
             // if all keys were pressed in the correct order, empty the list of pressed keys
             // and return true
+            pressedKeys.Clear();
+            _konamiCodeEntered = true;
             return true;
         }
 
@@ -213,16 +228,26 @@ namespace TheAdventure
 
                     case (uint)EventType.Keydown:
                     {
+                        
+                        if (_konamiCodeEntered)
+                        {
+                            break;
+                        }
 
                         // get the pressed key
                         KeyCode pressedKey = (KeyCode) ev.Key.Keysym.Sym;
 
                         pressedKeys.Add(pressedKey);
 
+                        Console.WriteLine($"Key pressed: {pressedKey} ");
+
                         if(CheckKonamiCode())
                         {   
                             // trigger the event if the Konami code was entered correctly
                             OnKonamiCode?.Invoke(this, EventArgs.Empty);
+                            
+                            // reset the event
+                            OnKonamiCode = null;
                         }
 
                         break;

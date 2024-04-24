@@ -25,6 +25,7 @@ namespace TheAdventure
             _input = input;
 
             _input.OnMouseClick += (_, coords) => AddBomb(coords.x, coords.y);
+            _input.OnKonamiCode += (_, _) => HandleKonamiCode();
         }
 
         public void InitializeWorld()
@@ -200,6 +201,12 @@ namespace TheAdventure
                 TemporaryGameObject bomb = new(spriteSheet, 2.1, (translated.X, translated.Y));
                 _gameObjects.Add(bomb.Id, bomb);
             }
+        }
+
+        private void HandleKonamiCode()
+        {
+
+            Console.WriteLine("Konami code entered!");
         }
     }
 }
