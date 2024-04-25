@@ -49,13 +49,12 @@ public class EnemyObject : RenderableGameObject
 
     public virtual void UpdateEnemyPosition((int x, int y) playerPosition, double time)
     {
-        // zombie moves way slower than the player, so we need to update its position less frequently
-        // in this case we update the zombie position every 2 seconds
+        // enemies move slower than the player, so we need to update their position
+        // when the timer reaches the cooldown
 
         _movementTimer += time;
         if (_movementTimer >= _movementCooldown)
         {
-            Console.WriteLine($"Zombie {Id} is moving");
             _movementTimer = 0.0;
 
             // update zombie position in the direction of the player

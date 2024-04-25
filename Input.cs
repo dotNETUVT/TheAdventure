@@ -49,7 +49,6 @@ namespace TheAdventure
             // if length doesnt match return false
             if (pressedKeys.Count < konamiCode.Count)
             {   
-                Console.WriteLine($"Pressed keys: {pressedKeys.Count} - Konami code: {konamiCode.Count}");
                 return false;
             }
 
@@ -59,14 +58,11 @@ namespace TheAdventure
 
                 if (pressedKeys[i] != konamiCode[i])
                 {   
-                    Console.WriteLine();
                     // empty the list of pressed keys if the user makes a mistake
                     pressedKeys.Clear();
                     // return false if the user makes a mistake
                     return false;
                 }
-
-                Console.Write($"Key {i} matches: {pressedKeys[i]} ");
             }
 
             // if all keys were pressed in the correct order, empty the list of pressed keys
@@ -247,8 +243,6 @@ namespace TheAdventure
                         KeyCode pressedKey = (KeyCode) ev.Key.Keysym.Sym;
 
                         pressedKeys.Add(pressedKey);
-
-                        Console.WriteLine($"Key pressed: {pressedKey} ");
 
                         if(CheckKonamiCode())
                         {   

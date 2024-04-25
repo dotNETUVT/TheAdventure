@@ -290,8 +290,6 @@ namespace TheAdventure
                 return;
             }
 
-            Console.WriteLine("Konami code entered!");
-
             // now we can add a bunch of enemies that will follow the player
 
             var zombieSheet = SpriteSheet.LoadSpriteSheet("zombie.json", "Assets", _renderer);
@@ -300,7 +298,6 @@ namespace TheAdventure
             if(zombieSheet != null && skeletonSheet != null){
                 for (var i = 0; i < 15; i++)
                 {
-                    
                     // random position
                     int npcX = new Random().Next(0, _currentLevel.Width * _currentLevel.TileWidth);
                     int npcY = new Random().Next(0, _currentLevel.Height * _currentLevel.TileHeight);
