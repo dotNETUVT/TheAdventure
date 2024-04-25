@@ -71,6 +71,7 @@ namespace TheAdventure
             if(spriteSheet != null){
                 _player = new PlayerObject(spriteSheet, 100, 100);
             }
+
             _renderer.SetWorldBounds(new Rectangle<int>(0, 0, _currentLevel.Width * _currentLevel.TileWidth,
                 _currentLevel.Height * _currentLevel.TileHeight));
         }
@@ -85,28 +86,65 @@ namespace TheAdventure
             bool down = _input.IsDownPressed();
             bool left = _input.IsLeftPressed();
             bool right = _input.IsRightPressed();
+            bool isAttacking = _input.IsKeyAPressed();
+            bool addBomb = _input.IsKeyBPressed();
 
-            _player.UpdatePlayerPosition(up ? 1.0 : 0.0, down ? 1.0 : 0.0, left ? 1.0 : 0.0, right ? 1.0 : 0.0,
-                _currentLevel.Width * _currentLevel.TileWidth, _currentLevel.Height * _currentLevel.TileHeight,
-                secsSinceLastFrame);
-            
-            // render enemies if konami code is entered
-            if(_input.IsKonamiCodeEntered()){
-                foreach(var enemy in _enemies){
-                    enemy.UpdateEnemyPosition((_player.Position.X, _player.Position.Y), secsSinceLastFrame);
+            if(isAttacking)
+            {
+                var dir = up ? 1: 0;
+                dir += down? 1 : 0;
+                dir += left? 1: 0;
+                dir += right ? 1 : 0;
+                if(dir <= 1){
+                    _player.Attack(up, down, left, right);
+                }
+                else{
+                    isAttacking = false;
                 }
             }
-
-
+            if(!isAttacking)
+            {
+                _player.UpdatePlayerPosition(up ? 1.0 : 0.0, down ? 1.0 : 0.0, left ? 1.0 : 0.0, right ? 1.0 : 0.0,
+                    _currentLevel.Width * _currentLevel.TileWidth, _currentLevel.Height * _currentLevel.TileHeight,
+                    secsSinceLastFrame);
+            }
+            
+            // render enemies if konami code is entered
+            if(_input.IsKonamiCodeEntered() && _player.State.State != PlayerObject.PlayerState.GameOver){
+                foreach(var enemy in _enemies){
+                    enemy.UpdateEnemyPosition((_player.Position.X, _player.Position.Y), secsSinceLastFrame);
+                
+                    if(CheckCollision(_player, enemy)){
+                        _player.GameOver();
+                        AddGameOverObject();
+                    }
+                }
+            }
 
             var itemsToRemove = new List<int>();
             itemsToRemove.AddRange(GetAllTemporaryGameObjects().Where(gameObject => gameObject.IsExpired)
                 .Select(gameObject => gameObject.Id).ToList());
 
-            foreach (var gameObject in itemsToRemove)
+            if (addBomb)
             {
-                _gameObjects.Remove(gameObject);
+                AddBomb(_player.Position.X, _player.Position.Y, false);
             }
+
+            foreach (var gameObjectId in itemsToRemove)
+            {
+                var gameObject = _gameObjects[gameObjectId];
+                if(gameObject is TemporaryGameObject){
+                    var tempObject = (TemporaryGameObject)gameObject;
+                    var deltaX = Math.Abs(_player.Position.X - tempObject.Position.X);
+                    var deltaY = Math.Abs(_player.Position.Y - tempObject.Position.Y);
+                    if(deltaX < 32 && deltaY < 32){
+                        _player.GameOver();
+                        AddGameOverObject();
+                    }
+                }
+                _gameObjects.Remove(gameObjectId);
+            }
+
             
         }
 
@@ -202,17 +240,11 @@ namespace TheAdventure
             }
         }
 
-        private void AddBomb(int x, int y)
+        private void AddBomb(int x, int y, bool translateCoordinates = true)
         {
-            var translated = _renderer.TranslateFromScreenToWorldCoordinates(x, y);
-            /*SpriteSheet spriteSheet = new(_renderer, "BombExploding.png", 1, 13, 32, 64, (16, 48));
-            spriteSheet.Animations["Explode"] = new SpriteSheet.Animation()
-            {
-                StartFrame = (0, 0),
-                EndFrame = (0, 12),
-                DurationMs = 2000,
-                Loop = false
-            };*/
+
+            var translated = translateCoordinates ? _renderer.TranslateFromScreenToWorldCoordinates(x, y) : new Vector2D<int>(x, y);
+            
             var spriteSheet = SpriteSheet.LoadSpriteSheet("bomb.json", "Assets", _renderer);
             if(spriteSheet != null){
                 spriteSheet.ActivateAnimation("Explode");
@@ -220,9 +252,43 @@ namespace TheAdventure
                 _gameObjects.Add(bomb.Id, bomb);
             }
         }
+        
+        private bool CheckCollision(PlayerObject obj1, EnemyObject obj2)
+        {
+            // margin to reduce the collision area of the player and the enemy
+            int playerMargin = 10;
+            int playerWidth = obj1._width - playerMargin * 2;
+            int playerHeight = obj1._height - playerMargin * 2;
+
+            // verify is the player is colliding with the enemy
+            var deltaX = Math.Abs(obj1.Position.X - obj2.Position.X);
+            var deltaY = Math.Abs(obj1.Position.Y - obj2.Position.Y);
+
+            // if the player is colliding with the enemy, return true
+            return deltaX < playerWidth && deltaY < playerHeight;
+        }
+
+        private void AddGameOverObject()
+        {
+
+            // create sprite sheet for game over image
+            var spriteSheet = new SpriteSheet(_renderer, "Assets/gameover.png", 1, 1, 200, 161, new FrameOffset() { OffsetX = 16, OffsetY = 35 });
+
+            // create gameobject and set it to the center of the screen
+            var gameOverObject = new RenderableGameObject(spriteSheet, (300, 200));
+
+            _gameObjects.Add(gameOverObject.Id, gameOverObject);
+        }
+
+
 
         private void HandleKonamiCode()
         {
+
+            // not avaliable if the player is already in game over state
+            if(_player.State.State == PlayerObject.PlayerState.GameOver){
+                return;
+            }
 
             Console.WriteLine("Konami code entered!");
 
