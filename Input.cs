@@ -76,6 +76,15 @@ namespace TheAdventure
             return true;
         }
 
+        public bool IsKeyAPressed(){
+            ReadOnlySpan<byte> _keyboardState = new(_sdl.GetKeyboardState(null), (int)KeyCode.Count);
+            return _keyboardState[(int)KeyCode.A] == 1;
+        }
+
+        public bool IsKeyBPressed(){
+            ReadOnlySpan<byte> _keyboardState = new(_sdl.GetKeyboardState(null), (int)KeyCode.Count);
+            return _keyboardState[(int)KeyCode.B] == 1;
+        }
 
         public bool IsLeftPressed()
         {
