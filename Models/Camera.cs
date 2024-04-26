@@ -66,10 +66,18 @@ public class Camera
         {
             _y = y;
         }
+        else if( y> _gameWorld.Origin.Y + _gameWorld.Size.Y)
+        {
+            _y = _gameWorld.Origin.Y + _gameWorld.Size.Y;
+        }
 
         if (_gameWorld.Contains(new Vector2D<int>(x, _y)))
         {
             _x = x;
+        }
+        else if (x > _gameWorld.Origin.X + _gameWorld.Size.X)
+        {
+            _x = _gameWorld.Origin.X + _gameWorld.Size.X;
         }
     }
 

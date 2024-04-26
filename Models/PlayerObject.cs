@@ -19,7 +19,6 @@ public class PlayerObject : RenderableGameObject
     public void UpdatePlayerPosition(double up, double down, double left, double right, int width, int height,
         double time)
     {
-
         if (up <= double.Epsilon &&
             down <= double.Epsilon &&
             left <= double.Epsilon &&

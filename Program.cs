@@ -22,15 +22,18 @@ public static class Program
             var input = new Input(sdl, window, renderer);
             var engine = new Engine(renderer, input);
 
-            engine.InitializeWorld();
+            engine.InitializeMainMenu();
+            // engine.InitializeWorld();
 
             bool quit = false;
             while (!quit)
             {
                 quit = input.ProcessInput();
                 if (quit) break;
-                
-                engine.ProcessFrame();
+
+                quit = engine.ProcessFrame();
+                if (quit) break;
+
                 engine.RenderFrame();
             }
         }

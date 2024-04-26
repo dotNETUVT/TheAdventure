@@ -1,3 +1,4 @@
+using System.Collections.Specialized;
 using System.Text.Json;
 using Silk.NET.Maths;
 using Silk.NET.SDL;
@@ -11,8 +12,13 @@ namespace TheAdventure
         private readonly Dictionary<int, GameObject> _gameObjects = new();
         private readonly Dictionary<string, TileSet> _loadedTileSets = new();
 
+        private bool _isMainMenu = true;
         private Level? _currentLevel;
+
+        private MainMenuLevel? _currentMainMenuLevel;
         private PlayerObject _player;
+
+        private PlayerObject _mainMenuPlayer;
         private GameRenderer _renderer;
         private Input _input;
 
@@ -25,6 +31,68 @@ namespace TheAdventure
             _input = input;
 
             _input.OnMouseClick += (_, coords) => AddBomb(coords.x, coords.y);
+        }
+
+        private readonly Interractable playButton = new(23, 19, 4, 4);
+        private readonly Interractable exitButton = new(24, 1, 2, 3);
+
+        private void InitializePlayer()
+        {
+            var spriteSheet = SpriteSheet.LoadSpriteSheet("player.json", "Assets", _renderer);
+            if(_isMainMenu)
+            {
+                if(_mainMenuPlayer != null)
+                {
+                    return;
+                }
+                if(spriteSheet != null){
+                    _mainMenuPlayer = new PlayerObject(spriteSheet, 400, 240);
+                }
+            }
+            else
+            {
+                if (_player != null)
+                {
+                    return;
+                }
+                if(spriteSheet != null){
+                    _player = new PlayerObject(spriteSheet, 100, 100);
+                }
+            }
+        }
+
+        public void InitializeMainMenu()
+        {
+            var jsonSerializerOptions = new JsonSerializerOptions() { PropertyNameCaseInsensitive = true };
+            var levelContent = File.ReadAllText(Path.Combine("Assets", "mainMenu", "the_adventure_main_menu.tmj"));
+
+            var level = JsonSerializer.Deserialize<MainMenuLevel>(levelContent, jsonSerializerOptions);
+            if (level == null) return;
+            foreach (var tileSet in level.TileSets)
+            {
+                _renderer.LoadMainMenuTileSet(tileSet);
+            }
+
+            _currentMainMenuLevel = level;
+            _renderer.SetWorldBounds(new Rectangle<int>(0, 0, _currentMainMenuLevel.Width * _currentMainMenuLevel.TileWidth,
+                _currentMainMenuLevel.Height * _currentMainMenuLevel.TileHeight));
+
+            InitializePlayer();
+        }
+
+        public void DeInitializeMainMenu()
+        {
+            if (_currentMainMenuLevel == null) return;
+            foreach (var tileSet in _currentMainMenuLevel.TileSets)
+            {
+                foreach (var tile in tileSet.Tiles)
+                {
+                    _renderer.UnloadTexture(tile.InternalTextureId);
+                }
+                tileSet.Tiles = [];
+            }
+            _currentMainMenuLevel = null;
+            _mainMenuPlayer = null;
         }
 
         public void InitializeWorld()
@@ -63,15 +131,28 @@ namespace TheAdventure
                 Loop = true
             };
             */
-            var spriteSheet = SpriteSheet.LoadSpriteSheet("player.json", "Assets", _renderer);
-            if(spriteSheet != null){
-                _player = new PlayerObject(spriteSheet, 100, 100);
-            }
             _renderer.SetWorldBounds(new Rectangle<int>(0, 0, _currentLevel.Width * _currentLevel.TileWidth,
                 _currentLevel.Height * _currentLevel.TileHeight));
+
+            InitializePlayer();
         }
 
-        public void ProcessFrame()
+        public void DeinitializeWorld()
+        {
+            if (_currentLevel == null) return;
+            foreach (var tileSet in _currentLevel.TileSets)
+            {
+                foreach (var tile in tileSet.Set.Tiles)
+                {
+                    _renderer.UnloadTexture(tile.InternalTextureId);
+                }
+                tileSet.Set.Tiles = [];
+            }
+            _currentLevel = null;
+            _loadedTileSets.Clear();
+        }
+
+        public bool ProcessFrame()
         {
             var currentTime = DateTimeOffset.Now;
             var secsSinceLastFrame = (currentTime - _lastUpdate).TotalSeconds;
@@ -82,9 +163,42 @@ namespace TheAdventure
             bool left = _input.IsLeftPressed();
             bool right = _input.IsRightPressed();
 
-            _player.UpdatePlayerPosition(up ? 1.0 : 0.0, down ? 1.0 : 0.0, left ? 1.0 : 0.0, right ? 1.0 : 0.0,
-                _currentLevel.Width * _currentLevel.TileWidth, _currentLevel.Height * _currentLevel.TileHeight,
-                secsSinceLastFrame);
+            if(_isMainMenu)
+            {
+                _mainMenuPlayer.UpdatePlayerPosition(up ? 1.0 : 0.0, down ? 1.0 : 0.0, left ? 1.0 : 0.0, right ? 1.0 : 0.0,
+                    _currentMainMenuLevel.Width * _currentMainMenuLevel.TileWidth, _currentMainMenuLevel.Height * _currentMainMenuLevel.TileHeight,
+                    secsSinceLastFrame);
+
+                if (_input.IsEnterPressed())
+                {
+                    var playerPosition = _mainMenuPlayer.Position;
+                    if (playButton.IsObjectInteracted((int)playerPosition.X, (int)playerPosition.Y))
+                    {
+                        _isMainMenu = false;
+                        DeInitializeMainMenu();
+                        InitializeWorld();
+                    }
+
+                    if(exitButton.IsObjectInteracted((int)playerPosition.X, (int)playerPosition.Y))
+                    {
+                        return true;
+                    }
+                }
+            }
+            else
+            {
+                _player.UpdatePlayerPosition(up ? 1.0 : 0.0, down ? 1.0 : 0.0, left ? 1.0 : 0.0, right ? 1.0 : 0.0,
+                    _currentLevel.Width * _currentLevel.TileWidth, _currentLevel.Height * _currentLevel.TileHeight,
+                    secsSinceLastFrame);
+
+                if (_input.IsEscPressed())
+                {
+                    _isMainMenu = true;
+                    DeinitializeWorld();
+                    InitializeMainMenu();
+                }
+            }
+
 
             var itemsToRemove = new List<int>();
             itemsToRemove.AddRange(GetAllTemporaryGameObjects().Where(gameObject => gameObject.IsExpired)
@@ -94,16 +208,26 @@ namespace TheAdventure
             {
                 _gameObjects.Remove(gameObject);
             }
+
+            return false;
         }
 
         public void RenderFrame()
         {
             _renderer.SetDrawColor(0, 0, 0, 255);
             _renderer.ClearScreen();
-            
-            _renderer.CameraLookAt(_player.Position.X, _player.Position.Y);
 
-            RenderTerrain();
+            if(_isMainMenu)
+            {
+                RenderMainMenu();
+                _renderer.CameraLookAt(_mainMenuPlayer.Position.X, _mainMenuPlayer.Position.Y);
+            }
+            else
+            {
+                RenderTerrain();
+                _renderer.CameraLookAt(_player.Position.X, _player.Position.Y);
+            }
+
             RenderAllObjects();
 
             _renderer.PresentFrame();
@@ -115,6 +239,23 @@ namespace TheAdventure
             foreach (var tileSet in _currentLevel.TileSets)
             {
                 foreach (var tile in tileSet.Set.Tiles)
+                {
+                    if (tile.Id == id)
+                    {
+                        return tile;
+                    }
+                }
+            }
+
+            return null;
+        }
+
+        private Tile? GetMainMenuTile(int id)
+        {
+            if (_currentMainMenuLevel == null) return null;
+            foreach (var tileSet in _currentMainMenuLevel.TileSets)
+            {
+                foreach (var tile in tileSet.Tiles)
                 {
                     if (tile.Id == id)
                     {
@@ -140,6 +281,34 @@ namespace TheAdventure
                         var cTileId = cLayer.Data[j * cLayer.Width + i] - 1;
                         var cTile = GetTile(cTileId);
                         if (cTile == null) continue;
+
+                        var src = new Rectangle<int>(0, 0, cTile.ImageWidth, cTile.ImageHeight);
+                        var dst = new Rectangle<int>(i * cTile.ImageWidth, j * cTile.ImageHeight, cTile.ImageWidth,
+                            cTile.ImageHeight);
+
+                        _renderer.RenderTexture(cTile.InternalTextureId, src, dst);
+                    }
+                }
+            }
+        }
+
+        private void RenderMainMenu()
+        {
+            if (_currentMainMenuLevel == null) return;
+            for (var layer = 0; layer < _currentMainMenuLevel.Layers.Length; ++layer)
+            {
+                var cLayer = _currentMainMenuLevel.Layers[layer];
+
+                for (var i = 0; i < _currentMainMenuLevel.Width; ++i)
+                {
+                    for (var j = 0; j < _currentMainMenuLevel.Height; ++j)
+                    {
+                        var cTileId = cLayer.Data[j * cLayer.Width + i] - 1;
+                        var cTile = GetMainMenuTile(cTileId);
+                        if (cTile == null)
+                        {
+                            continue;
+                        }
 
                         var src = new Rectangle<int>(0, 0, cTile.ImageWidth, cTile.ImageHeight);
                         var dst = new Rectangle<int>(i * cTile.ImageWidth, j * cTile.ImageHeight, cTile.ImageWidth,
@@ -180,7 +349,14 @@ namespace TheAdventure
                 gameObject.Render(_renderer);
             }
 
-            _player.Render(_renderer);
+            if(_isMainMenu)
+            {
+                _mainMenuPlayer.Render(_renderer);
+            }
+            else
+            {
+                _player.Render(_renderer);
+            }
         }
 
         private void AddBomb(int x, int y)

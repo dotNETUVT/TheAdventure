@@ -66,6 +66,76 @@ public unsafe class GameRenderer
         return _textureId++;
     }
 
+    public void LoadMainMenuTileSet(MainMenuTileSet tileSet)
+    {
+        var fileName = Path.Combine("Assets", "mainMenu", tileSet.Image);
+        tileSet.Tiles = new Tile[tileSet.TileCount];
+        using (var fStream = new FileStream(fileName, FileMode.Open))
+        {
+            var image = Image.Load<Rgba32>(fStream);
+            var textureInfo = new TextureInfo()
+            {
+                Width = image.Width,
+                Height = image.Height
+            };
+            int numberOfRows = image.Height / tileSet.TileHeight;
+            int numberOfColumns = image.Width / tileSet.TileWidth;
+            int firstgid = tileSet.Firstgid;
+            int tilesCount = 0;
+            for(int i = 0; i < numberOfRows; i++)
+            {
+                for(int j = 0; j < numberOfColumns; j++)
+                {
+                    byte[] byteArray = new byte[tileSet.TileWidth * tileSet.TileHeight * 4];
+
+                    int byteIndex = 0;
+                    for (int y = i * tileSet.TileHeight; y < (i + 1) * tileSet.TileHeight; y++)
+                    {
+                        for (int x = j * tileSet.TileWidth; x < (j + 1) * tileSet.TileWidth; x++)
+                        {
+                            Rgba32 pixel = image[x, y];
+
+                            byteArray[byteIndex++] = pixel.R;
+                            byteArray[byteIndex++] = pixel.G;
+                            byteArray[byteIndex++] = pixel.B;
+                            byteArray[byteIndex++] = pixel.A;
+                        }
+                    }
+
+                    fixed (byte* data = byteArray)
+                    {
+                        var imageSurface = _sdl.CreateRGBSurfaceWithFormatFrom(data, tileSet.TileWidth,
+                            tileSet.TileHeight, 8, tileSet.TileWidth * 4, (uint)PixelFormatEnum.Rgba32);
+                        var imageTexture = _sdl.CreateTextureFromSurface(_renderer, imageSurface);
+                        _sdl.FreeSurface(imageSurface);
+                        _textureData[_textureId] = textureInfo;
+                        _textures[_textureId] = (IntPtr)imageTexture;
+                    }
+
+                    _textureId++;
+                    tileSet.Tiles[tilesCount++] = new Tile()
+                    {
+                        Id = firstgid++,
+                        Image = fileName,
+                        ImageWidth = tileSet.TileWidth,
+                        ImageHeight = tileSet.TileHeight,
+                        InternalTextureId = _textureId
+                    };
+                }
+            }
+        }
+    }
+
+    public void UnloadTexture(int textureId)
+    {
+        if (_textures.TryGetValue(textureId, out var imageTexture))
+        {
+            _sdl.DestroyTexture((Texture*)imageTexture);
+            _textures.Remove(textureId);
+            _textureData.Remove(textureId);
+        }
+    }
+
     public void RenderTexture(int textureId, Rectangle<int> src, Rectangle<int> dst,
         RendererFlip flip = RendererFlip.None, double angle = 0.0, Point center = default)
     {
