@@ -54,10 +54,12 @@ public class PlayerObject : GameObject
         UpdateScreenTarget();
     }
 
+    string currentStatistics;
     public override void Update()
     {
-        // string currentCoins = $"Gold coins [{pocket.Count(x => x.Type == MaterialType.Gold)}] | Silver coins [{pocket.Count(x => x.Type == MaterialType.Silver)}]";
-        // Console.WriteLine(currentCoins);
+        Console.SetCursorPosition(0, Console.CursorTop);
+        string currentStatistics = $"Player: Gold coins [{pocket.Count(x => x.Type == MaterialType.Gold)}] | Silver coins [{pocket.Count(x => x.Type == MaterialType.Silver)}]";
+        Console.Write(currentStatistics);
     
     }
     public void Render(GameRenderer renderer){

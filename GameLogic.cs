@@ -1,8 +1,6 @@
 using System.Text.Json;
 using kbradu;
 using Silk.NET.Maths;
-using Silk.NET.SDL;
-using static System.Net.Mime.MediaTypeNames;
 
 namespace TheAdventure
 {
@@ -15,10 +13,6 @@ namespace TheAdventure
 
 
         public PlayerObject Player => _player;
-        public GameLogic()
-        {
-            
-        }
 
         public void LoadGameState()
         {
@@ -56,7 +50,7 @@ namespace TheAdventure
                 int id = 3141592 + i; // i see no id generator all around the scripts, so who knows where is it. Replace this please.
                 int randX = 10 + rng.Next(900);
                 int randY = 10 + rng.Next(600);
-                var material = rng.Next() > 0.3 ? MaterialType.Silver : MaterialType.Gold;
+                var material = rng.NextDouble() > 0.3 ? MaterialType.Silver : MaterialType.Gold;
                 level.ChestSets[i] = new kbradu.ChestObject(id, randX, randY, 3 + rng.Next(10), material, _player);
                 _gameObjects.Add(id, level.ChestSets[i]);
             }

@@ -31,6 +31,7 @@ namespace TheAdventure
         private static GameRenderer? _singleton;
         private DateTimeOffset _lastFrameRenderedAt = DateTimeOffset.MinValue;
 
+
         public GameRenderer(Sdl sdl, GameWindow gameWindow, GameLogic gameLogic)
         {
             _window = gameWindow;
@@ -132,6 +133,7 @@ namespace TheAdventure
             _sdl.RenderPresent(_renderer);
         }
 
- 
+
+
     }
 }
