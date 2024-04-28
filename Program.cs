@@ -22,9 +22,6 @@ public static class Program
             var input = new Input(sdl, window, renderer);
             var engine = new Engine(renderer, input);
 
-            engine.InitializeMainMenu();
-            // engine.InitializeWorld();
-
             bool quit = false;
             while (!quit)
             {

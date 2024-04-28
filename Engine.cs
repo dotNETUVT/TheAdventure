@@ -1,155 +1,30 @@
-using System.Collections.Specialized;
-using System.Text.Json;
-using Silk.NET.Maths;
-using Silk.NET.SDL;
 using TheAdventure.Models;
-using TheAdventure.Models.Data;
 
 namespace TheAdventure
 {
     public class Engine
     {
         private readonly Dictionary<int, GameObject> _gameObjects = new();
-        private readonly Dictionary<string, TileSet> _loadedTileSets = new();
-
-        private bool _isMainMenu = true;
-        private Level? _currentLevel;
-
-        private MainMenuLevel? _currentMainMenuLevel;
-        private PlayerObject _player;
-
-        private PlayerObject _mainMenuPlayer;
         private GameRenderer _renderer;
         private Input _input;
 
         private DateTimeOffset _lastUpdate = DateTimeOffset.Now;
-        private DateTimeOffset _lastPlayerUpdate = DateTimeOffset.Now;
+
+        private readonly MainMenu _mainMenuScene;
+
+        private readonly SimpleWorld _simpleWorldScene;
 
         public Engine(GameRenderer renderer, Input input)
         {
             _renderer = renderer;
             _input = input;
+            _mainMenuScene = new MainMenu(renderer, input);
+            _simpleWorldScene = new SimpleWorld(renderer, input, _mainMenuScene);
+            _mainMenuScene.AddScene(Scenes.simpleWorld, (GameScene)_simpleWorldScene);
 
             _input.OnMouseClick += (_, coords) => AddBomb(coords.x, coords.y);
-        }
 
-        private readonly Interractable playButton = new(23, 19, 4, 4);
-        private readonly Interractable exitButton = new(24, 1, 2, 3);
-
-        private void InitializePlayer()
-        {
-            var spriteSheet = SpriteSheet.LoadSpriteSheet("player.json", "Assets", _renderer);
-            if(_isMainMenu)
-            {
-                if(_mainMenuPlayer != null)
-                {
-                    return;
-                }
-                if(spriteSheet != null){
-                    _mainMenuPlayer = new PlayerObject(spriteSheet, 400, 240);
-                }
-            }
-            else
-            {
-                if (_player != null)
-                {
-                    return;
-                }
-                if(spriteSheet != null){
-                    _player = new PlayerObject(spriteSheet, 100, 100);
-                }
-            }
-        }
-
-        public void InitializeMainMenu()
-        {
-            var jsonSerializerOptions = new JsonSerializerOptions() { PropertyNameCaseInsensitive = true };
-            var levelContent = File.ReadAllText(Path.Combine("Assets", "mainMenu", "the_adventure_main_menu.tmj"));
-
-            var level = JsonSerializer.Deserialize<MainMenuLevel>(levelContent, jsonSerializerOptions);
-            if (level == null) return;
-            foreach (var tileSet in level.TileSets)
-            {
-                _renderer.LoadMainMenuTileSet(tileSet);
-            }
-
-            _currentMainMenuLevel = level;
-            _renderer.SetWorldBounds(new Rectangle<int>(0, 0, _currentMainMenuLevel.Width * _currentMainMenuLevel.TileWidth,
-                _currentMainMenuLevel.Height * _currentMainMenuLevel.TileHeight));
-
-            InitializePlayer();
-        }
-
-        public void DeInitializeMainMenu()
-        {
-            if (_currentMainMenuLevel == null) return;
-            foreach (var tileSet in _currentMainMenuLevel.TileSets)
-            {
-                foreach (var tile in tileSet.Tiles)
-                {
-                    _renderer.UnloadTexture(tile.InternalTextureId);
-                }
-                tileSet.Tiles = [];
-            }
-            _currentMainMenuLevel = null;
-            _mainMenuPlayer = null;
-        }
-
-        public void InitializeWorld()
-        {
-            var jsonSerializerOptions = new JsonSerializerOptions() { PropertyNameCaseInsensitive = true };
-            var levelContent = File.ReadAllText(Path.Combine("Assets", "terrain.tmj"));
-
-            var level = JsonSerializer.Deserialize<Level>(levelContent, jsonSerializerOptions);
-            if (level == null) return;
-            foreach (var refTileSet in level.TileSets)
-            {
-                var tileSetContent = File.ReadAllText(Path.Combine("Assets", refTileSet.Source));
-                if (!_loadedTileSets.TryGetValue(refTileSet.Source, out var tileSet))
-                {
-                    tileSet = JsonSerializer.Deserialize<TileSet>(tileSetContent, jsonSerializerOptions);
-
-                    foreach (var tile in tileSet.Tiles)
-                    {
-                        var internalTextureId = _renderer.LoadTexture(Path.Combine("Assets", tile.Image), out _);
-                        tile.InternalTextureId = internalTextureId;
-                    }
-
-                    _loadedTileSets[refTileSet.Source] = tileSet;
-                }
-
-                refTileSet.Set = tileSet;
-            }
-
-            _currentLevel = level;
-            /*SpriteSheet spriteSheet = new(_renderer, Path.Combine("Assets", "player.png"), 10, 6, 48, 48, new FrameOffset() { OffsetX = 24, OffsetY = 42 });
-            spriteSheet.Animations["IdleDown"] = new SpriteSheet.Animation()
-            {
-                StartFrame = new FramePosition(),//(0, 0),
-                EndFrame = new FramePosition() { Row = 0, Col = 5 },
-                DurationMs = 1000,
-                Loop = true
-            };
-            */
-            _renderer.SetWorldBounds(new Rectangle<int>(0, 0, _currentLevel.Width * _currentLevel.TileWidth,
-                _currentLevel.Height * _currentLevel.TileHeight));
-
-            InitializePlayer();
-        }
-
-        public void DeinitializeWorld()
-        {
-            if (_currentLevel == null) return;
-            foreach (var tileSet in _currentLevel.TileSets)
-            {
-                foreach (var tile in tileSet.Set.Tiles)
-                {
-                    _renderer.UnloadTexture(tile.InternalTextureId);
-                }
-                tileSet.Set.Tiles = [];
-            }
-            _currentLevel = null;
-            _loadedTileSets.Clear();
+            _mainMenuScene.Activate();
         }
 
         public bool ProcessFrame()
@@ -158,45 +33,8 @@ namespace TheAdventure
             var secsSinceLastFrame = (currentTime - _lastUpdate).TotalSeconds;
             _lastUpdate = currentTime;
 
-            bool up = _input.IsUpPressed();
-            bool down = _input.IsDownPressed();
-            bool left = _input.IsLeftPressed();
-            bool right = _input.IsRightPressed();
-
-            if(_isMainMenu)
-            {
-                _mainMenuPlayer.UpdatePlayerPosition(up ? 1.0 : 0.0, down ? 1.0 : 0.0, left ? 1.0 : 0.0, right ? 1.0 : 0.0,
-                    _currentMainMenuLevel.Width * _currentMainMenuLevel.TileWidth, _currentMainMenuLevel.Height * _currentMainMenuLevel.TileHeight,
-                    secsSinceLastFrame);
-
-                if (_input.IsEnterPressed())
-                {
-                    var playerPosition = _mainMenuPlayer.Position;
-                    if (playButton.IsObjectInteracted((int)playerPosition.X, (int)playerPosition.Y))
-                    {
-                        _isMainMenu = false;
-                        DeInitializeMainMenu();
-                        InitializeWorld();
-                    }
-
-                    if(exitButton.IsObjectInteracted((int)playerPosition.X, (int)playerPosition.Y))
-                    {
-                        return true;
-                    }
-                }
-            }
-            else
-            {
-                _player.UpdatePlayerPosition(up ? 1.0 : 0.0, down ? 1.0 : 0.0, left ? 1.0 : 0.0, right ? 1.0 : 0.0,
-                    _currentLevel.Width * _currentLevel.TileWidth, _currentLevel.Height * _currentLevel.TileHeight,
-                    secsSinceLastFrame);
-
-                if (_input.IsEscPressed())
-                {
-                    _isMainMenu = true;
-                    DeinitializeWorld();
-                    InitializeMainMenu();
-                }
+            if(_mainMenuScene.ProcessFrame() || _simpleWorldScene.ProcessFrame()){
+                return true;
             }
 
 
@@ -217,107 +55,12 @@ namespace TheAdventure
             _renderer.SetDrawColor(0, 0, 0, 255);
             _renderer.ClearScreen();
 
-            if(_isMainMenu)
-            {
-                RenderMainMenu();
-                _renderer.CameraLookAt(_mainMenuPlayer.Position.X, _mainMenuPlayer.Position.Y);
-            }
-            else
-            {
-                RenderTerrain();
-                _renderer.CameraLookAt(_player.Position.X, _player.Position.Y);
-            }
+            _mainMenuScene.RenderFrame();
+            _simpleWorldScene.RenderFrame();
 
             RenderAllObjects();
 
             _renderer.PresentFrame();
-        }
-
-        private Tile? GetTile(int id)
-        {
-            if (_currentLevel == null) return null;
-            foreach (var tileSet in _currentLevel.TileSets)
-            {
-                foreach (var tile in tileSet.Set.Tiles)
-                {
-                    if (tile.Id == id)
-                    {
-                        return tile;
-                    }
-                }
-            }
-
-            return null;
-        }
-
-        private Tile? GetMainMenuTile(int id)
-        {
-            if (_currentMainMenuLevel == null) return null;
-            foreach (var tileSet in _currentMainMenuLevel.TileSets)
-            {
-                foreach (var tile in tileSet.Tiles)
-                {
-                    if (tile.Id == id)
-                    {
-                        return tile;
-                    }
-                }
-            }
-
-            return null;
-        }
-
-        private void RenderTerrain()
-        {
-            if (_currentLevel == null) return;
-            for (var layer = 0; layer < _currentLevel.Layers.Length; ++layer)
-            {
-                var cLayer = _currentLevel.Layers[layer];
-
-                for (var i = 0; i < _currentLevel.Width; ++i)
-                {
-                    for (var j = 0; j < _currentLevel.Height; ++j)
-                    {
-                        var cTileId = cLayer.Data[j * cLayer.Width + i] - 1;
-                        var cTile = GetTile(cTileId);
-                        if (cTile == null) continue;
-
-                        var src = new Rectangle<int>(0, 0, cTile.ImageWidth, cTile.ImageHeight);
-                        var dst = new Rectangle<int>(i * cTile.ImageWidth, j * cTile.ImageHeight, cTile.ImageWidth,
-                            cTile.ImageHeight);
-
-                        _renderer.RenderTexture(cTile.InternalTextureId, src, dst);
-                    }
-                }
-            }
-        }
-
-        private void RenderMainMenu()
-        {
-            if (_currentMainMenuLevel == null) return;
-            for (var layer = 0; layer < _currentMainMenuLevel.Layers.Length; ++layer)
-            {
-                var cLayer = _currentMainMenuLevel.Layers[layer];
-
-                for (var i = 0; i < _currentMainMenuLevel.Width; ++i)
-                {
-                    for (var j = 0; j < _currentMainMenuLevel.Height; ++j)
-                    {
-                        var cTileId = cLayer.Data[j * cLayer.Width + i] - 1;
-                        var cTile = GetMainMenuTile(cTileId);
-                        if (cTile == null)
-                        {
-                            continue;
-                        }
-
-                        var src = new Rectangle<int>(0, 0, cTile.ImageWidth, cTile.ImageHeight);
-                        var dst = new Rectangle<int>(i * cTile.ImageWidth, j * cTile.ImageHeight, cTile.ImageWidth,
-                            cTile.ImageHeight);
-
-                        _renderer.RenderTexture(cTile.InternalTextureId, src, dst);
-                    }
-                }
-            }
         }
 
         private IEnumerable<RenderableGameObject> GetAllRenderableObjects()
@@ -347,15 +90,6 @@ namespace TheAdventure
             foreach (var gameObject in GetAllRenderableObjects())
             {
                 gameObject.Render(_renderer);
-            }
-
-            if(_isMainMenu)
-            {
-                _mainMenuPlayer.Render(_renderer);
-            }
-            else
-            {
-                _player.Render(_renderer);
             }
         }
 
