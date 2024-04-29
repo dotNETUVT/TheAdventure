@@ -28,8 +28,11 @@ public static class Program
             while (!quit)
             {
                 quit = input.ProcessInput();
-                if (quit) break;
-                
+                if (quit)
+                {
+                    engine.SavePlayerEconomy();
+                }
+
                 engine.ProcessFrame();
                 engine.RenderFrame();
             }

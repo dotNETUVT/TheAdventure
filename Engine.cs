@@ -18,6 +18,10 @@ namespace TheAdventure
 
         private DateTimeOffset _lastUpdate = DateTimeOffset.Now;
         private DateTimeOffset _lastPlayerUpdate = DateTimeOffset.Now;
+        private DateTimeOffset _lastMoneyUpdate = DateTimeOffset.Now;
+
+        private PlayerEconomy _playerEconomy = new PlayerEconomy();
+
 
         public Engine(GameRenderer renderer, Input input)
         {
@@ -27,10 +31,22 @@ namespace TheAdventure
             _input.OnMouseClick += (_, coords) => AddBomb(coords.x, coords.y);
         }
 
+        public void SavePlayerEconomy()
+        {
+            _playerEconomy.SaveMoney();
+        }
+
         public void InitializeWorld()
         {
             var jsonSerializerOptions = new JsonSerializerOptions() { PropertyNameCaseInsensitive = true };
             var levelContent = File.ReadAllText(Path.Combine("Assets", "terrain.tmj"));
+
+            if (File.Exists("player_money.txt"))
+            {
+                int savedMoney = int.Parse(File.ReadAllText("player_money.txt"));
+                _playerEconomy.LoadMoney(savedMoney);
+            }
+
 
             var level = JsonSerializer.Deserialize<Level>(levelContent, jsonSerializerOptions);
             if (level == null) return;
@@ -77,6 +93,13 @@ namespace TheAdventure
             var secsSinceLastFrame = (currentTime - _lastUpdate).TotalSeconds;
             _lastUpdate = currentTime;
 
+            if((currentTime - _lastMoneyUpdate).TotalSeconds >= 5)
+            {
+                _playerEconomy.AddMoney(10);
+                _lastMoneyUpdate = currentTime;
+                Console.WriteLine($"Money received. Total amount: {_playerEconomy.Money}");
+            }
+
             bool up = _input.IsUpPressed();
             bool down = _input.IsDownPressed();
             bool left = _input.IsLeftPressed();
@@ -105,6 +128,8 @@ namespace TheAdventure
 
             RenderTerrain();
             RenderAllObjects();
+
+            //_renderer.DrawText($"Money: {_playerEconomy.Money}", 10, 10, new SDL_Color { r = 255, g = 255, b = 255, a = 255 });
 
             _renderer.PresentFrame();
         }
@@ -202,4 +227,6 @@ namespace TheAdventure
             }
         }
     }
+
+    
 }

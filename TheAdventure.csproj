@@ -9,6 +9,8 @@
     </PropertyGroup>
 
     <ItemGroup>
+      <PackageReference Include="freetype" Version="2.8.0.1" />
+      <PackageReference Include="SharpFont" Version="4.0.1" />
       <PackageReference Include="Silk.NET.Input.Sdl" Version="2.20.0" />
       <PackageReference Include="Silk.NET.SDL" Version="2.20.0" />
       <PackageReference Include="Silk.NET.Windowing.Sdl" Version="2.20.0" />
@@ -52,6 +54,15 @@
       <Content Include="Assets\terrain.tmj">
         <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
       </Content>
+    </ItemGroup>
+
+    <ItemGroup>
+      <None Update="Assets\bomb.json">
+        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      </None>
+      <None Update="Assets\player.json">
+        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      </None>
     </ItemGroup>
 
 </Project>

@@ -3,7 +3,10 @@ using Silk.NET.SDL;
 using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.PixelFormats;
 using TheAdventure.Models;
+using static System.Net.Mime.MediaTypeNames;
 using Point = Silk.NET.SDL.Point;
+//using SharpFont;
+
 
 namespace TheAdventure;
 
@@ -44,7 +47,7 @@ public unsafe class GameRenderer
     {
         using (var fStream = new FileStream(fileName, FileMode.Open))
         {
-            var image = Image.Load<Rgba32>(fStream);
+            var image = SixLabors.ImageSharp.Image.Load<Rgba32>(fStream);
             textureInfo = new TextureInfo()
             {
                 Width = image.Width,
@@ -97,4 +100,16 @@ public unsafe class GameRenderer
     {
         _sdl.RenderPresent(_renderer);
     }
+
+    //public void DrawText(string text, int x, int y, SDL_Color color)
+    //{
+    //    // Implement text drawing with SDL_ttf or another method.
+    //    IntPtr surface = SDL_ttf.TTF_RenderText_Solid(font, text, color);  // Assuming a loaded font
+    //    IntPtr texture = SDL_CreateTextureFromSurface(_renderer, surface);
+    //    SDL_FreeSurface(surface);
+    //    SDL_Rect position = new SDL_Rect { x = x, y = y, w = 100, h = 20 };  // Adjust size as necessary
+    //    SDL_RenderCopy(_renderer, texture, IntPtr.Zero, ref position);
+    //    SDL_DestroyTexture(texture);
+    //}
+
 }
