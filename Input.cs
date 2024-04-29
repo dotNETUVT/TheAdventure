@@ -25,6 +25,12 @@ namespace TheAdventure
             return _keyboardState[(int)KeyCode.Left] == 1;
         }
         
+        public bool IsSpacePressed()
+        {
+            ReadOnlySpan<byte> _keyboardState = new(_sdl.GetKeyboardState(null), (int)KeyCode.Count); // added function to toggle sound on space
+            return _keyboardState[(int)KeyCode.Space] == 1;
+        }
+        
         public bool IsRightPressed()
         {
             ReadOnlySpan<byte> _keyboardState = new(_sdl.GetKeyboardState(null), (int)KeyCode.Count);
@@ -140,7 +146,13 @@ namespace TheAdventure
                         
                         if (ev.Button.Button == (byte)MouseButton.Primary)
                         {
+                            var basePath = AppDomain.CurrentDomain.BaseDirectory;
+                            var relPath = "Assets\\bomb_blast_sound.mp4";   // adding sound bomb effect on left mouse click
+                            var fullPath = Path.Combine(basePath, relPath);
+                            var musicPlayer = new Musicz(fullPath);
+                            musicPlayer.Start();
                             OnMouseClick?.Invoke(this, (mouseX, mouseY));
+                            
                         }
                         
                         break;

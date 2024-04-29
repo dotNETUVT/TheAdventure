@@ -9,6 +9,7 @@
     </PropertyGroup>
 
     <ItemGroup>
+      <PackageReference Include="CSCore" Version="1.2.1.2" />
       <PackageReference Include="Silk.NET.Input.Sdl" Version="2.20.0" />
       <PackageReference Include="Silk.NET.SDL" Version="2.20.0" />
       <PackageReference Include="Silk.NET.Windowing.Sdl" Version="2.20.0" />
@@ -52,6 +53,9 @@
       <Content Include="Assets\terrain.tmj">
         <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
       </Content>
+      <None Remove="Assets\Travis Scott - FE!N (Official Audio) ft. Playboi Carti.mp3" />
+      <None Remove="Assets\travis_fein.mp3" />
+      <Content Include="Assets\travis_fein.mp3" />
     </ItemGroup>
 
 </Project>
