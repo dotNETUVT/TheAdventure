@@ -15,7 +15,6 @@ namespace TheAdventure
         private PlayerObject _player;
         private GameRenderer _renderer;
         private Input _input;
-
         private DateTimeOffset _lastUpdate = DateTimeOffset.Now;
         private DateTimeOffset _lastPlayerUpdate = DateTimeOffset.Now;
 
@@ -52,7 +51,6 @@ namespace TheAdventure
 
                 refTileSet.Set = tileSet;
             }
-
             _currentLevel = level;
             /*SpriteSheet spriteSheet = new(_renderer, Path.Combine("Assets", "player.png"), 10, 6, 48, 48, new FrameOffset() { OffsetX = 24, OffsetY = 42 });
             spriteSheet.Animations["IdleDown"] = new SpriteSheet.Animation()
