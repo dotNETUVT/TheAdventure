@@ -99,7 +99,14 @@ namespace TheAdventure
             var itemsToRemove = new List<int>();
             itemsToRemove.AddRange(GetAllTemporaryGameObjects().Where(gameObject => gameObject.IsExpired)
                 .Select(gameObject => gameObject.Id).ToList());
-
+            if( up ||  down  || left || right)
+            {
+                var pathToRepo = AppDomain.CurrentDomain.BaseDirectory;
+                var pathToSound = "Assets\\walk.mp3";
+                var pathCombined = Path.Combine(pathToRepo, pathToSound);
+                var soundeffect = new SoundEffects(pathCombined);
+                soundeffect.Play();
+            }
             foreach (var gameObject in itemsToRemove)
             {
                 _gameObjects.Remove(gameObject);
@@ -207,10 +214,17 @@ namespace TheAdventure
                 DurationMs = 2000,
                 Loop = false
             };*/
+
             var spriteSheet = SpriteSheet.LoadSpriteSheet("bomb.json", "Assets", _renderer);
+            var pathToRepo = AppDomain.CurrentDomain.BaseDirectory;
+            var pathToSound = "Assets\\bombexplode.mp3";
+            var pathCombined = Path.Combine(pathToRepo, pathToSound);
+            var soundeffect = new SoundEffects(pathCombined);
+            
             if (spriteSheet != null)
             {
                 spriteSheet.ActivateAnimation("Explode");
+                soundeffect.Play();
                 TemporaryGameObject bomb = new(spriteSheet, 2.1, (translated.X, translated.Y));
                 _gameObjects.Add(bomb.Id, bomb);
             }
