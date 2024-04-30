@@ -8,12 +8,36 @@ public class PlayerObject : RenderableGameObject
     private int _pixelsPerSecond = 192;
 
     private string _currentAnimation = "IdleDown";
+    private int posX {  get; set; }
+    private int posY { get; set; }
 
 
     public PlayerObject(SpriteSheet spriteSheet, int x, int y) : base(spriteSheet, (x, y))
     {
         SpriteSheet.ActivateAnimation(_currentAnimation);
-       
+        posX = x;
+        posY = y;
+    }
+
+    public string getCurrentAnimation()
+    {
+        return _currentAnimation;
+    }
+
+    public void setPosition(int x, int y)
+    {
+        posX += x;
+        posY += y;
+
+        Position = (posX, posY);
+    }
+
+    public bool collide(int object_x, int object_y, int object_width, int object_height)
+    {
+        if (posX + 8 >= object_x - object_width / 2 && posX - 8 <= object_x + object_width / 2 &&
+            posY >= object_y - object_height / 2 && posY - 22 <= object_y - object_height / 2)
+            return true;
+        return false;
     }
 
     public void UpdatePlayerPosition(double up, double down, double left, double right, int width, int height,
@@ -81,5 +105,7 @@ public class PlayerObject : RenderableGameObject
         //Console.WriteLine($"Will to switch to {_currentAnimation}");
         SpriteSheet.ActivateAnimation(_currentAnimation);
         Position = (x, y);
+        posX = x;
+        posY = y;
     }
 }

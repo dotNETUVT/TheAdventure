@@ -19,6 +19,9 @@ public class SpriteSheet
     public int RowCount { get; set; }
     public int ColumnCount { get; set; }
 
+    public int TextureRow { get; set; }
+    public int TextureColumn { get; set; }
+
     public int FrameWidth { get; set; }
     public int FrameHeight { get; set; }
     public FrameOffset FrameCenter { get; set; }
@@ -54,6 +57,12 @@ public class SpriteSheet
         }
     }
 
+    public void selectTexture(int textureRow, int textureCol)
+    {
+        TextureRow = textureRow;
+        TextureColumn = textureCol;
+    }
+
     public SpriteSheet(GameRenderer renderer, string fileName, int rowCount, int columnCount, int frameWidth,
         int frameHeight, FrameOffset frameCenter)
     {
@@ -63,6 +72,7 @@ public class SpriteSheet
         FrameWidth = frameWidth;
         FrameHeight = frameHeight;
         FrameCenter = frameCenter;
+        ActiveAnimation = null;
 
         LoadTexture(renderer);
     }
@@ -79,7 +89,7 @@ public class SpriteSheet
     {
         if (ActiveAnimation == null)
         {
-            renderer.RenderTexture(_textureId, new Rectangle<int>(0, 0, FrameWidth, FrameHeight),
+            renderer.RenderTexture(_textureId, new Rectangle<int>(TextureColumn*16, TextureRow, FrameWidth, FrameHeight),
                 new Rectangle<int>(dest.X - FrameCenter.OffsetX, dest.Y - FrameCenter.OffsetY, FrameWidth, FrameHeight),
                 RendererFlip.None, angle, rotationCenter);
         }

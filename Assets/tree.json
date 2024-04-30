@@ -1,0 +1,11 @@
+{
+    "rowCount" : 1,
+    "columnCount" : 3,
+    "frameWidth" : 16,
+    "frameHeight" : 16,
+    "frameCenter" : {
+        "offsetX" : 8,
+        "offsetY" : 8
+    },
+    "fileName" : "trees.png"
+}
