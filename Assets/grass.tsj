@@ -15,24 +15,42 @@
         {
          "id":0,
          "image":"grass_001.png",
+         "solid":false,
          "imageheight":16,
          "imagewidth":16
         }, 
         {
          "id":1,
          "image":"grass_002.png",
+         "solid":false,
          "imageheight":16,
          "imagewidth":16
         }, 
         {
          "id":2,
          "image":"grass_003.png",
+         "solid":false,
          "imageheight":16,
          "imagewidth":16
         }, 
         {
          "id":3,
          "image":"grass_004.png",
+         "solid":false,
+         "imageheight":16,
+         "imagewidth":16
+        },
+        {
+         "id":4,
+         "image":"wall.png",
+         "solid":true,
+         "imageheight":16,
+         "imagewidth":16
+        },
+        {
+         "id":5,
+         "image":"wall2.png",
+         "solid":true,
          "imageheight":16,
          "imagewidth":16
         }],

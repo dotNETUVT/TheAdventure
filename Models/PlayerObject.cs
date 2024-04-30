@@ -13,7 +13,6 @@ public class PlayerObject : RenderableGameObject
     public PlayerObject(SpriteSheet spriteSheet, int x, int y) : base(spriteSheet, (x, y))
     {
         SpriteSheet.ActivateAnimation(_currentAnimation);
-       
     }
 
     public void UpdatePlayerPosition(double up, double down, double left, double right, int width, int height,
