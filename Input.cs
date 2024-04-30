@@ -18,6 +18,14 @@ namespace TheAdventure
             _gameWindow = window;
             _renderer = renderer;
         }
+        
+        // checking if M is pressed in order to stop or play the background music
+        public bool IsMKeyPressed()
+        {
+            ReadOnlySpan<byte> _keyboardState = new(_sdl.GetKeyboardState(null), (int)KeyCode.Count);
+            return _keyboardState[(int)KeyCode.M] == 1;
+        }
+
 
         public bool IsLeftPressed()
         {

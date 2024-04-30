@@ -8,7 +8,16 @@
         <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     </PropertyGroup>
 
+    <PropertyGroup Condition=" '$(Configuration)' == 'Debug' ">
+      <PlatformTarget>x64</PlatformTarget>
+    </PropertyGroup>
+
+    <PropertyGroup Condition=" '$(Configuration)' == 'Release' ">
+      <PlatformTarget>x64</PlatformTarget>
+    </PropertyGroup>
+
     <ItemGroup>
+      <PackageReference Include="NAudio" Version="2.2.1" />
       <PackageReference Include="Silk.NET.Input.Sdl" Version="2.20.0" />
       <PackageReference Include="Silk.NET.SDL" Version="2.20.0" />
       <PackageReference Include="Silk.NET.Windowing.Sdl" Version="2.20.0" />
@@ -52,6 +61,15 @@
       <Content Include="Assets\terrain.tmj">
         <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
       </Content>
+      <None Update="Assets\bomb.json">
+        <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+      </None>
+      <None Update="Assets\player.json">
+        <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+      </None>
+      <None Update="Assets\background_music.mp3">
+        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      </None>
     </ItemGroup>
 
 </Project>

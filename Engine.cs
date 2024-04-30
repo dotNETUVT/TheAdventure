@@ -16,6 +16,9 @@ namespace TheAdventure
         private GameRenderer _renderer;
         private Input _input;
 
+        // initializing music player
+        private MusicPlayer _musicPlayer = new MusicPlayer(Path.Combine("Assets","background_music.mp3"));
+
         private DateTimeOffset _lastUpdate = DateTimeOffset.Now;
         private DateTimeOffset _lastPlayerUpdate = DateTimeOffset.Now;
 
@@ -69,6 +72,9 @@ namespace TheAdventure
             }
             _renderer.SetWorldBounds(new Rectangle<int>(0, 0, _currentLevel.Width * _currentLevel.TileWidth,
                 _currentLevel.Height * _currentLevel.TileHeight));
+            
+            // calling the method for playing the music
+            _musicPlayer.PlayMusic();
         }
 
         public void ProcessFrame()
@@ -93,6 +99,12 @@ namespace TheAdventure
             foreach (var gameObject in itemsToRemove)
             {
                 _gameObjects.Remove(gameObject);
+            }
+            
+            // By pressing 'M' music stops / restarts
+            if (_input.IsMKeyPressed())
+            {
+                _musicPlayer.ToggleMusic();
             }
         }
 
