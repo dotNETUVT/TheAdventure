@@ -1,3 +1,4 @@
+using System.Runtime.InteropServices;
 using System.Text.Json;
 using Silk.NET.Maths;
 using Silk.NET.SDL;
@@ -12,7 +13,7 @@ namespace TheAdventure
         private readonly Dictionary<string, TileSet> _loadedTileSets = new();
 
         private Level? _currentLevel;
-        private PlayerObject _player;
+        private PlayerObject? _player;
         private GameRenderer _renderer;
         private Input _input;
 
@@ -36,18 +37,19 @@ namespace TheAdventure
             if (level == null) return;
             foreach (var refTileSet in level.TileSets)
             {
-                var tileSetContent = File.ReadAllText(Path.Combine("Assets", refTileSet.Source));
-                if (!_loadedTileSets.TryGetValue(refTileSet.Source, out var tileSet))
+                var tileSetContent = File.ReadAllText(Path.Combine("Assets", refTileSet.Source!));
+                if (!_loadedTileSets.TryGetValue(refTileSet.Source!, out var tileSet))
                 {
                     tileSet = JsonSerializer.Deserialize<TileSet>(tileSetContent, jsonSerializerOptions);
 
+                    if (tileSet == null) continue;
                     foreach (var tile in tileSet.Tiles)
                     {
                         var internalTextureId = _renderer.LoadTexture(Path.Combine("Assets", tile.Image), out _);
                         tile.InternalTextureId = internalTextureId;
                     }
 
-                    _loadedTileSets[refTileSet.Source] = tileSet;
+                    _loadedTileSets[refTileSet.Source!] = tileSet;
                 }
 
                 refTileSet.Set = tileSet;
@@ -69,6 +71,15 @@ namespace TheAdventure
             }
             _renderer.SetWorldBounds(new Rectangle<int>(0, 0, _currentLevel.Width * _currentLevel.TileWidth,
                 _currentLevel.Height * _currentLevel.TileHeight));
+        }
+
+        private bool canMoveInDirection(bool direction, Tile?  tile, Tile? tileHead){
+            if (direction && (tile?.Solid == true || tileHead?.Solid == true))
+            {
+                return false;
+            }
+
+            return direction;
         }
 
         public void ProcessFrame()
@@ -99,10 +110,31 @@ namespace TheAdventure
             }
             if(!isAttacking)
             {
-                _player.UpdatePlayerPosition(up ? 1.0 : 0.0, down ? 1.0 : 0.0, left ? 1.0 : 0.0, right ? 1.0 : 0.0,
-                    _currentLevel.Width * _currentLevel.TileWidth, _currentLevel.Height * _currentLevel.TileHeight,
+                for (var layer = 0; layer < _currentLevel?.Layers.Length; ++layer)
+                {
+                    var aproximatedPixelsToMove = 3;
+                    var blockSize = 16;
+                    var cLayer = _currentLevel.Layers[layer];
+
+                    // #verySmartAndLongArithmeticCalculations
+                    var cTileUp = GetTile(cLayer.Data[(_player!.Position.Y - aproximatedPixelsToMove - blockSize) / blockSize * cLayer.Width + _player.Position.X / blockSize] - 1);
+                    var cTileRight = GetTile(cLayer.Data[_player.Position.Y / blockSize * cLayer.Width + (_player.Position.X + (int)(aproximatedPixelsToMove * 2)) / blockSize] - 1);
+                    var cTileRightHead = GetTile(cLayer.Data[(_player.Position.Y - blockSize) / blockSize * cLayer.Width + (_player.Position.X + (int)(aproximatedPixelsToMove * 2)) / blockSize] - 1);
+                    var cTileDown = GetTile(cLayer.Data[(_player.Position.Y + aproximatedPixelsToMove) / blockSize * cLayer.Width + _player.Position.X / blockSize] - 1);
+                    var cTileLeft = GetTile(cLayer.Data[_player.Position.Y / blockSize * cLayer.Width + (_player.Position.X - aproximatedPixelsToMove) / blockSize] - 1);
+                    var cTileLeftHead = GetTile(cLayer.Data[(_player.Position.Y - blockSize) / blockSize * cLayer.Width + (_player.Position.X - aproximatedPixelsToMove) / blockSize] - 1);
+
+                    up = canMoveInDirection(up, cTileUp, null);
+                    right = canMoveInDirection(right, cTileRight, cTileRightHead);
+                    down = canMoveInDirection(down, cTileDown, null);
+                    left = canMoveInDirection(left, cTileLeft, cTileLeftHead);
+                }
+
+                _player?.UpdatePlayerPosition(up ? 1.0 : 0.0, down ? 1.0 : 0.0, left ? 1.0 : 0.0, right ? 1.0 : 0.0,
+                    _currentLevel!.Width * _currentLevel!.TileWidth, _currentLevel!.Height * _currentLevel!.TileHeight,
                     secsSinceLastFrame);
             }
+
             var itemsToRemove = new List<int>();
             itemsToRemove.AddRange(GetAllTemporaryGameObjects().Where(gameObject => gameObject.IsExpired)
                 .Select(gameObject => gameObject.Id).ToList());
@@ -131,8 +163,11 @@ namespace TheAdventure
         {
             _renderer.SetDrawColor(0, 0, 0, 255);
             _renderer.ClearScreen();
-            
-            _renderer.CameraLookAt(_player.Position.X, _player.Position.Y);
+
+            if(_player != null)
+            {
+                _renderer.CameraLookAt(_player.Position.X, _player.Position.Y);
+            }
 
             RenderTerrain();
             RenderAllObjects();
@@ -145,7 +180,7 @@ namespace TheAdventure
             if (_currentLevel == null) return null;
             foreach (var tileSet in _currentLevel.TileSets)
             {
-                foreach (var tile in tileSet.Set.Tiles)
+                foreach (var tile in tileSet.Set!.Tiles)
                 {
                     if (tile.Id == id)
                     {
@@ -211,7 +246,7 @@ namespace TheAdventure
                 gameObject.Render(_renderer);
             }
 
-            _player.Render(_renderer);
+            _player?.Render(_renderer);
         }
 
         private void AddBomb(int x, int y, bool translateCoordinates = true)

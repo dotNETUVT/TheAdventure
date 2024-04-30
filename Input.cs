@@ -10,7 +10,7 @@ namespace TheAdventure
         
         byte[] _mouseButtonStates = new byte[(int)MouseButton.Count];
         
-        public EventHandler<(int x, int y)> OnMouseClick;
+        public EventHandler<(int x, int y)>? OnMouseClick;
         
         public Input(Sdl sdl, GameWindow window, GameRenderer renderer)
         {
