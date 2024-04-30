@@ -1,8 +1,14 @@
 using System.Text.Json;
 using Silk.NET.Maths;
 using Silk.NET.SDL;
+using System;
+using System.IO;
+using CSCore;
+using CSCore.Codecs.WAV;
+using CSCore.SoundOut;
 using TheAdventure.Models;
 using TheAdventure.Models.Data;
+using CSCore.Codecs;
 
 namespace TheAdventure
 {
@@ -19,12 +25,25 @@ namespace TheAdventure
         private DateTimeOffset _lastUpdate = DateTimeOffset.Now;
         private DateTimeOffset _lastPlayerUpdate = DateTimeOffset.Now;
 
+        // Add smoke sound
+        private readonly IWaveSource _soundSource;
+        private readonly ISoundOut _soundOut;
+
         public Engine(GameRenderer renderer, Input input)
         {
             _renderer = renderer;
             _input = input;
 
             _input.OnMouseClick += (_, coords) => AddBomb(coords.x, coords.y);
+
+            // Load the sound file
+            var soundPath = Path.Combine("Assets", "smoke_sound1.wav");
+            _soundSource = CodecFactory.Instance.GetCodec(soundPath)
+                             .ToSampleSource()
+                             .ToWaveSource();
+
+            // Create the sound output device
+            _soundOut = new WasapiOut();
         }
 
         public void InitializeWorld()
@@ -64,7 +83,8 @@ namespace TheAdventure
             };
             */
             var spriteSheet = SpriteSheet.LoadSpriteSheet("player.json", "Assets", _renderer);
-            if(spriteSheet != null){
+            if (spriteSheet != null)
+            {
                 _player = new PlayerObject(spriteSheet, 100, 100);
             }
             _renderer.SetWorldBounds(new Rectangle<int>(0, 0, _currentLevel.Width * _currentLevel.TileWidth,
@@ -81,6 +101,13 @@ namespace TheAdventure
             bool down = _input.IsDownPressed();
             bool left = _input.IsLeftPressed();
             bool right = _input.IsRightPressed();
+            // Adding a new variable to check if SpaceBar is pressed
+            bool IsSpaceBar = _input.IsSpaceBarPressed();
+            if (IsSpaceBar)
+            {
+                AddSmokeEffect(_player.Position.X, _player.Position.Y, true);
+                //PlaySmokeSound();
+            }
 
             _player.UpdatePlayerPosition(up ? 1.0 : 0.0, down ? 1.0 : 0.0, left ? 1.0 : 0.0, right ? 1.0 : 0.0,
                 _currentLevel.Width * _currentLevel.TileWidth, _currentLevel.Height * _currentLevel.TileHeight,
@@ -100,7 +127,7 @@ namespace TheAdventure
         {
             _renderer.SetDrawColor(0, 0, 0, 255);
             _renderer.ClearScreen();
-            
+
             _renderer.CameraLookAt(_player.Position.X, _player.Position.Y);
 
             RenderTerrain();
@@ -195,11 +222,60 @@ namespace TheAdventure
                 Loop = false
             };*/
             var spriteSheet = SpriteSheet.LoadSpriteSheet("bomb.json", "Assets", _renderer);
-            if(spriteSheet != null){
+            if (spriteSheet != null)
+            {
                 spriteSheet.ActivateAnimation("Explode");
                 TemporaryGameObject bomb = new(spriteSheet, 2.1, (translated.X, translated.Y));
                 _gameObjects.Add(bomb.Id, bomb);
             }
+        }
+
+        private void AddSmokeEffect(int x, int y, bool isPlayerPosition = false)
+        {
+            // Define offset variable to position smoke
+            var offset = 16;
+
+            var pos = isPlayerPosition ? (_player.Position.X, _player.Position.Y) : (x, y);
+
+            // Load the sprite sheet for smoke.png
+            var spriteSheet = SpriteSheet.LoadSpriteSheet("smoke.json", "Assets", _renderer);
+            if (spriteSheet != null)
+            {
+                // Use the same animation as the bomb
+                spriteSheet.ActivateAnimation("Explode");
+
+                // Define the positions for the four smoke parts around the player
+                var positions = new List<(int, int)>
+                {
+                    (pos.Item1 - offset, pos.Item2 - offset), // Top-left
+                    (pos.Item1 + offset, pos.Item2 - offset), // Top-right
+                    (pos.Item1 - offset, pos.Item2 + offset), // Bottom-left
+                    (pos.Item1 + offset, pos.Item2 + offset)  // Bottom-right
+                };
+
+                // Create and add each smoke effect to the game objects dictionary
+                foreach (var position in positions)
+                {
+                    TemporaryGameObject smokeEffect = new(spriteSheet, 2.1, position);
+                    _gameObjects.Add(smokeEffect.Id, smokeEffect);
+                }
+            }
+
+        }
+
+       private void PlaySmokeSound()
+        {
+            // Set the source of the sound output
+            _soundOut.Initialize(_soundSource);
+
+            // Play the sound
+            _soundOut.Play();
+
+            // Wait until it ends
+            _soundOut.WaitForStopped();
+
+            // Dispose the sound output
+            _soundOut.Dispose();
         }
     }
 }
