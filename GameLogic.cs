@@ -12,7 +12,8 @@ namespace TheAdventure
 
         private Level? _currentLevel;
         private PlayerObject _player;
-
+        private AppleObject _apple;
+        private int _score=0;
        
         public GameLogic()
         {
@@ -20,7 +21,9 @@ namespace TheAdventure
 
         public void LoadGameState()
         {
+      
             _player = new PlayerObject(1000);
+            _apple = new AppleObject(); 
             var jsonSerializerOptions =  new JsonSerializerOptions(){ PropertyNameCaseInsensitive = true };
             var levelContent = File.ReadAllText(Path.Combine("Assets", "terrain.tmj"));
 
@@ -42,6 +45,8 @@ namespace TheAdventure
                 refTileSet.Set = tileSet;
             }
             _currentLevel = level;
+            Console.WriteLine($"Score: {_score}");
+
         }
 
         public IEnumerable<RenderableGameObject> GetAllRenderableObjects()
@@ -74,8 +79,16 @@ namespace TheAdventure
             return null;
         }
 
+        
         public void UpdatePlayerPosition(double up, double down, double left, double right, int timeSinceLastUpdateInMS)
         {
+            if (_player.attack == true && _apple.IntersectsWith(_player))
+            {
+                _score++;
+                Console.Clear();
+                Console.WriteLine($"Score: {_score}");
+                _apple.Update();
+            }
             _player.UpdatePlayerPosition(up, down, left, right, timeSinceLastUpdateInMS);
             
         }
@@ -139,6 +152,7 @@ namespace TheAdventure
             }
 
             _player.Render(renderer);
+            _apple.Render(renderer);
         }
 
         private int _bombIds = 100;

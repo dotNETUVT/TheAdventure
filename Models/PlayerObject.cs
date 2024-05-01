@@ -26,7 +26,7 @@ public class PlayerObject : GameObject
     private readonly AnimatedGameObject _attackingDown;
     private readonly AnimatedGameObject _attackingLeft;
     private readonly AnimatedGameObject _attackingRight;
-    private bool _attack = false;
+    public bool attack { get; set; } = false;
     //private int _textureId;
     private int _pixelsPerSecond = 128;
 
@@ -65,22 +65,22 @@ public class PlayerObject : GameObject
 
         if (up > 0)
         {
-            if (_attack) _currentAnimation = _attackingUp;
+            if (attack) _currentAnimation = _attackingUp;
             else _currentAnimation = _movingUp;
         }
         else if (right > 0)
         {
-            if (_attack) _currentAnimation = _attackingRight;
+            if (attack) _currentAnimation = _attackingRight;
             else _currentAnimation = _movingRight;
         }
         else if (down > 0)
         {
-            if (_attack) _currentAnimation = _attackingDown;
+            if (attack) _currentAnimation = _attackingDown;
             else _currentAnimation = _movingDown;
         }
         else if (left > 0)
         {
-            if (_attack) _currentAnimation = _attackingLeft;
+            if (attack) _currentAnimation = _attackingLeft;
             else _currentAnimation = _movingLeft;
         }
 
@@ -95,9 +95,9 @@ public class PlayerObject : GameObject
         UpdateScreenTarget();
     }
 
-    public void Attack(bool isAttacking)
+    public Rectangle<int> GetHitbox()
     {
-        _attack = isAttacking;
+        return _target;
     }
 
     public void Render(GameRenderer renderer){

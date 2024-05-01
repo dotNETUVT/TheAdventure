@@ -162,11 +162,11 @@ namespace TheAdventure{
             }
             if (_keyboardState[(int)Scancode.ScancodeSpace] == 1)
             {
-                _gameLogic.GetPlayer().Attack(true);
+                _gameLogic.GetPlayer().attack=true;
             }
             else
             {
-                _gameLogic.GetPlayer().Attack(false);
+                _gameLogic.GetPlayer().attack=false;
             }
 
             _lastUpdate = currentTime;

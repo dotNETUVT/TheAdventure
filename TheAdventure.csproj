@@ -9,6 +9,7 @@
     </PropertyGroup>
 
     <ItemGroup>
+      <PackageReference Include="SDL-Sharp" Version="2.2.3-beta2" />
       <PackageReference Include="Silk.NET.Input.Sdl" Version="2.20.0" />
       <PackageReference Include="Silk.NET.SDL" Version="2.20.0" />
       <PackageReference Include="Silk.NET.Windowing.Sdl" Version="2.20.0" />
@@ -16,9 +17,13 @@
     </ItemGroup>
 
     <ItemGroup>
+      <None Remove="Apple.png" />
       <None Remove="Assets\player_right.png" />
       <None Remove="Assets\player_up.png" />
       <None Remove="BombExploding.png" />
+      <Content Include="Apple.png">
+        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      </Content>
       <Content Include="Assets\player_up.png">
         <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
       </Content>
