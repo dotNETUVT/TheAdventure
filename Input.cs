@@ -7,7 +7,9 @@ namespace TheAdventure
         private Sdl _sdl;
         private GameWindow _gameWindow;
         private GameRenderer _renderer;
-        
+        private IntPtr _keyboardState;
+        private int _numKeys;
+        private bool _lastSpaceState = false;
         byte[] _mouseButtonStates = new byte[(int)MouseButton.Count];
         
         public EventHandler<(int x, int y)> OnMouseClick;
@@ -17,8 +19,34 @@ namespace TheAdventure
             _sdl = sdl;
             _gameWindow = window;
             _renderer = renderer;
+            UpdateKeyboardState();  // Properly initialize keyboard state
+           
         }
+        private void UpdateKeyboardState()
+        {
+             // Local variable for the out parameter
+            unsafe
+            {
+                int numKeysLocal = 0;  // Initialize with 0 to ensure it has a defined value.
+                int* pNumKeys = &numKeysLocal;  // Pointer to numKeysLocal
 
+                _keyboardState = (IntPtr)_sdl.GetKeyboardState(pNumKeys);
+                _numKeys = numKeysLocal;  
+            }
+            // Assign back to the class field
+        }
+        public bool IsSpaceJustPressed()
+        {
+            UpdateKeyboardState();
+            unsafe
+            {
+                ReadOnlySpan<byte> keys = new ReadOnlySpan<byte>((void*)_keyboardState, _numKeys);
+                bool currentSpaceState = keys[(int)KeyCode.Space] == 1;
+                bool wasJustPressed = currentSpaceState && !_lastSpaceState;
+                _lastSpaceState = currentSpaceState; // Update the last known state
+                return wasJustPressed;
+            }
+        }
         public bool IsLeftPressed()
         {
             ReadOnlySpan<byte> _keyboardState = new(_sdl.GetKeyboardState(null), (int)KeyCode.Count);

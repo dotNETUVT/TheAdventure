@@ -1,12 +1,16 @@
 ﻿using System;
+using System.Runtime.InteropServices;
 using Silk.NET.SDL;
 
 namespace TheAdventure;
 
 public static class Program
 {
+    [DllImport("kernel32.dll", SetLastError = true)]
+    static extern bool AllocConsole();
     public static void Main()
     {
+        AllocConsole();
         var sdl = new Sdl(new SdlContext());
 
         var sdlInitResult = sdl.Init(Sdl.InitVideo | Sdl.InitEvents | Sdl.InitTimer | Sdl.InitGamecontroller |
@@ -34,11 +38,20 @@ public static class Program
             bool quit = false;
             while (!quit)
             {
-                quit = input.ProcessInput();
-                if (quit) break;
+                if (input.IsSpaceJustPressed())
+                {
+                    engine.TogglePause();
+                    Console.WriteLine($"Paused: {engine.IsPaused()}");  // Should log the current pause state
+                }
 
-                engine.ProcessFrame();
-                engine.RenderFrame();
+                if (!engine.IsPaused())
+                {
+                    engine.ProcessFrame();
+                    engine.RenderFrame();
+                }
+
+                // Process other events or input
+                quit = input.ProcessInput();
             }
 
             // Stop music when exiting the game

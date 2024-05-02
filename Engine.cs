@@ -25,6 +25,18 @@ namespace TheAdventure
 
             _input.OnMouseClick += (_, coords) => AddBomb(coords.x, coords.y);
         }
+        private bool _isPaused = false;
+
+        public void TogglePause()
+        {
+            _isPaused = !_isPaused;
+            Console.WriteLine("pause");
+        }
+
+        public bool IsPaused()
+        {
+            return _isPaused;
+        }
 
         public void InitializeWorld()
         {
@@ -71,6 +83,7 @@ namespace TheAdventure
 
         public void ProcessFrame()
         {
+            if (_isPaused) return;
             var currentTime = DateTimeOffset.Now;
             var secsSinceLastFrame = (currentTime - _lastUpdate).TotalSeconds;
             _lastUpdate = currentTime;
@@ -180,6 +193,7 @@ namespace TheAdventure
 
             _player.Render(_renderer);
         }
+        private int _bombCount = 0;
 
         private void AddBomb(int x, int y)
         {
@@ -197,7 +211,10 @@ namespace TheAdventure
                 spriteSheet.ActivateAnimation("Explode");
                 TemporaryGameObject bomb = new(spriteSheet, 2.1, (translated.X, translated.Y));
                 _gameObjects.Add(bomb.Id, bomb);
+                _bombCount++;
             }
+
         }
+        public int BombCount => _bombCount;
     }
 }
