@@ -1,25 +1,25 @@
 {
-    "rowCount" : 1,
-    "columnCount" : 13,
-    "frameWidth" : 32,
-    "frameHeight" : 64,
-    "frameCenter" : {
-        "offsetX" : 16,
-        "offsetY" : 48
+    "rowCount": 1,
+    "columnCount": 20, 
+    "frameWidth": 32,
+    "frameHeight": 64,
+    "frameCenter": {
+        "offsetX": 16,
+        "offsetY": 48
     },
-    "fileName" : "BombExploding.png",
-    "animations" : {
-        "Explode" : {
-            "startFrame" : {
-                "row" : 0,
-                "col" : 0
+    "fileName": "BombExploding.png",
+    "animations": {
+        "Explode": {
+            "startFrame": {
+                "row": 0,
+                "col": 0
             },
-            "endFrame" : {
-                "row" : 0,
-                "col" : 12
+            "endFrame": {
+                "row": 0,
+                "col": 19  
             },
-            "durationMs" : 2000,
-            "loop" : false
+            "durationMs": 3000,  
+            "loop": false
         }
     }
 }

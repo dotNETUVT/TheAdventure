@@ -1,33 +1,24 @@
 using Silk.NET.Maths;
+using System;
 
-
-/// <summary>
-/// Provides translation from world coordinates to screen coordinates.
-/// </summary>
-/// <remarks>
-/// World coordinates are top = 0, left = 0, positivie in right and down direction.
-/// </remarks>
 public class Camera
 {
     private int _x;
     private int _y;
 
     private Rectangle<int> _gameWorld = new();
+    private Vector2D<int> _shakeOffset = new Vector2D<int>(0, 0);
+    private int _shakeIntensity = 0;
+    private float _shakeDuration = 0;
 
-    /// <summary>
-    /// World coordinates.
-    /// </summary>
     public int X
     {
-        get { return _x; }
+        get { return _x + _shakeOffset.X; } 
     }
 
-    /// <summary>
-    /// World coordinates.
-    /// </summary>
     public int Y
     {
-        get { return _y; }
+        get { return _y + _shakeOffset.Y; } 
     }
 
     public int Width { get; init; }
@@ -73,13 +64,27 @@ public class Camera
         }
     }
 
-    /// <summary>
-    /// Translates a rectangle from world coordinates to screen coordinates.
-    ///
-    /// Camera is always in the center of the screen.
-    /// </summary>
-    /// <param name="textureDestination"></param>
-    /// <returns></returns>
+    public void TriggerScreenShakeAfterDelay()
+    {
+        if (_shakeDuration > 0)
+        {
+            Random rnd = new Random();
+            _shakeOffset.X = rnd.Next(-_shakeIntensity, _shakeIntensity);
+            _shakeOffset.Y = rnd.Next(-_shakeIntensity, _shakeIntensity);
+            _shakeDuration -= 0.016f; 
+        }
+        else
+        {
+            _shakeOffset = new Vector2D<int>(0, 0);
+        }
+    }
+
+    public void TriggerScreenShake(float intensity, float duration)
+    {
+        _shakeIntensity = (int)Math.Round(intensity);
+        _shakeDuration = duration;
+    }
+
     public Rectangle<int> TranslateToScreenCoordinates(Rectangle<int> textureDestination)
     {
         var newDestination = textureDestination.GetTranslated(new Vector2D<int>(Width / 2 - X, Height / 2 - Y));

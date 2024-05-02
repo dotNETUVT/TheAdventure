@@ -18,97 +18,96 @@ public class SpriteSheet
 
     public int RowCount { get; set; }
     public int ColumnCount { get; set; }
-
     public int FrameWidth { get; set; }
     public int FrameHeight { get; set; }
     public FrameOffset FrameCenter { get; set; }
-
     public string? FileName { get; set; }
-
     public Animation? ActiveAnimation { get; private set; }
     public Dictionary<string, Animation> Animations { get; init; } = new();
 
     private int _textureId = -1;
     private DateTimeOffset _animationStart = DateTimeOffset.MinValue;
 
-    public SpriteSheet(){
-
-    }
-
-    public static SpriteSheet? LoadSpriteSheet(string fileName, string folder, GameRenderer renderer){
-        var json = File.ReadAllText(Path.Combine(folder, fileName));
-        var spriteSheet = JsonSerializer.Deserialize<SpriteSheet>(json, new JsonSerializerOptions() { PropertyNameCaseInsensitive = true });
-        if(spriteSheet != null){
-            spriteSheet.LoadTexture(renderer, folder);
-        }
-        return spriteSheet;
-    }
-
-    public void LoadTexture(GameRenderer renderer, string? parentFolder = null){
-        var filePath = FileName;
-        if(!string.IsNullOrWhiteSpace(parentFolder) && !string.IsNullOrWhiteSpace(FileName)){
-            filePath = Path.Combine(parentFolder, FileName);
-        }
-        if(_textureId == -1 && !string.IsNullOrWhiteSpace(filePath)){
-            _textureId = renderer.LoadTexture(filePath, out _);
-        }
-    }
-
-    public SpriteSheet(GameRenderer renderer, string fileName, int rowCount, int columnCount, int frameWidth,
-        int frameHeight, FrameOffset frameCenter)
+    public static SpriteSheet? LoadSpriteSheet(string fileName, string folder, GameRenderer renderer)
     {
-        FileName = fileName;
-        RowCount = rowCount;
-        ColumnCount = columnCount;
-        FrameWidth = frameWidth;
-        FrameHeight = frameHeight;
-        FrameCenter = frameCenter;
+        try
+        {
+            var path = Path.Combine(folder, fileName);
+            var json = File.ReadAllText(path);
+            var spriteSheet = JsonSerializer.Deserialize<SpriteSheet>(json, new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
+            spriteSheet?.LoadTexture(renderer, folder);
+            return spriteSheet;
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error loading sprite sheet from {fileName}: {ex.Message}");
+            return null;
+        }
+    }
 
-        LoadTexture(renderer);
+    public void LoadTexture(GameRenderer renderer, string? parentFolder = null)
+    {
+        var filePath = FileName;
+        try
+        {
+            
+            if (!string.IsNullOrWhiteSpace(parentFolder) && !string.IsNullOrWhiteSpace(FileName))
+            {
+                filePath = Path.Combine(parentFolder, FileName);
+            }
+            if (_textureId == -1 && !string.IsNullOrWhiteSpace(filePath))
+            {
+                _textureId = renderer.LoadTexture(filePath, out _);
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error loading texture from {filePath}: {ex.Message}");
+        }
     }
 
     public void ActivateAnimation(string name)
     {
-        if (!Animations.TryGetValue(name, out var animation)) return;
-
-        ActiveAnimation = animation;
-        _animationStart = DateTimeOffset.Now;
+        if (Animations.TryGetValue(name, out var animation))
+        {
+            ActiveAnimation = animation;
+            _animationStart = DateTimeOffset.Now;
+        }
     }
 
     public void Render(GameRenderer renderer, (int X, int Y) dest, double angle = 0.0, Point rotationCenter = new())
     {
         if (ActiveAnimation == null)
         {
-            renderer.RenderTexture(_textureId, new Rectangle<int>(0, 0, FrameWidth, FrameHeight),
-                new Rectangle<int>(dest.X - FrameCenter.OffsetX, dest.Y - FrameCenter.OffsetY, FrameWidth, FrameHeight),
-                RendererFlip.None, angle, rotationCenter);
+            RenderTexture(renderer, dest, angle, rotationCenter);
         }
         else
         {
-            var totalFrames = (ActiveAnimation.EndFrame.Row - ActiveAnimation.StartFrame.Row) * ColumnCount +
-                ActiveAnimation.EndFrame.Col - ActiveAnimation.StartFrame.Col;
-            var currentFrame = (int)((DateTimeOffset.Now - _animationStart).TotalMilliseconds /
-                                     (ActiveAnimation.DurationMs / totalFrames));
-            if (currentFrame > totalFrames)
-            {
-                if (ActiveAnimation.Loop)
-                {
-                    _animationStart = DateTimeOffset.Now;
-                    currentFrame = 0;
-                }
-                else
-                {
-                    currentFrame = totalFrames;
-                }
-            }
-
-            var currentRow = ActiveAnimation.StartFrame.Row + currentFrame / ColumnCount;
-            var currentCol = ActiveAnimation.StartFrame.Col + currentFrame % ColumnCount;
-
-            renderer.RenderTexture(_textureId,
-                new Rectangle<int>(currentCol * FrameWidth, currentRow * FrameHeight, FrameWidth, FrameHeight),
-                new Rectangle<int>(dest.X - FrameCenter.OffsetX, dest.Y - FrameCenter.OffsetY, FrameWidth, FrameHeight),
-                ActiveAnimation.Flip, angle, rotationCenter);
+            RenderAnimation(renderer, dest, angle, rotationCenter);
         }
+    }
+
+    private void RenderTexture(GameRenderer renderer, (int X, int Y) dest, double angle, Point rotationCenter)
+    {
+        renderer.RenderTexture(_textureId,
+            new Rectangle<int>(0, 0, FrameWidth, FrameHeight),
+            new Rectangle<int>(dest.X - FrameCenter.OffsetX, dest.Y - FrameCenter.OffsetY, FrameWidth, FrameHeight),
+            RendererFlip.None, angle, rotationCenter);
+    }
+
+    private void RenderAnimation(GameRenderer renderer, (int X, int Y) dest, double angle, Point rotationCenter)
+    {
+        int totalFrames = (ActiveAnimation.EndFrame.Row - ActiveAnimation.StartFrame.Row) * ColumnCount +
+                          ActiveAnimation.EndFrame.Col - ActiveAnimation.StartFrame.Col + 1;
+        int currentFrame = (int)((DateTimeOffset.Now - _animationStart).TotalMilliseconds /
+                                 (ActiveAnimation.DurationMs / (double)totalFrames)) % totalFrames;
+
+        int currentRow = ActiveAnimation.StartFrame.Row + currentFrame / ColumnCount;
+        int currentCol = ActiveAnimation.StartFrame.Col + currentFrame % ColumnCount;
+
+        renderer.RenderTexture(_textureId,
+            new Rectangle<int>(currentCol * FrameWidth, currentRow * FrameHeight, FrameWidth, FrameHeight),
+            new Rectangle<int>(dest.X - FrameCenter.OffsetX, dest.Y - FrameCenter.OffsetY, FrameWidth, FrameHeight),
+            ActiveAnimation.Flip, angle, rotationCenter);
     }
 }

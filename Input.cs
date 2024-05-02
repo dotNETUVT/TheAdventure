@@ -1,5 +1,5 @@
 using Silk.NET.SDL;
-
+using Silk.NET.Maths;
 namespace TheAdventure
 {
     public unsafe class Input
@@ -24,11 +24,18 @@ namespace TheAdventure
             ReadOnlySpan<byte> _keyboardState = new(_sdl.GetKeyboardState(null), (int)KeyCode.Count);
             return _keyboardState[(int)KeyCode.Left] == 1;
         }
-        
+        public Vector2D<int> GetMovementDirection()
+        {
+            int dx = (IsRightPressed() ? 1 : 0) - (IsLeftPressed() ? 1 : 0);
+            int dy = (IsDownPressed() ? 1 : 0) - (IsUpPressed() ? 1 : 0);
+            return new Vector2D<int>(dx, dy);
+        }
+
         public bool IsRightPressed()
         {
             ReadOnlySpan<byte> _keyboardState = new(_sdl.GetKeyboardState(null), (int)KeyCode.Count);
             return _keyboardState[(int)KeyCode.Right] == 1;
+
         }
         
         public bool IsUpPressed()

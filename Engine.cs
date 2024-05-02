@@ -10,12 +10,13 @@ namespace TheAdventure
     {
         private readonly Dictionary<int, GameObject> _gameObjects = new();
         private readonly Dictionary<string, TileSet> _loadedTileSets = new();
-
+        private MusicPlayer _grassmusicPlayer = new MusicPlayer(Path.Combine("Assets", "grass.mp3"));
         private Level? _currentLevel;
         private PlayerObject _player;
         private GameRenderer _renderer;
         private Input _input;
-
+        private DateTimeOffset _musicStartTime = DateTimeOffset.MinValue; 
+        
         private DateTimeOffset _lastUpdate = DateTimeOffset.Now;
         private DateTimeOffset _lastPlayerUpdate = DateTimeOffset.Now;
 
@@ -77,11 +78,36 @@ namespace TheAdventure
             var secsSinceLastFrame = (currentTime - _lastUpdate).TotalSeconds;
             _lastUpdate = currentTime;
 
+            if (_grassmusicPlayer.IsMusicPlaying && (currentTime - _musicStartTime).TotalSeconds >= 0.3)
+            {
+                _grassmusicPlayer.StopMusic();
+            }
+
             bool up = _input.IsUpPressed();
             bool down = _input.IsDownPressed();
             bool left = _input.IsLeftPressed();
             bool right = _input.IsRightPressed();
-
+            
+            if (_input.IsRightPressed())
+            {
+                _grassmusicPlayer.ToggleMusic();
+                _musicStartTime = currentTime;
+            }
+            if (_input.IsLeftPressed())
+            {
+                _grassmusicPlayer.ToggleMusic();
+                _musicStartTime = currentTime;
+            }
+            if (_input.IsUpPressed())
+            {
+                _grassmusicPlayer.ToggleMusic();
+                _musicStartTime = currentTime;
+            }
+            if (_input.IsDownPressed())
+            {
+                _grassmusicPlayer.ToggleMusic();
+                _musicStartTime = currentTime;
+            }
             _player.UpdatePlayerPosition(up ? 1.0 : 0.0, down ? 1.0 : 0.0, left ? 1.0 : 0.0, right ? 1.0 : 0.0,
                 _currentLevel.Width * _currentLevel.TileWidth, _currentLevel.Height * _currentLevel.TileHeight,
                 secsSinceLastFrame);
@@ -96,11 +122,12 @@ namespace TheAdventure
             }
         }
 
+
         public void RenderFrame()
         {
             _renderer.SetDrawColor(0, 0, 0, 255);
             _renderer.ClearScreen();
-            
+    
             _renderer.CameraLookAt(_player.Position.X, _player.Position.Y);
 
             RenderTerrain();
@@ -108,6 +135,7 @@ namespace TheAdventure
 
             _renderer.PresentFrame();
         }
+
 
         private Tile? GetTile(int id)
         {
@@ -199,6 +227,7 @@ namespace TheAdventure
                 spriteSheet.ActivateAnimation("Explode");
                 TemporaryGameObject bomb = new(spriteSheet, 2.1, (translated.X, translated.Y));
                 _gameObjects.Add(bomb.Id, bomb);
+                
             }
         }
     }
