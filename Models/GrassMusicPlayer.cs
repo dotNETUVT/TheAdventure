@@ -2,7 +2,7 @@
 using System;
 using System.Threading.Tasks;
 
-public class MusicPlayer : IDisposable
+public class GrassMusicPlayer : IDisposable
 {
     private readonly WaveOutEvent _outputDevice;
     private AudioFileReader _audioFile;
@@ -11,7 +11,7 @@ public class MusicPlayer : IDisposable
     private bool _isPlaying;
     private DateTime _startTime;
 
-    public MusicPlayer(string filePath)
+    public GrassMusicPlayer(string filePath)
     {
         _outputDevice = new WaveOutEvent();
         LoadMusic(filePath);

@@ -10,7 +10,7 @@ namespace TheAdventure
     {
         private readonly Dictionary<int, GameObject> _gameObjects = new();
         private readonly Dictionary<string, TileSet> _loadedTileSets = new();
-        private MusicPlayer _grassmusicPlayer = new MusicPlayer(Path.Combine("Assets", "grass.mp3"));
+        private GrassMusicPlayer _grassmusicPlayer = new GrassMusicPlayer(Path.Combine("Assets", "grass.mp3"));
         private Level? _currentLevel;
         private PlayerObject _player;
         private GameRenderer _renderer;
