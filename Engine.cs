@@ -15,7 +15,7 @@ namespace TheAdventure
         private PlayerObject _player;
         private GameRenderer _renderer;
         private Input _input;
-
+        private bool _isPaused = false;
         private DateTimeOffset _lastUpdate = DateTimeOffset.Now;
         private DateTimeOffset _lastPlayerUpdate = DateTimeOffset.Now;
 
@@ -25,6 +25,14 @@ namespace TheAdventure
             _input = input;
 
             _input.OnMouseClick += (_, coords) => AddBomb(coords.x, coords.y);
+        }
+
+        public bool IsPaused => _isPaused;
+
+        public void TogglePause()
+        {
+            _isPaused = !_isPaused;
+            Console.WriteLine($"Paused: {_isPaused}");
         }
 
         public void InitializeWorld()
@@ -98,6 +106,7 @@ namespace TheAdventure
 
         public void RenderFrame()
         {
+            if (_isPaused) return;
             _renderer.SetDrawColor(0, 0, 0, 255);
             _renderer.ClearScreen();
             

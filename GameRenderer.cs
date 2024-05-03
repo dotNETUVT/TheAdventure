@@ -18,6 +18,12 @@ public unsafe class GameRenderer
     private Dictionary<int, TextureInfo> _textureData = new();
     private int _textureId;
 
+    private IntPtr _pauseButtonTexture;
+    private bool _showPauseButton = false;
+
+    private int _frameCount = 0;
+    private double _lastFpsUpdateTime = 0;
+    private double _fps = 0;
     public GameRenderer(Sdl sdl, GameWindow window)
     {
         _window = window;
@@ -28,7 +34,38 @@ public unsafe class GameRenderer
 
         var windowSize = window.Size;
         _camera = new Camera(windowSize.Width, windowSize.Height);
+
+        _lastFpsUpdateTime = _sdl.GetTicks();
+
+        LoadPauseButton("Assets/pausebtn.png");
     }
+
+    private void LoadPauseButton(string filePath)
+    {
+        TextureInfo textureInfo;
+        _pauseButtonTexture = LoadTexture(filePath, out textureInfo);
+    }
+
+    public void TogglePauseButtonDisplay(bool show)
+    {
+        _showPauseButton = show;
+    }
+
+    public struct SDL_Color {
+    public byte r, g, b, a;
+    }
+
+    public void Update(double deltaTime)
+    {
+        _frameCount++;
+        if (_sdl.GetTicks() - _lastFpsUpdateTime > 1000) // Update every second
+        {
+            _fps = _frameCount / ((_sdl.GetTicks() - _lastFpsUpdateTime) / 1000.0);
+            _frameCount = 0;
+            _lastFpsUpdateTime = _sdl.GetTicks();
+        }
+    }
+
 
     public void SetWorldBounds(Rectangle<int> bounds)
     {
@@ -96,5 +133,18 @@ public unsafe class GameRenderer
     public void PresentFrame()
     {
         _sdl.RenderPresent(_renderer);
+        _sdl.Delay(16); // Cap the frame rate to 60 FPS.
+
+        if (_showPauseButton)
+        {
+            var pauseButtonRect = new Rectangle<int>(0, 0, 64, 64);
+            RenderTexture((int)_pauseButtonTexture, pauseButtonRect, pauseButtonRect); // Explicitly cast _pauseButtonTexture to int
+        }
+
+        //FPS counter
+        SDL_Color fpsColor = new SDL_Color { r = 255, g = 255, b = 255, a = 255 }; // White
+
+        
+        
     }
 }

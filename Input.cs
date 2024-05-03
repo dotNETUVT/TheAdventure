@@ -7,6 +7,10 @@ namespace TheAdventure
         private Sdl _sdl;
         private GameWindow _gameWindow;
         private GameRenderer _renderer;
+        private IntPtr _keyboardState;
+        private bool _lastEscState = false;
+        private int _numKeys;
+        
         
         byte[] _mouseButtonStates = new byte[(int)MouseButton.Count];
         
@@ -17,7 +21,37 @@ namespace TheAdventure
             _sdl = sdl;
             _gameWindow = window;
             _renderer = renderer;
+            UpdateKeyboardState();
         }
+
+        private void UpdateKeyboardState()
+        {
+            unsafe
+            {
+                int numKeysLocal = 0;
+                int* pNumKeys = &numKeysLocal;
+
+                _keyboardState = (IntPtr)_sdl.GetKeyboardState(pNumKeys);
+                _numKeys = numKeysLocal;  
+            }
+        }
+        public bool IsEscJustPressed()
+        {
+            UpdateKeyboardState(); // Ensure the latest keyboard state is loaded.
+            unsafe
+            {
+                ReadOnlySpan<byte> keys = new ReadOnlySpan<byte>((void*)_keyboardState, _numKeys);
+                bool currentEscState = keys[(int)KeyCode.Escape] == 1;
+                if (currentEscState && !_lastEscState)
+                {
+                    _lastEscState = true; // Update the last known state only on change.
+                    return true; // Esc was just pressed.
+                }
+                _lastEscState = currentEscState; // Update the last known state.
+                return false; // Esc was not just pressed or is still being held down.
+            }
+        }
+
 
         public bool IsLeftPressed()
         {
