@@ -17,7 +17,7 @@ public class PlayerObject : RenderableGameObject
     }
 
     public void UpdatePlayerPosition(double up, double down, double left, double right, int width, int height,
-        double time)
+        double time, IEnumerable<TemporaryGameObject> gameObject)
     {
 
         if (up <= double.Epsilon &&
@@ -56,6 +56,12 @@ public class PlayerObject : RenderableGameObject
             y = height - 6;
         }
 
+        foreach( var obj in gameObject )
+        {
+            // Calling function for collision, still needs work
+            CollidesWithBomb(x, y, obj);
+        }
+
         if (y < Position.Y && _currentAnimation != "MoveUp"){
             _currentAnimation = "MoveUp";
             //Console.WriteLine($"Attempt to switch to {_currentAnimation}");
@@ -81,5 +87,26 @@ public class PlayerObject : RenderableGameObject
         //Console.WriteLine($"Will to switch to {_currentAnimation}");
         SpriteSheet.ActivateAnimation(_currentAnimation);
         Position = (x, y);
+    }
+
+    // Function to prevent the player colliding with the bomb, stll needs improvements
+    private bool CollidesWithBomb(int x, int y, TemporaryGameObject bomb)
+    {
+        int playerRight = x + 4; ;
+
+        int bombRight = bomb.Position.X + 16;
+        int bombBottom = bomb.Position.Y + 48;
+
+        return x - 4 < bombRight &&
+               playerRight > bomb.Position.X &&
+               y < bombBottom &&
+               y > bomb.Position.Y;
+    }
+
+    // Method to get the bounding box of the player
+    public System.Drawing.Rectangle GetBoundingBox()
+    {
+        // Assuming player's bounding box is a rectangle centered at its position with width and height of sprite
+        return new System.Drawing.Rectangle((int)(Position.X - SpriteSheet.FrameWidth / 2), (int)(Position.Y - SpriteSheet.FrameHeight / 2), SpriteSheet.FrameWidth, SpriteSheet.FrameHeight);
     }
 }

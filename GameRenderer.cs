@@ -12,7 +12,7 @@ public unsafe class GameRenderer
     private Sdl _sdl;
     private Renderer* _renderer;
     private GameWindow _window;
-    private Camera _camera;
+    public Camera _camera;
 
     private Dictionary<int, IntPtr> _textures = new();
     private Dictionary<int, TextureInfo> _textureData = new();

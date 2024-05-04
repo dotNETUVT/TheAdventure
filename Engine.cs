@@ -19,12 +19,25 @@ namespace TheAdventure
         private DateTimeOffset _lastUpdate = DateTimeOffset.Now;
         private DateTimeOffset _lastPlayerUpdate = DateTimeOffset.Now;
 
+        public bool IsGameOver { get; private set; }
+
         public Engine(GameRenderer renderer, Input input)
         {
             _renderer = renderer;
             _input = input;
 
-            _input.OnMouseClick += (_, coords) => AddBomb(coords.x, coords.y);
+            _input.OnMouseClick += (_, coords) =>
+            {
+                
+                if (IsGameOver && IsWithinPlayImage(coords.x, coords.y))
+                {
+                    RestartGame();
+                }
+                else
+                {
+                    AddBomb(coords.x, coords.y);
+                }
+            };
         }
 
         public void InitializeWorld()
@@ -73,6 +86,9 @@ namespace TheAdventure
 
         public void ProcessFrame()
         {
+            if (IsGameOver)
+                return;
+
             var currentTime = DateTimeOffset.Now;
             var secsSinceLastFrame = (currentTime - _lastUpdate).TotalSeconds;
             _lastUpdate = currentTime;
@@ -84,7 +100,25 @@ namespace TheAdventure
 
             _player.UpdatePlayerPosition(up ? 1.0 : 0.0, down ? 1.0 : 0.0, left ? 1.0 : 0.0, right ? 1.0 : 0.0,
                 _currentLevel.Width * _currentLevel.TileWidth, _currentLevel.Height * _currentLevel.TileHeight,
-                secsSinceLastFrame);
+                secsSinceLastFrame, GetAllTemporaryGameObjects());
+
+            // Check collision between player and bombs
+            foreach (var gameObject in GetAllTemporaryGameObjects())
+            {
+                if (gameObject is TemporaryGameObject bomb)
+                {
+                    if (RectanglesIntersect(_player.GetBoundingBox(), bomb.GetBoundingBox()))
+                    {
+                        // Check proximity
+                        double distance = Math.Sqrt(Math.Pow(_player.Position.X - bomb.Position.X, 2) + Math.Pow(_player.Position.Y - bomb.Position.Y, 2));
+                        if (distance < 50 && bomb.IsExpired) 
+                        {
+                            GameOver();
+                            return;
+                        }
+                    }
+                }
+            }
 
             var itemsToRemove = new List<int>();
             itemsToRemove.AddRange(GetAllTemporaryGameObjects().Where(gameObject => gameObject.IsExpired)
@@ -96,15 +130,64 @@ namespace TheAdventure
             }
         }
 
+        // Method to check intersection between two rectangles
+        private bool RectanglesIntersect(System.Drawing.Rectangle rect1, System.Drawing.Rectangle rect2)
+        {
+            return rect1.Left < rect2.Right && rect1.Right > rect2.Left &&
+                   rect1.Top < rect2.Bottom && rect1.Bottom > rect2.Top;
+        }
+
+        // Handling game over scenario
+        private void GameOver()
+        {
+            IsGameOver = true;
+        }
+
+        // Position for play again button
+        private bool IsWithinPlayImage(int x, int y)
+        {
+            return x >= 385 && x <= 435 &&
+                   y >= 290 && y <= 340;
+        }
+
+        // Handling restart game scenario
+        private void RestartGame()
+        {
+            IsGameOver = false;
+            InitializeWorld();
+
+            ProcessFrame();
+            RenderFrame();
+        }
+
         public void RenderFrame()
         {
-            _renderer.SetDrawColor(0, 0, 0, 255);
-            _renderer.ClearScreen();
-            
-            _renderer.CameraLookAt(_player.Position.X, _player.Position.Y);
+            if (!IsGameOver)
+            {
+                _renderer.SetDrawColor(0, 0, 0, 255);
+                _renderer.ClearScreen();
 
-            RenderTerrain();
-            RenderAllObjects();
+                _renderer.CameraLookAt(_player.Position.X, _player.Position.Y);
+               
+                RenderTerrain();
+                RenderAllObjects();
+            }
+            else
+            {
+                // Render background color for game over screen
+                _renderer.SetDrawColor(0, 0, 0, 255);
+                _renderer.ClearScreen();
+
+                // Render game over image
+                var spriteSheet = new SpriteSheet(_renderer, "Assets/game_over.png", 1, 1, 200, 161, new FrameOffset() { OffsetX = 48, OffsetY = 48 });
+                var gameOverObject = new RenderableGameObject(spriteSheet, (_renderer._camera.X - 45, _renderer._camera.Y - 75));
+                gameOverObject.Render(_renderer);
+
+                // Render replay image
+                var spriteSheet1 = new SpriteSheet(_renderer, "Assets/play.png", 1, 1, 80, 80, new FrameOffset() { OffsetX = 50, OffsetY = 50 });
+                var gameOverObject1 = new RenderableGameObject(spriteSheet1, (_renderer._camera.X + 5, _renderer._camera.Y + 75));
+                gameOverObject1.Render(_renderer);
+            }
 
             _renderer.PresentFrame();
         }
@@ -116,7 +199,8 @@ namespace TheAdventure
             {
                 foreach (var tile in tileSet.Set.Tiles)
                 {
-                    if (tile.Id == id)
+                    // Change for multiple layer rendering
+                    if (tile.InternalTextureId == id)
                     {
                         return tile;
                     }

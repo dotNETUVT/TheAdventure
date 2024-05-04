@@ -25,7 +25,7 @@ public static class Program
             engine.InitializeWorld();
 
             bool quit = false;
-            while (!quit)
+            while (!quit || !engine.IsGameOver)
             {
                 quit = input.ProcessInput();
                 if (quit) break;

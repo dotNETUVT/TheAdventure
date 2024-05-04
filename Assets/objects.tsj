@@ -6,63 +6,51 @@
      "width":1
     },
  "margin":0,
- "name":"grass",
+ "name":"objects",
  "spacing":0,
- "tilecount":9,
+ "tilecount":7,
  "tiledversion":"1.10.2",
  "tileheight":16,
  "tiles":[
         {
          "id":0,
-         "image":"grass\/Grass_1.png",
+         "image":"objects\/flower.png",
          "imageheight":16,
          "imagewidth":16
         }, 
         {
          "id":1,
-         "image":"grass\/Grass_2.png",
+         "image":"objects\/mushrooms.png",
          "imageheight":16,
          "imagewidth":16
         }, 
         {
          "id":2,
-         "image":"grass\/Grass_3.png",
+         "image":"objects\/rock.png",
          "imageheight":16,
          "imagewidth":16
         }, 
         {
          "id":3,
-         "image":"grass\/Grass_4.png",
+         "image":"objects\/tree_1.png",
          "imageheight":16,
          "imagewidth":16
         }, 
         {
          "id":4,
-         "image":"grass\/Grass_5.png",
+         "image":"objects\/tree_2.png",
          "imageheight":16,
          "imagewidth":16
         }, 
         {
          "id":5,
-         "image":"grass\/Grass_6.png",
+         "image":"objects\/tree_3.png",
          "imageheight":16,
          "imagewidth":16
         }, 
         {
          "id":6,
-         "image":"grass\/Grass_7.png",
-         "imageheight":16,
-         "imagewidth":16
-        }, 
-        {
-         "id":7,
-         "image":"grass\/Grass_8.png",
-         "imageheight":16,
-         "imagewidth":16
-        }, 
-        {
-         "id":8,
-         "image":"grass\/Grass_9.png",
+         "image":"objects\/tree_4.png",
          "imageheight":16,
          "imagewidth":16
         }],
