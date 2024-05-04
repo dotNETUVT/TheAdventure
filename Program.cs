@@ -54,6 +54,11 @@ public static class Program
             }
 
             System.Threading.Thread.Sleep(TimeSpan.FromSeconds(0.041666666666667));
+
+            if(inputLogic.fatigueTimer.Elapsed.TotalSeconds < inputLogic.fatigueTime)
+                gameLogic.setPlayerSpeed(64);
+            else if(inputLogic.sprintTimer.IsRunning == false)
+                gameLogic.setPlayerSpeed(128);
         }
 
         gameWindow.Destroy();

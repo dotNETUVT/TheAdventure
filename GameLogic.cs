@@ -164,5 +164,10 @@ namespace TheAdventure
             ++_crowIds;
 
         }
+
+        public void setPlayerSpeed(int speed)
+        {
+            _player.PixelsPerSecond = speed;
+        }
     }
 }

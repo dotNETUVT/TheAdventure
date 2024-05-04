@@ -1,4 +1,6 @@
+using Silk.NET.Input;
 using Silk.NET.SDL;
+using System.Diagnostics;
 
 namespace TheAdventure{
     public unsafe class InputLogic
@@ -8,6 +10,11 @@ namespace TheAdventure{
         private GameWindow _gameWindow;
         private GameRenderer _renderer;
         private DateTimeOffset _lastUpdate;
+
+        public Stopwatch sprintTimer = new Stopwatch();
+        public Stopwatch fatigueTimer = new Stopwatch();
+        public double fatigueTime = 0;
+        public bool allowToSprint = true;
 
         public InputLogic(Sdl sdl, GameWindow window, GameRenderer renderer, GameLogic logic){
             _sdl = sdl;
@@ -135,29 +142,53 @@ namespace TheAdventure{
 
                     case (uint)EventType.Keyup:
                     {
-                        
-                        break;
+                            var key = (Scancode)ev.Key.Keysym.Scancode;
+
+                            if ((key == Scancode.ScancodeLshift || key == Scancode.ScancodeRshift) && allowToSprint == true)
+                            {
+                                fatigueTime = sprintTimer.Elapsed.TotalSeconds;
+                                sprintTimer.Reset();
+                                fatigueTimer.Start();
+                                _gameLogic.setPlayerSpeed(128);
+                                allowToSprint = false;
+                            }
+                            break;
                     }
 
                     case (uint)EventType.Keydown:
                     {
-                        break;
-                    }
+                            var key = (Scancode)ev.Key.Keysym.Scancode;
+
+                            if (key == Scancode.ScancodeLshift || key == Scancode.ScancodeRshift)
+                            {
+                                if(fatigueTimer.Elapsed.TotalSeconds >= fatigueTime)
+                                {
+                                    fatigueTimer.Reset();
+                                    fatigueTime = 0;
+                                    sprintTimer.Start();
+                                     _gameLogic.setPlayerSpeed(220);
+                                    allowToSprint = true;
+                                }
+                            }
+                            break;
+                        }
                 }
             }
 
             var timeSinceLastUpdateInMS = (int)currentTime.Subtract(_lastUpdate).TotalMilliseconds;
 
-            if (_keyboardState[(int)Scancode.ScancodeUp] == 1){
+            if (_keyboardState[(int)Scancode.ScancodeUp] == 1 || _keyboardState[(int)Scancode.ScancodeW] == 1){
                 _gameLogic.UpdatePlayerPosition(1.0, 0, 0, 0, timeSinceLastUpdateInMS);
             }
-            else if (_keyboardState[(int)Scancode.ScancodeDown] == 1){
+            else if (_keyboardState[(int)Scancode.ScancodeDown] == 1 || _keyboardState[(int)Scancode.ScancodeS] == 1){
                 _gameLogic.UpdatePlayerPosition(0, 1.0, 0, 0, timeSinceLastUpdateInMS);
             }
-            else if (_keyboardState[(int)Scancode.ScancodeLeft] == 1){
+            else if (_keyboardState[(int)Scancode.ScancodeLeft] == 1 || _keyboardState[(int)Scancode.ScancodeA] == 1)
+            {
                 _gameLogic.UpdatePlayerPosition(0, 0, 1.0, 0, timeSinceLastUpdateInMS);
             }
-            else if (_keyboardState[(int)Scancode.ScancodeRight] == 1){
+            else if (_keyboardState[(int)Scancode.ScancodeRight] == 1 || _keyboardState[(int)Scancode.ScancodeD] == 1)
+            {
                 _gameLogic.UpdatePlayerPosition(0, 0, 0, 1.0, timeSinceLastUpdateInMS);
             }
 
@@ -167,6 +198,11 @@ namespace TheAdventure{
                 _gameLogic.AddBomb(mouseX, mouseY);
             }
             return false;
+
+
         }
+
+
     }
+
 }
