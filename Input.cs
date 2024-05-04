@@ -19,16 +19,6 @@ namespace TheAdventure
             _renderer = renderer;
         }
 
-        public bool IsKeyAPressed(){
-            ReadOnlySpan<byte> _keyboardState = new(_sdl.GetKeyboardState(null), (int)KeyCode.Count);
-            return _keyboardState[(int)KeyCode.A] == 1;
-        }
-
-        public bool IsKeyBPressed(){
-            ReadOnlySpan<byte> _keyboardState = new(_sdl.GetKeyboardState(null), (int)KeyCode.Count);
-            return _keyboardState[(int)KeyCode.B] == 1;
-        }
-
         public bool IsLeftPressed()
         {
             ReadOnlySpan<byte> _keyboardState = new(_sdl.GetKeyboardState(null), (int)KeyCode.Count);
@@ -52,7 +42,13 @@ namespace TheAdventure
             ReadOnlySpan<byte> _keyboardState = new(_sdl.GetKeyboardState(null), (int)KeyCode.Count);
             return _keyboardState[(int)KeyCode.Down] == 1;
         }
-        
+
+        public bool IsSpacePressed()
+        {
+            ReadOnlySpan<byte> _keyboardState = new(_sdl.GetKeyboardState(null), (int)KeyCode.Count);
+            return _keyboardState[(int)KeyCode.Space] == 1;
+        }
+
         public bool ProcessInput()
         {
             var currentTime = DateTimeOffset.UtcNow;
@@ -187,5 +183,7 @@ namespace TheAdventure
 
             return false;
         }
+
+        
     }
 }
