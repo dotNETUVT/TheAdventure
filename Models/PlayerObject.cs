@@ -16,70 +16,49 @@ public class PlayerObject : RenderableGameObject
        
     }
 
-    public void UpdatePlayerPosition(double up, double down, double left, double right, int width, int height,
-        double time)
+    public void UpdatePlayerPosition(double up, double down, double left, double right, int width, int height, double time)
     {
+        // Calculate total movement for this frame
+        var deltaX = (right - left) * time * _pixelsPerSecond;
+        var deltaY = (down - up) * time * _pixelsPerSecond;
 
-        if (up <= double.Epsilon &&
-            down <= double.Epsilon &&
-            left <= double.Epsilon &&
-            right <= double.Epsilon &&
-            _currentAnimation == "IdleDown"){
-            return;
-        }
+        // Update player's position
+        var x = Position.X + (int)deltaX;
+        var y = Position.Y - (int)deltaY;
 
-        var pixelsToMove = time * _pixelsPerSecond;
+        // Clamp the position to the screen boundaries
+        x = Math.Clamp(x, 10, width - 10);
+        y = Math.Clamp(y, 24, height - 6);
 
-        var x = Position.X + (int)(right * pixelsToMove);
-        x -= (int)(left * pixelsToMove);
-
-        var y = Position.Y - (int)(up * pixelsToMove);
-        y += (int)(down * pixelsToMove);
-
-        if (x < 10)
-        {
-            x = 10;
-        }
-
-        if (y < 24)
-        {
-            y = 24;
-        }
-
-        if (x > width - 10)
-        {
-            x = width - 10;
-        }
-
-        if (y > height - 6)
-        {
-            y = height - 6;
-        }
-
-        if (y < Position.Y && _currentAnimation != "MoveUp"){
-            _currentAnimation = "MoveUp";
-            //Console.WriteLine($"Attempt to switch to {_currentAnimation}");
-        }
-        if (y > Position.Y && _currentAnimation != "MoveDown"){
-            _currentAnimation = "MoveDown";
-            //Console.WriteLine($"Attempt to switch to {_currentAnimation}");
-        }
-        if (x > Position.X && _currentAnimation != "MoveRight"){
-            _currentAnimation = "MoveRight";
-            //Console.WriteLine($"Attempt to switch to {_currentAnimation}");
-        }
-        if (x < Position.X && _currentAnimation != "MoveLeft"){
-            _currentAnimation = "MoveLeft";
-            //Console.WriteLine($"Attempt to switch to {_currentAnimation}");
-        }
-        if (x == Position.X && _currentAnimation != "IdleDown" &&
-            y == Position.Y && _currentAnimation != "IdleDown"){
-            _currentAnimation = "IdleDown";
-            //Console.WriteLine($"Attempt to switch to {_currentAnimation}");
-        }
-
-        //Console.WriteLine($"Will to switch to {_currentAnimation}");
-        SpriteSheet.ActivateAnimation(_currentAnimation);
+        // Set the new position
         Position = (x, y);
+
+        // Update animation based on movement direction
+        if (deltaY < 0 && _currentAnimation != "MoveUp")
+        {
+            _currentAnimation = "MoveUp";
+            SpriteSheet.ActivateAnimation(_currentAnimation);
+        }
+        else if (deltaY > 0 && _currentAnimation != "MoveDown")
+        {
+            _currentAnimation = "MoveDown";
+            SpriteSheet.ActivateAnimation(_currentAnimation);
+        }
+        else if (deltaX > 0 && _currentAnimation != "MoveRight")
+        {
+            _currentAnimation = "MoveRight";
+            SpriteSheet.ActivateAnimation(_currentAnimation);
+        }
+        else if (deltaX < 0 && _currentAnimation != "MoveLeft")
+        {
+            _currentAnimation = "MoveLeft";
+            SpriteSheet.ActivateAnimation(_currentAnimation);
+        }
+        else if (deltaX == 0 && deltaY == 0 && _currentAnimation != "IdleDown")
+        {
+            _currentAnimation = "IdleDown";
+            SpriteSheet.ActivateAnimation(_currentAnimation);
+        }
     }
+
 }
