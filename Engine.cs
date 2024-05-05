@@ -87,12 +87,21 @@ namespace TheAdventure
                 secsSinceLastFrame);
 
             var itemsToRemove = new List<int>();
-            itemsToRemove.AddRange(GetAllTemporaryGameObjects().Where(gameObject => gameObject.IsExpired)
-                .Select(gameObject => gameObject.Id).ToList());
-
-            foreach (var gameObject in itemsToRemove)
+            foreach (var gameObject in _gameObjects.Values.ToList())
             {
-                _gameObjects.Remove(gameObject);
+                if (gameObject is TemporaryGameObject tempGameObject)
+                {
+                    CheckBombPlayerCollision(tempGameObject); // check collision every frame
+                    if (tempGameObject.IsExpired)
+                    {
+                        itemsToRemove.Add(gameObject.Id);
+                    }
+                }
+            }
+
+            foreach (var id in itemsToRemove)
+            {
+                _gameObjects.Remove(id);
             }
         }
 
@@ -185,22 +194,36 @@ namespace TheAdventure
             _player.Render(_renderer);
         }
 
-        private void AddBomb(int x, int y)
+       private void AddBomb(int x, int y)
         {
             var translated = _renderer.TranslateFromScreenToWorldCoordinates(x, y);
-            /*SpriteSheet spriteSheet = new(_renderer, "BombExploding.png", 1, 13, 32, 64, (16, 48));
-            spriteSheet.Animations["Explode"] = new SpriteSheet.Animation()
-            {
-                StartFrame = (0, 0),
-                EndFrame = (0, 12),
-                DurationMs = 2000,
-                Loop = false
-            };*/
             var spriteSheet = SpriteSheet.LoadSpriteSheet("bomb.json", "Assets", _renderer);
-            if(spriteSheet != null){
+            if (spriteSheet != null)
+            {
                 spriteSheet.ActivateAnimation("Explode");
                 TemporaryGameObject bomb = new(spriteSheet, 2.1, (translated.X, translated.Y));
                 _gameObjects.Add(bomb.Id, bomb);
+            }
+        }
+
+// method for checking collision from the explosion to the player
+       private void CheckBombPlayerCollision(TemporaryGameObject bomb)
+        {   
+            if (bomb.HasDealtDamage) return;
+
+            var playerCenterX = _player.Position.X + _player.SpriteSheet.FrameWidth / 2;
+            var playerCenterY = _player.Position.Y + _player.SpriteSheet.FrameHeight / 2;
+
+            var bombCenterX = bomb.Position.X + bomb.SpriteSheet.FrameWidth / 2;
+            var bombCenterY = bomb.Position.Y + bomb.SpriteSheet.FrameHeight / 2;
+
+            var distance = Math.Sqrt(Math.Pow(bombCenterX - playerCenterX, 2) + Math.Pow(bombCenterY - playerCenterY, 2));
+
+
+            if (distance < (bomb.SpriteSheet.FrameWidth / 4 + _player.SpriteSheet.FrameWidth / 4)) 
+            {
+                _player._health -= 1; 
+                bomb.HasDealtDamage = true;
             }
         }
     }

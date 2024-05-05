@@ -8,6 +8,7 @@ public class TemporaryGameObject : RenderableGameObject
     public bool IsExpired => (DateTimeOffset.Now - _spawnTime).TotalSeconds >= Ttl;
     
     private DateTimeOffset _spawnTime;
+    public bool HasDealtDamage { get; set; } = false; // flag for dealing damage only once not on the hole animation
     
     public TemporaryGameObject(SpriteSheet spriteSheet, double ttl, (int X, int Y) position, double angle = 0.0, Point rotationCenter = new())
         : base(spriteSheet, position, angle, rotationCenter)
@@ -15,4 +16,5 @@ public class TemporaryGameObject : RenderableGameObject
         Ttl = ttl;
         _spawnTime = DateTimeOffset.Now;
     }
+
 }
