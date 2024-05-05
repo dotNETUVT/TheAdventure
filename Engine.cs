@@ -18,6 +18,8 @@ namespace TheAdventure
 
         private DateTimeOffset _lastUpdate = DateTimeOffset.Now;
         private DateTimeOffset _lastPlayerUpdate = DateTimeOffset.Now;
+        private bool _flashRed = false;
+        private DateTimeOffset _flashEndTime;
 
         public Engine(GameRenderer renderer, Input input)
         {
@@ -106,6 +108,14 @@ namespace TheAdventure
             RenderTerrain();
             RenderAllObjects();
 
+            if (_flashRed && DateTimeOffset.Now <= _flashEndTime)
+    {
+        _renderer.RenderRedFlash();
+        if (DateTimeOffset.Now > _flashEndTime) {
+            _flashRed = false; // Reset the flash trigger after the time ends
+        }
+    }
+            
             _renderer.PresentFrame();
         }
 
@@ -182,24 +192,36 @@ namespace TheAdventure
 
             _player.Render(_renderer);
         }
+private void TriggerRedFlash()
+{
+    _flashRed = true;
+    _flashEndTime = DateTimeOffset.Now.AddSeconds(1); // Flash for 1 second
+}
 
-        private void AddBomb(int x, int y)
+        private async void AddBomb(int x, int y)
+{
+    var translated = _renderer.TranslateFromScreenToWorldCoordinates(x, y);
+    var spriteSheet = SpriteSheet.LoadSpriteSheet("bomb.json", "Assets", _renderer);
+    if (spriteSheet != null)
+    {
+        spriteSheet.ActivateAnimation("Explode");
+        TemporaryGameObject bomb = new TemporaryGameObject(spriteSheet, 2.1, (translated.X, translated.Y)); 
+        _gameObjects.Add(bomb.Id, bomb); 
+        await Task.Delay(TimeSpan.FromSeconds(1.2));
+
+        // Calculate the distance between the player and the bomb
+        double distance = Math.Sqrt(Math.Pow(_player.Position.X - translated.X, 2) + Math.Pow(_player.Position.Y - translated.Y, 2));
+
+        // Check if the distance is within a certain range
+        if (distance < 100) // Adjust this range as needed
         {
-            var translated = _renderer.TranslateFromScreenToWorldCoordinates(x, y);
-            /*SpriteSheet spriteSheet = new(_renderer, "BombExploding.png", 1, 13, 32, 64, (16, 48));
-            spriteSheet.Animations["Explode"] = new SpriteSheet.Animation()
-            {
-                StartFrame = (0, 0),
-                EndFrame = (0, 12),
-                DurationMs = 2000,
-                Loop = false
-            };*/
-            var spriteSheet = SpriteSheet.LoadSpriteSheet("bomb.json", "Assets", _renderer);
-            if(spriteSheet != null){
-                spriteSheet.ActivateAnimation("Explode");
-                TemporaryGameObject bomb = new(spriteSheet, 2.1, (translated.X, translated.Y));
-                _gameObjects.Add(bomb.Id, bomb);
-            }
+            TriggerRedFlash();
+            _renderer.FlashWhiteEffect(100);
         }
+
+    }
+}
+
+
     }
 }
