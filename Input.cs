@@ -1,4 +1,5 @@
 using Silk.NET.SDL;
+using TheAdventure.Models;
 
 namespace TheAdventure
 {
@@ -6,17 +7,22 @@ namespace TheAdventure
     {
         private Sdl _sdl;
         private GameWindow _gameWindow;
+        private Engine _gameEngine;
         private GameRenderer _renderer;
-        
+        private PlayerObject _player;
+        bool isSpacebarPressed = false;
+        private bool _isSprinting = false; // Flag to track sprint mode
+
         byte[] _mouseButtonStates = new byte[(int)MouseButton.Count];
-        
+
         public EventHandler<(int x, int y)> OnMouseClick;
-        
-        public Input(Sdl sdl, GameWindow window, GameRenderer renderer)
+
+        public Input(Sdl sdl, GameWindow window, GameRenderer renderer, PlayerObject player)
         {
             _sdl = sdl;
             _gameWindow = window;
             _renderer = renderer;
+            _player = player; // Add this line to store the PlayerObject instance
         }
 
         public bool IsLeftPressed()
@@ -24,19 +30,19 @@ namespace TheAdventure
             ReadOnlySpan<byte> _keyboardState = new(_sdl.GetKeyboardState(null), (int)KeyCode.Count);
             return _keyboardState[(int)KeyCode.Left] == 1;
         }
-        
+
         public bool IsRightPressed()
         {
             ReadOnlySpan<byte> _keyboardState = new(_sdl.GetKeyboardState(null), (int)KeyCode.Count);
             return _keyboardState[(int)KeyCode.Right] == 1;
         }
-        
+
         public bool IsUpPressed()
         {
             ReadOnlySpan<byte> _keyboardState = new(_sdl.GetKeyboardState(null), (int)KeyCode.Count);
             return _keyboardState[(int)KeyCode.Up] == 1;
         }
-        
+
         public bool IsDownPressed()
         {
             ReadOnlySpan<byte> _keyboardState = new(_sdl.GetKeyboardState(null), (int)KeyCode.Count);
@@ -65,6 +71,17 @@ namespace TheAdventure
             ReadOnlySpan<byte> _keyboardState = new(_sdl.GetKeyboardState(null), (int)KeyCode.Count);
             return _keyboardState[(int)KeyCode.D] == 1;
         }
+        public bool IsRPressed()
+        {
+            ReadOnlySpan<byte> _keyboardState = new(_sdl.GetKeyboardState(null), (int)KeyCode.Count);
+            return _keyboardState[(int)KeyCode.R] == 1;
+        }
+        public bool IsSpacePressed()
+        {
+            ReadOnlySpan<byte> keyboardState = new(_sdl.GetKeyboardState(null), (int)KeyCode.Count);
+            return keyboardState[(int)KeyCode.Space] == 1;
+        }
+
 
         public bool ProcessInput()
         {
@@ -82,119 +99,90 @@ namespace TheAdventure
                 switch (ev.Type)
                 {
                     case (uint)EventType.Windowevent:
-                    {
-                        switch (ev.Window.Event)
                         {
-                            case (byte)WindowEventID.Shown:
-                            case (byte)WindowEventID.Exposed:
-                            {
-                                break;
-                            }
-                            case (byte)WindowEventID.Hidden:
-                            {
-                                break;
-                            }
-                            case (byte)WindowEventID.Moved:
-                            {
-                                break;
-                            }
-                            case (byte)WindowEventID.SizeChanged:
-                            {
-                                break;
-                            }
-                            case (byte)WindowEventID.Minimized:
-                            case (byte)WindowEventID.Maximized:
-                            case (byte)WindowEventID.Restored:
-                                break;
-                            case (byte)WindowEventID.Enter:
-                            {
-                                break;
-                            }
-                            case (byte)WindowEventID.Leave:
-                            {
-                                break;
-                            }
-                            case (byte)WindowEventID.FocusGained:
-                            {
-                                break;
-                            }
-                            case (byte)WindowEventID.FocusLost:
-                            {
-                                break;
-                            }
-                            case (byte)WindowEventID.Close:
-                            {
-                                break;
-                            }
-                            case (byte)WindowEventID.TakeFocus:
-                            {
-                                unsafe
-                                {
-                                    _sdl.SetWindowInputFocus(_sdl.GetWindowFromID(ev.Window.WindowID));
-                                }
-
-                                break;
-                            }
+                            // Handle window events
+                            break;
                         }
-
-                        break;
-                    }
 
                     case (uint)EventType.Fingermotion:
-                    {
-                        break;
-                    }
+                        {
+                            // Handle finger motion events
+                            break;
+                        }
 
                     case (uint)EventType.Mousemotion:
-                    {
-                        break;
-                    }
+                        {
+                            // Handle mouse motion events
+                            break;
+                        }
 
                     case (uint)EventType.Fingerdown:
-                    {
-                        _mouseButtonStates[(byte)MouseButton.Primary] = 1;
-                        break;
-                    }
-                    case (uint)EventType.Mousebuttondown:
-                    {
-                        mouseX = ev.Motion.X;
-                        mouseY = ev.Motion.Y;
-                        _mouseButtonStates[ev.Button.Button] = 1;
-                        
-                        if (ev.Button.Button == (byte)MouseButton.Primary)
                         {
-                            OnMouseClick?.Invoke(this, (mouseX, mouseY));
+                            // Handle finger down events
+                            _mouseButtonStates[(byte)MouseButton.Primary] = 1;
+                            break;
                         }
-                        
-                        break;
-                    }
+
+                    case (uint)EventType.Mousebuttondown:
+                        {
+                            // Handle mouse button down events
+                            mouseX = ev.Motion.X;
+                            mouseY = ev.Motion.Y;
+                            _mouseButtonStates[ev.Button.Button] = 1;
+
+                            if (ev.Button.Button == (byte)MouseButton.Primary)
+                            {
+                                OnMouseClick?.Invoke(this, (mouseX, mouseY));
+                            }
+
+                            break;
+                        }
 
                     case (uint)EventType.Fingerup:
-                    {
-                        _mouseButtonStates[(byte)MouseButton.Primary] = 0;
-                        break;
-                    }
+                        {
+                            // Handle finger up events
+                            _mouseButtonStates[(byte)MouseButton.Primary] = 0;
+                            break;
+                        }
 
                     case (uint)EventType.Mousebuttonup:
-                    {
-                        _mouseButtonStates[ev.Button.Button] = 0;
-                        break;
-                    }
+                        {
+                            // Handle mouse button up events
+                            _mouseButtonStates[ev.Button.Button] = 0;
+                            break;
+                        }
 
                     case (uint)EventType.Mousewheel:
-                    {
-                        break;
-                    }
+                        {
+                            // Handle mouse wheel events
+                            break;
+                        }
 
                     case (uint)EventType.Keyup:
-                    {
-                        break;
-                    }
+                        {
+                            // Handle key up events
+                            break;
+                        }
 
                     case (uint)EventType.Keydown:
-                    {
-                        break;
-                    }
+                        {
+                            // Handle key down events
+                            if (ev.Key.Keysym.Sym == (int)KeyCode.R)
+                            {
+                                // Toggle sprint mode
+                                _isSprinting = !_isSprinting;
+
+                                // Set sprint mode for the player
+                                _player.SetSprint(_isSprinting);
+                            }
+                            else if (ev.Key.Keysym.Sym == (int)KeyCode.Space)
+                            {
+                                // Set the flag when spacebar is pressed
+                                isSpacebarPressed = true;
+                            }
+
+                            break;
+                        }
                 }
             }
 

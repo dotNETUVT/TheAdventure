@@ -1,3 +1,4 @@
+using System;
 using System.Text.Json;
 using Silk.NET.Maths;
 using Silk.NET.SDL;
@@ -72,7 +73,8 @@ namespace TheAdventure
             _renderer.SetWorldBounds(new Rectangle<int>(0, 0, _currentLevel.Width * _currentLevel.TileWidth,
                 _currentLevel.Height * _currentLevel.TileHeight));
         }
-    
+        
+
         private double CalculateDistance(Vector2D<int> point1, Vector2D<int> point2)
         {
             var dx = point1.X - point2.X;
@@ -92,9 +94,15 @@ namespace TheAdventure
             double down = (_input.IsDownPressed() || _input.IsSPressed()) ? 1.0 : 0.0;
             double left = (_input.IsLeftPressed() || _input.IsAPressed()) ? 1.0 : 0.0;
             double right = (_input.IsRightPressed() || _input.IsDPressed()) ? 1.0 : 0.0;
-
-            // Update player position
-            _player.UpdatePlayerPosition(up, down, left, right, _currentLevel.Width * _currentLevel.TileWidth, _currentLevel.Height * _currentLevel.TileHeight, secsSinceLastFrame);
+            bool isSpacebarPressed = _input.IsSpacePressed(); // Check if spacebar is pressed
+            if (_input.IsRPressed())
+            {
+                // Toggle sprint mode
+                _player.ToggleSprint();
+            }
+            // Update player position with additional isSpacebarPressed argument
+            _player.UpdatePlayerPosition(up, down, left, right, _currentLevel.Width * _currentLevel.TileWidth,
+                _currentLevel.Height * _currentLevel.TileHeight, secsSinceLastFrame, _player.IsSprinting, isSpacebarPressed);
 
             // Check if it's time to spawn a new bomb
             if (secsSinceLastBomb >= 1) // spawn every 5 seconds, adjust as needed
@@ -102,7 +110,6 @@ namespace TheAdventure
                 AddRandomBomb();
                 _lastBombTime = currentTime; // update the last bomb time
             }
-
 
             var itemsToRemove = new List<int>();
             itemsToRemove.AddRange(GetAllTemporaryGameObjects().Where(gameObject => gameObject.IsExpired)
@@ -115,6 +122,7 @@ namespace TheAdventure
 
             _lastUpdate = currentTime;
         }
+
 
         public void RenderFrame()
         {
@@ -205,7 +213,7 @@ namespace TheAdventure
 
 
 
-        private void AddRandomBomb()
+        public void AddRandomBomb()
         {
             // Generate random position for the bomb within the game world
             var random = new Random();
@@ -222,6 +230,9 @@ namespace TheAdventure
                 _gameObjects.Add(bomb.Id, bomb);
             }
         }
+        
+        
+
 
 
     }

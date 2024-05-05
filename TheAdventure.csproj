@@ -9,6 +9,10 @@
     </PropertyGroup>
 
     <ItemGroup>
+      <PackageReference Include="sdl2_mixer" Version="2.0.0">
+        <PrivateAssets>all</PrivateAssets>
+        <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+      </PackageReference>
       <PackageReference Include="Silk.NET.Input.Sdl" Version="2.20.0" />
       <PackageReference Include="Silk.NET.SDL" Version="2.20.0" />
       <PackageReference Include="Silk.NET.Windowing.Sdl" Version="2.20.0" />
