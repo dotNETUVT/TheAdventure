@@ -24,13 +24,7 @@ public class PlayerObject : RenderableGameObject
         Position = (x, y);
     }
     
-    public void MoveTo(int x, int y, int width, int height)
-    {
-        x = Math.Clamp(x, 10, width - 10);
-        y = Math.Clamp(y, 24, height - 6);
-
-        Position = (x, y);
-    }
+    
 
 
 
