@@ -65,7 +65,7 @@ namespace TheAdventure
             */
             var spriteSheet = SpriteSheet.LoadSpriteSheet("player.json", "Assets", _renderer);
             if(spriteSheet != null){
-                _player = new PlayerObject(spriteSheet, 100, 100);
+                _player = new PlayerObject(_renderer, spriteSheet, 100, 100);
             }
             _renderer.SetWorldBounds(new Rectangle<int>(0, 0, _currentLevel.Width * _currentLevel.TileWidth,
                 _currentLevel.Height * _currentLevel.TileHeight));
@@ -105,6 +105,8 @@ namespace TheAdventure
 
             RenderTerrain();
             RenderAllObjects();
+
+            _player.RenderHearths(_renderer);
 
             _renderer.PresentFrame();
         }

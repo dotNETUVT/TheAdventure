@@ -78,6 +78,19 @@ public unsafe class GameRenderer
         }
     }
 
+    public void RenderTextureToScreen(int textureId, Rectangle<int> src, Rectangle<int> dst)
+{
+    if (_textures.TryGetValue(textureId, out var imageTexture))
+    {
+        _sdl.RenderCopyEx(_renderer, (Texture*)imageTexture, src, dst, 0.0, new Point(), RendererFlip.None);
+    }
+    else
+    {
+        // Optionally handle the case where the texture is not found
+        throw new InvalidOperationException("Texture ID not found.");
+    }
+}
+
     public Vector2D<int> TranslateFromScreenToWorldCoordinates(int x, int y)
     {
         return _camera.FromScreenToWorld(x, y);
