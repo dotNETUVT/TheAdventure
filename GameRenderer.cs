@@ -78,6 +78,7 @@ public unsafe class GameRenderer
         }
     }
 
+    // method for rendering the player's life always directly on screen
     public void RenderTextureToScreen(int textureId, Rectangle<int> src, Rectangle<int> dst)
 {
     if (_textures.TryGetValue(textureId, out var imageTexture))
@@ -86,7 +87,6 @@ public unsafe class GameRenderer
     }
     else
     {
-        // Optionally handle the case where the texture is not found
         throw new InvalidOperationException("Texture ID not found.");
     }
 }

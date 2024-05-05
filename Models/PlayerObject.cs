@@ -24,7 +24,7 @@ public class PlayerObject : RenderableGameObject
         _renderer = renderer;
         TextureInfo textureInfo;
 
-        _hearthTextureId = _renderer.LoadTexture("Assets/life.png", out textureInfo);  // load texture
+        _hearthTextureId = _renderer.LoadTexture("Assets/life_resized.png", out textureInfo);  // load texture
 
 
        
