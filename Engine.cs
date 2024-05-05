@@ -15,7 +15,7 @@ namespace TheAdventure
         private PlayerObject _player;
         private GameRenderer _renderer;
         private Input _input;
-
+        private DateTimeOffset _lastBombTime;
         private DateTimeOffset _lastUpdate = DateTimeOffset.Now;
         private DateTimeOffset _lastPlayerUpdate = DateTimeOffset.Now;
 
@@ -24,8 +24,10 @@ namespace TheAdventure
             _renderer = renderer;
             _input = input;
 
-            _input.OnMouseClick += (_, coords) => AddBomb(coords.x, coords.y);
+            _lastUpdate = DateTimeOffset.Now;
+            _lastBombTime = DateTimeOffset.Now;
         }
+
 
         public void InitializeWorld()
         {
@@ -70,21 +72,37 @@ namespace TheAdventure
             _renderer.SetWorldBounds(new Rectangle<int>(0, 0, _currentLevel.Width * _currentLevel.TileWidth,
                 _currentLevel.Height * _currentLevel.TileHeight));
         }
+    
+        private double CalculateDistance(Vector2D<int> point1, Vector2D<int> point2)
+        {
+            var dx = point1.X - point2.X;
+            var dy = point1.Y - point2.Y;
+
+            return Math.Sqrt(dx * dx + dy * dy);
+        }
 
         public void ProcessFrame()
         {
             var currentTime = DateTimeOffset.Now;
             var secsSinceLastFrame = (currentTime - _lastUpdate).TotalSeconds;
-            _lastUpdate = currentTime;
+            var secsSinceLastBomb = (currentTime - _lastBombTime).TotalSeconds;
 
-            bool up = _input.IsUpPressed();
-            bool down = _input.IsDownPressed();
-            bool left = _input.IsLeftPressed();
-            bool right = _input.IsRightPressed();
+            // Get movement input from the Input class
+            double up = (_input.IsUpPressed() || _input.IsWPressed()) ? 1.0 : 0.0;
+            double down = (_input.IsDownPressed() || _input.IsSPressed()) ? 1.0 : 0.0;
+            double left = (_input.IsLeftPressed() || _input.IsAPressed()) ? 1.0 : 0.0;
+            double right = (_input.IsRightPressed() || _input.IsDPressed()) ? 1.0 : 0.0;
 
-            _player.UpdatePlayerPosition(up ? 1.0 : 0.0, down ? 1.0 : 0.0, left ? 1.0 : 0.0, right ? 1.0 : 0.0,
-                _currentLevel.Width * _currentLevel.TileWidth, _currentLevel.Height * _currentLevel.TileHeight,
-                secsSinceLastFrame);
+            // Update player position
+            _player.UpdatePlayerPosition(up, down, left, right, _currentLevel.Width * _currentLevel.TileWidth, _currentLevel.Height * _currentLevel.TileHeight, secsSinceLastFrame);
+
+            // Check if it's time to spawn a new bomb
+            if (secsSinceLastBomb >= 1) // spawn every 5 seconds, adjust as needed
+            {
+                AddRandomBomb();
+                _lastBombTime = currentTime; // update the last bomb time
+            }
+
 
             var itemsToRemove = new List<int>();
             itemsToRemove.AddRange(GetAllTemporaryGameObjects().Where(gameObject => gameObject.IsExpired)
@@ -94,6 +112,8 @@ namespace TheAdventure
             {
                 _gameObjects.Remove(gameObject);
             }
+
+            _lastUpdate = currentTime;
         }
 
         public void RenderFrame()
@@ -183,23 +203,26 @@ namespace TheAdventure
             _player.Render(_renderer);
         }
 
-        private void AddBomb(int x, int y)
+
+
+        private void AddRandomBomb()
         {
-            var translated = _renderer.TranslateFromScreenToWorldCoordinates(x, y);
-            /*SpriteSheet spriteSheet = new(_renderer, "BombExploding.png", 1, 13, 32, 64, (16, 48));
-            spriteSheet.Animations["Explode"] = new SpriteSheet.Animation()
-            {
-                StartFrame = (0, 0),
-                EndFrame = (0, 12),
-                DurationMs = 2000,
-                Loop = false
-            };*/
+            // Generate random position for the bomb within the game world
+            var random = new Random();
+            var x = random.Next(0, _currentLevel.Width * _currentLevel.TileWidth);
+            var y = random.Next(0, _currentLevel.Height * _currentLevel.TileHeight);
+
+            var translatedPosition = _renderer.TranslateFromScreenToWorldCoordinates(x, y);
+
             var spriteSheet = SpriteSheet.LoadSpriteSheet("bomb.json", "Assets", _renderer);
-            if(spriteSheet != null){
+            if (spriteSheet != null)
+            {
                 spriteSheet.ActivateAnimation("Explode");
-                TemporaryGameObject bomb = new(spriteSheet, 2.1, (translated.X, translated.Y));
+                TemporaryGameObject bomb = new(spriteSheet, 2.1, (translatedPosition.X, translatedPosition.Y));
                 _gameObjects.Add(bomb.Id, bomb);
             }
         }
+
+
     }
 }
