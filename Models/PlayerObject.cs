@@ -15,6 +15,15 @@ public class PlayerObject : RenderableGameObject
         SpriteSheet.ActivateAnimation(_currentAnimation);
        
     }
+    
+    public void MoveTo(int x, int y, int width, int height)
+    {
+        x = Math.Clamp(x, 10, width - 10);
+        y = Math.Clamp(y, 24, height - 6);
+
+        Position = (x, y);
+    }
+
 
     public void UpdatePlayerPosition(double up, double down, double left, double right, int width, int height,
         double time)

@@ -25,6 +25,16 @@ namespace TheAdventure
             _input = input;
 
             _input.OnMouseClick += (_, coords) => AddBomb(coords.x, coords.y);
+            _input.OnRightMouseClick += (_, coords) => MovePlayer(coords.x, coords.y);
+        }
+        
+        private void MovePlayer(int x, int y)
+        {
+            if (_currentLevel == null) return;
+
+            var translatedCoords = _renderer.TranslateFromScreenToWorldCoordinates(x, y);
+
+            _player.MoveTo(translatedCoords.X, translatedCoords.Y, _currentLevel.Width * _currentLevel.TileWidth, _currentLevel.Height * _currentLevel.TileHeight);
         }
 
         public void InitializeWorld()
