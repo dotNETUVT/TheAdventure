@@ -10,7 +10,8 @@ public class PlayerObject : RenderableGameObject
     public int heals = 30;
     public PlayerObject(SpriteSheet spriteSheet, int x, int y) : base(spriteSheet, (x, y))
     {
-        SpriteSheet.ActivateAnimation("IdleDown");
+        SpriteSheet.ActivateAnimation(_currentAnimation);
+       
     }
 
     public void UpdatePlayerPosition(double up, double down, double left, double right, int width, int height,
@@ -48,6 +49,30 @@ public class PlayerObject : RenderableGameObject
             y = height - 6;
         }
 
+        if (y < Position.Y && _currentAnimation != "MoveUp"){
+            _currentAnimation = "MoveUp";
+            //Console.WriteLine($"Attempt to switch to {_currentAnimation}");
+        }
+        if (y > Position.Y && _currentAnimation != "MoveDown"){
+            _currentAnimation = "MoveDown";
+            //Console.WriteLine($"Attempt to switch to {_currentAnimation}");
+        }
+        if (x > Position.X && _currentAnimation != "MoveRight"){
+            _currentAnimation = "MoveRight";
+            //Console.WriteLine($"Attempt to switch to {_currentAnimation}");
+        }
+        if (x < Position.X && _currentAnimation != "MoveLeft"){
+            _currentAnimation = "MoveLeft";
+            //Console.WriteLine($"Attempt to switch to {_currentAnimation}");
+        }
+        if (x == Position.X && _currentAnimation != "IdleDown" &&
+            y == Position.Y && _currentAnimation != "IdleDown"){
+            _currentAnimation = "IdleDown";
+            //Console.WriteLine($"Attempt to switch to {_currentAnimation}");
+        }
+
+        //Console.WriteLine($"Will to switch to {_currentAnimation}");
+        SpriteSheet.ActivateAnimation(_currentAnimation);
         Position = (x, y);
         
     }
