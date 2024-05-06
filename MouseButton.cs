@@ -3,8 +3,8 @@ namespace TheAdventure;
 public enum MouseButton : byte
 {
     Primary = 1,
-    Middle,
-    Secondary,
+    Middle = 3,
+    Secondary = 2,
     Button4,
     Button5,
     Button6,

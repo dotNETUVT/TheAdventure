@@ -77,10 +77,17 @@ namespace TheAdventure
             bool down = _input.IsDownPressed();
             bool left = _input.IsLeftPressed();
             bool right = _input.IsRightPressed();
+            bool fast = _input.IsShiftPressed();
+            bool heal = _input.IsHPressed();
+            if(heal && _player.heals>=1){
+                _player.Heal(1);
+                _player.heals=_player.heals - 1;
+            }
 
             _player.UpdatePlayerPosition(up ? 1.0 : 0.0, down ? 1.0 : 0.0, left ? 1.0 : 0.0, right ? 1.0 : 0.0,
                 _currentLevel.Width * _currentLevel.TileWidth, _currentLevel.Height * _currentLevel.TileHeight,
-                secsSinceLastFrame);
+                secsSinceLastFrame, fast);
+            
 
             var itemsToRemove = new List<int>();
             itemsToRemove.AddRange(GetAllTemporaryGameObjects().Where(gameObject => gameObject.IsExpired)
@@ -100,8 +107,8 @@ namespace TheAdventure
             _renderer.CameraLookAt(_player.Position.X, _player.Position.Y);
 
             RenderTerrain();
-            RenderAllObjects();
-
+            RenderAllObjects(); 
+            _renderer.RenderPlayerHealth(_player);
             _renderer.PresentFrame();
         }
 

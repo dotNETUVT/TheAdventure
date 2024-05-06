@@ -6,16 +6,21 @@ namespace TheAdventure.Models;
 public class PlayerObject : RenderableGameObject
 {
     private int _pixelsPerSecond = 192;
-
+    public int Health { get; private set; } = 50;
+    public int heals = 30;
     public PlayerObject(SpriteSheet spriteSheet, int x, int y) : base(spriteSheet, (x, y))
     {
         SpriteSheet.ActivateAnimation("IdleDown");
     }
 
     public void UpdatePlayerPosition(double up, double down, double left, double right, int width, int height,
-        double time)
+        double time, bool fast)
     {
-        var pixelsToMove = time * _pixelsPerSecond;
+        var pixelsToMove = 0;
+        if(fast)
+            {pixelsToMove = (int)(time * _pixelsPerSecond * 2); }
+        else 
+            {pixelsToMove = (int)(time * _pixelsPerSecond); }
 
         var x = Position.X + (int)(right * pixelsToMove);
         x -= (int)(left * pixelsToMove);
@@ -44,5 +49,12 @@ public class PlayerObject : RenderableGameObject
         }
 
         Position = (x, y);
+        
     }
+    public void Heal(int healAmount)
+    {
+        Health = Math.Min(Health + healAmount, 100);
+    }
+
+    
 }

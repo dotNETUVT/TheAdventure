@@ -17,6 +17,8 @@ public unsafe class GameRenderer
     private Dictionary<int, IntPtr> _textures = new();
     private Dictionary<int, TextureInfo> _textureData = new();
     private int _textureId;
+    private int _screenWidth;
+    private int _screenHeight;
 
     public GameRenderer(Sdl sdl, GameWindow window)
     {
@@ -28,6 +30,9 @@ public unsafe class GameRenderer
 
         var windowSize = window.Size;
         _camera = new Camera(windowSize.Width, windowSize.Height);
+
+        _screenWidth = window.Size.Width;
+        _screenHeight = window.Size.Height; 
     }
 
     public void SetWorldBounds(Rectangle<int> bounds)
@@ -44,7 +49,7 @@ public unsafe class GameRenderer
     {
         using (var fStream = new FileStream(fileName, FileMode.Open))
         {
-            var image = Image.Load<Rgba32>(fStream);
+            var image = SixLabors.ImageSharp.Image.Load<Rgba32>(fStream);
             textureInfo = new TextureInfo()
             {
                 Width = image.Width,
@@ -97,4 +102,25 @@ public unsafe class GameRenderer
     {
         _sdl.RenderPresent(_renderer);
     }
+
+    public void RenderPlayerHealth(PlayerObject player)
+{
+    int healthBarWidth = 200;
+    int healthBarHeight = 20;
+    int healthBarX = 10;  // 10 pixels from the left
+    int healthBarY = _screenHeight - 30;  // 30 pixels from the bottom
+
+    _sdl.SetRenderDrawColor(_renderer, 128, 128, 128, 255);
+    var backgroundRect = new Rectangle<int>(healthBarX, healthBarY, healthBarWidth, healthBarHeight);
+    _sdl.RenderFillRect(_renderer, &backgroundRect);
+
+    int filledWidth = (int)(healthBarWidth * (player.Health / 100.0));
+    _sdl.SetRenderDrawColor(_renderer, 255, 0, 0, 255);
+    var filledRect = new Rectangle<int>(healthBarX, healthBarY, filledWidth, healthBarHeight);
+    _sdl.RenderFillRect(_renderer, &filledRect);
+}
+
+
+
+
 }
