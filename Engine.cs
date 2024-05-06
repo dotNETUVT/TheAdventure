@@ -19,6 +19,18 @@ namespace TheAdventure
         private DateTimeOffset _lastUpdate = DateTimeOffset.Now;
         private DateTimeOffset _lastPlayerUpdate = DateTimeOffset.Now;
 
+        private int _currentBombCount = 0;
+        private const int MaxBombCount = 5;
+        private double _timeSinceLastBombRecharge = 0.0;
+
+        private DateTimeOffset _lastMoveStartTime;
+        private bool _isCurrentlyMoving;
+        private bool _isCurrentlySliding;
+        private double _currentSpeedMultiplier = 1.0;
+        private bool _wasMovingFast = false;
+        private DateTimeOffset _slidingStartTime;
+        private double _lastUp, _lastDown, _lastLeft, _lastRight;
+
         public Engine(GameRenderer renderer, Input input)
         {
             _renderer = renderer;
@@ -77,14 +89,54 @@ namespace TheAdventure
             var secsSinceLastFrame = (currentTime - _lastUpdate).TotalSeconds;
             _lastUpdate = currentTime;
 
-            bool up = _input.IsUpPressed();
-            bool down = _input.IsDownPressed();
-            bool left = _input.IsLeftPressed();
-            bool right = _input.IsRightPressed();
+            _timeSinceLastBombRecharge += secsSinceLastFrame;
+            if (_timeSinceLastBombRecharge >= 3.0 && _currentBombCount < MaxBombCount)
+            {
+                _currentBombCount++;
+                _timeSinceLastBombRecharge -= 3.0;
+            }
 
-            _player.UpdatePlayerPosition(up ? 1.0 : 0.0, down ? 1.0 : 0.0, left ? 1.0 : 0.0, right ? 1.0 : 0.0,
-                _currentLevel.Width * _currentLevel.TileWidth, _currentLevel.Height * _currentLevel.TileHeight,
-                secsSinceLastFrame);
+            bool up = _input.IsUpPressed() || _input.IsWPressed();
+            bool down = _input.IsDownPressed() || _input.IsSPressed();
+            bool left = _input.IsLeftPressed() || _input.IsAPressed();
+            bool right = _input.IsRightPressed() || _input.IsDPressed();
+
+            bool isMovementKeyPressed = up || down || left || right;
+
+            UpdateMovementState(isMovementKeyPressed);
+
+            if (!isMovementKeyPressed && _wasMovingFast)
+            {   
+                if (!_isCurrentlySliding)
+                {
+                    _slidingStartTime = DateTimeOffset.UtcNow;
+                    _isCurrentlySliding = true;
+                }
+
+                if ((DateTimeOffset.UtcNow - _slidingStartTime).TotalSeconds <= 0.25)
+                {
+                    _player.UpdatePlayerPosition(_lastUp, _lastDown, _lastLeft, _lastRight,
+                        _currentLevel.Width * _currentLevel.TileWidth, _currentLevel.Height * _currentLevel.TileHeight,
+                        secsSinceLastFrame * _currentSpeedMultiplier);
+                }
+                else
+                {
+                    _wasMovingFast = false;
+                    _isCurrentlySliding = false;
+                    _currentSpeedMultiplier = 1.0;
+                }
+            }
+            else
+            {
+                _player.UpdatePlayerPosition(up ? 1.0 : 0.0, down ? 1.0 : 0.0, left ? 1.0 : 0.0, right ? 1.0 : 0.0,
+                    _currentLevel.Width * _currentLevel.TileWidth, _currentLevel.Height * _currentLevel.TileHeight,
+                    secsSinceLastFrame * _currentSpeedMultiplier);
+
+                _lastUp = up ? 1.0 : 0.0;
+                _lastDown = down ? 1.0 : 0.0;
+                _lastLeft = left ? 1.0 : 0.0;
+                _lastRight = right ? 1.0 : 0.0;
+            }
 
             var itemsToRemove = new List<int>();
             itemsToRemove.AddRange(GetAllTemporaryGameObjects().Where(gameObject => gameObject.IsExpired)
@@ -93,6 +145,30 @@ namespace TheAdventure
             foreach (var gameObject in itemsToRemove)
             {
                 _gameObjects.Remove(gameObject);
+            }
+        }
+
+        private void UpdateMovementState(bool isMovementKeyPressed)
+        {
+            if (isMovementKeyPressed && !_isCurrentlyMoving)
+            {
+                _lastMoveStartTime = DateTimeOffset.UtcNow;
+                _isCurrentlyMoving = true;
+            }
+            else if (!isMovementKeyPressed && _isCurrentlyMoving)
+            {
+                _isCurrentlyMoving = false;
+                _wasMovingFast = true;
+                _currentSpeedMultiplier = 1.5;
+            }
+
+            if (_isCurrentlyMoving)
+            {
+                TimeSpan movementDuration = DateTimeOffset.UtcNow - _lastMoveStartTime;
+                if (movementDuration.TotalSeconds > 2)
+                {
+                    _currentSpeedMultiplier = 2.0;  // Double the speed after 2 seconds
+                }
             }
         }
 
@@ -185,20 +261,20 @@ namespace TheAdventure
 
         private void AddBomb(int x, int y)
         {
-            var translated = _renderer.TranslateFromScreenToWorldCoordinates(x, y);
-            /*SpriteSheet spriteSheet = new(_renderer, "BombExploding.png", 1, 13, 32, 64, (16, 48));
-            spriteSheet.Animations["Explode"] = new SpriteSheet.Animation()
+            if (_currentBombCount <= 0)
             {
-                StartFrame = (0, 0),
-                EndFrame = (0, 12),
-                DurationMs = 2000,
-                Loop = false
-            };*/
+                return;
+            }
+
+            var translated = _renderer.TranslateFromScreenToWorldCoordinates(x, y);
             var spriteSheet = SpriteSheet.LoadSpriteSheet("bomb.json", "Assets", _renderer);
-            if(spriteSheet != null){
+            if(spriteSheet != null)
+            {
                 spriteSheet.ActivateAnimation("Explode");
                 TemporaryGameObject bomb = new(spriteSheet, 2.1, (translated.X, translated.Y));
                 _gameObjects.Add(bomb.Id, bomb);
+
+                _currentBombCount--;
             }
         }
     }
