@@ -45,38 +45,49 @@ public unsafe class GameRenderer
         using (var fStream = new FileStream(fileName, FileMode.Open))
         {
             var image = Image.Load<Rgba32>(fStream);
-            textureInfo = new TextureInfo()
+            textureInfo = new TextureInfo
             {
                 Width = image.Width,
                 Height = image.Height
             };
             var imageRAWData = new byte[textureInfo.Width * textureInfo.Height * 4];
             image.CopyPixelDataTo(imageRAWData.AsSpan());
+
             fixed (byte* data = imageRAWData)
             {
                 var imageSurface = _sdl.CreateRGBSurfaceWithFormatFrom(data, textureInfo.Width,
-                    textureInfo.Height, 8, textureInfo.Width * 4, (uint)PixelFormatEnum.Rgba32);
+                    textureInfo.Height, 32, textureInfo.Width * 4, (uint)PixelFormatEnum.Rgba32);
                 var imageTexture = _sdl.CreateTextureFromSurface(_renderer, imageSurface);
                 _sdl.FreeSurface(imageSurface);
+
                 _textureData[_textureId] = textureInfo;
                 _textures[_textureId] = (IntPtr)imageTexture;
+
+                return _textureId++; 
             }
         }
-
-        return _textureId++;
     }
 
+
+
     public void RenderTexture(int textureId, Rectangle<int> src, Rectangle<int> dst,
-        RendererFlip flip = RendererFlip.None, double angle = 0.0, Point center = default)
+        RendererFlip flip = RendererFlip.None, double angle = 0.0, Point center = default, float opacity = 1.0f)
     {
         if (_textures.TryGetValue(textureId, out var imageTexture))
         {
+            _sdl.SetTextureBlendMode((Texture*)imageTexture, BlendMode.Blend);
+
+            byte alpha = (byte)(opacity * 255);
+            _sdl.SetTextureAlphaMod((Texture*)imageTexture, alpha);
+
             _sdl.RenderCopyEx(_renderer, (Texture*)imageTexture, src,
                 _camera.TranslateToScreenCoordinates(dst),
                 angle,
                 center, flip);
         }
     }
+
+
 
     public Vector2D<int> TranslateFromScreenToWorldCoordinates(int x, int y)
     {

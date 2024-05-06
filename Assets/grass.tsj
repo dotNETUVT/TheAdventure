@@ -35,7 +35,19 @@
          "image":"grass_004.png",
          "imageheight":16,
          "imagewidth":16
-        }],
+        },{
+                  "id":4,
+                  "image":"grass_005.png",
+                  "solid":true,
+                  "imageheight":16,
+                  "imagewidth":16
+                 },{
+                                     "id":5,
+                                     "image":"grass_006.png",
+                                     "solid":true,
+                                     "imageheight":16,
+                                     "imagewidth":16
+                                    }],
  "tilewidth":16,
  "type":"tileset",
  "version":"1.10"

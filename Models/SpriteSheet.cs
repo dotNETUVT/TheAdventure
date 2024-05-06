@@ -1,3 +1,6 @@
+using System;
+using System.Collections.Generic;
+using System.IO;
 using System.Text.Json;
 using Silk.NET.Maths;
 using Silk.NET.SDL;
@@ -26,6 +29,8 @@ public class SpriteSheet
     public Dictionary<string, Animation> Animations { get; init; } = new();
 
     private int _textureId = -1;
+    private float _opacity = 1.0f;  // Default opacity is 100%
+    private Vector2D<float> _scale = new(1f, 1f); // Default scale
     private DateTimeOffset _animationStart = DateTimeOffset.MinValue;
 
     public static SpriteSheet? LoadSpriteSheet(string fileName, string folder, GameRenderer renderer)
@@ -50,7 +55,6 @@ public class SpriteSheet
         var filePath = FileName;
         try
         {
-            
             if (!string.IsNullOrWhiteSpace(parentFolder) && !string.IsNullOrWhiteSpace(FileName))
             {
                 filePath = Path.Combine(parentFolder, FileName);
@@ -91,8 +95,8 @@ public class SpriteSheet
     {
         renderer.RenderTexture(_textureId,
             new Rectangle<int>(0, 0, FrameWidth, FrameHeight),
-            new Rectangle<int>(dest.X - FrameCenter.OffsetX, dest.Y - FrameCenter.OffsetY, FrameWidth, FrameHeight),
-            RendererFlip.None, angle, rotationCenter);
+            new Rectangle<int>(dest.X - FrameCenter.OffsetX, dest.Y - FrameCenter.OffsetY, (int)(FrameWidth * _scale.X), (int)(FrameHeight * _scale.Y)),
+            RendererFlip.None, angle, rotationCenter, _opacity);
     }
 
     private void RenderAnimation(GameRenderer renderer, (int X, int Y) dest, double angle, Point rotationCenter)
@@ -107,7 +111,10 @@ public class SpriteSheet
 
         renderer.RenderTexture(_textureId,
             new Rectangle<int>(currentCol * FrameWidth, currentRow * FrameHeight, FrameWidth, FrameHeight),
-            new Rectangle<int>(dest.X - FrameCenter.OffsetX, dest.Y - FrameCenter.OffsetY, FrameWidth, FrameHeight),
-            ActiveAnimation.Flip, angle, rotationCenter);
+            new Rectangle<int>(dest.X - FrameCenter.OffsetX, dest.Y - FrameCenter.OffsetY, (int)(FrameWidth * _scale.X), (int)(FrameHeight * _scale.Y)),
+            ActiveAnimation.Flip, angle, rotationCenter, _opacity);
     }
+
+    public void SetOpacity(float opacity) => _opacity = opacity;
+    public void SetScale(float scaleX, float scaleY) => _scale = new Vector2D<float>(scaleX, scaleY);
 }
