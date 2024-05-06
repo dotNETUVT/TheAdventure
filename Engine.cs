@@ -12,6 +12,8 @@ namespace TheAdventure
         private readonly Dictionary<string, TileSet> _loadedTileSets = new();
 
         private Level? _currentLevel;
+
+         private bool isGameOver = false;
         private PlayerObject _player;
         private GameRenderer _renderer;
         private Input _input;
@@ -25,7 +27,18 @@ namespace TheAdventure
             _input = input;
 
             _input.OnMouseClick += (_, coords) => AddBomb(coords.x, coords.y);
+
+            InitializeWorld(); // Adaugă această linie pentru a inițializa lumea jocului la crearea motorului
+
+            // Inițializează și adaugă player-ul în lista de obiecte
+            var spriteSheet = SpriteSheet.LoadSpriteSheet("player.json", "Assets", _renderer);
+            if(spriteSheet != null)
+            {
+                _player = new PlayerObject(spriteSheet, 100, 100);
+                _gameObjects.Add(_player.Id, _player);
+            }
         }
+
 
         public void InitializeWorld()
         {
@@ -71,8 +84,53 @@ namespace TheAdventure
                 _currentLevel.Height * _currentLevel.TileHeight));
         }
 
+        public bool IntersectsWith(PlayerObject player, TemporaryGameObject bomb)
+        {
+            // Coordonatele și dimensiunile dreptunghiului care reprezintă jucătorul
+            int playerLeft = player.Position.X;
+            int playerTop = player.Position.Y;
+            int playerRight = player.Position.X + player.SpriteSheet.FrameWidth;
+            int playerBottom = player.Position.Y + player.SpriteSheet.FrameHeight;
+
+            // Coordonatele și dimensiunile dreptunghiului care reprezintă bomba
+            int bombLeft = bomb.Position.X;
+            int bombTop = bomb.Position.Y;
+            int bombRight = bomb.Position.X + bomb.SpriteSheet.FrameWidth;
+            int bombBottom = bomb.Position.Y + bomb.SpriteSheet.FrameHeight;
+
+            // Verificăm dacă cele două dreptunghiuri se intersectează
+            return playerLeft < bombRight && playerRight > bombLeft &&
+                playerTop < bombBottom && playerBottom > bombTop;
+        }
+
+        
+
+        private void CheckPlayerBombCollisions()
+        {
+            var playerBounds = new Rectangle<int>(_player.Position.X, _player.Position.Y,
+                _player.SpriteSheet.FrameWidth, _player.SpriteSheet.FrameHeight);
+
+            foreach (var gameObject in _gameObjects.Values)
+            {
+                if (gameObject is TemporaryGameObject bomb)
+                {
+                    if (IntersectsWith(_player, bomb))
+                    {
+                        _gameObjects.Remove(_player.Id);
+                        _player = null; // Actualizăm referința _player pentru a reflecta eliminarea acestuia din joc
+                        break;
+                    }
+                }
+            }
+        }
+
+
+
+
         public void ProcessFrame()
         {
+            CheckPlayerBombCollisions();
+
             var currentTime = DateTimeOffset.Now;
             var secsSinceLastFrame = (currentTime - _lastUpdate).TotalSeconds;
             _lastUpdate = currentTime;
@@ -82,8 +140,9 @@ namespace TheAdventure
             bool left = _input.IsLeftPressed();
             bool right = _input.IsRightPressed();
 
-            _player.UpdatePlayerPosition(up ? 1.0 : 0.0, down ? 1.0 : 0.0, left ? 1.0 : 0.0, right ? 1.0 : 0.0,
-                _currentLevel.Width * _currentLevel.TileWidth, _currentLevel.Height * _currentLevel.TileHeight,
+            // Utilizarea operatorului null-conditional pentru a apela metoda numai dacă _player nu este nul
+            _player?.UpdatePlayerPosition(up ? 1.0 : 0.0, down ? 1.0 : 0.0, left ? 1.0 : 0.0, right ? 1.0 : 0.0,
+                _currentLevel?.Width * _currentLevel.TileWidth ?? 0, _currentLevel?.Height * _currentLevel.TileHeight ?? 0,
                 secsSinceLastFrame);
 
             var itemsToRemove = new List<int>();
@@ -101,13 +160,32 @@ namespace TheAdventure
             _renderer.SetDrawColor(0, 0, 0, 255);
             _renderer.ClearScreen();
             
-            _renderer.CameraLookAt(_player.Position.X, _player.Position.Y);
+            // Verificăm dacă _player exista
+            if (_player != null)
+            {
+                _renderer.CameraLookAt(_player.Position.X, _player.Position.Y);
+            }
+            else
+            {
+                Console.WriteLine("Game over");
+            }
 
             RenderTerrain();
+
+            // Desenăm bomba chiar și după ce jucătorul a fost eliminat din joc
+            foreach (var gameObject in GetAllTemporaryGameObjects())
+            {
+                gameObject.Render(_renderer);
+            }
+
+            // Desenăm restul obiectelor
             RenderAllObjects();
 
             _renderer.PresentFrame();
         }
+
+
+
 
         private Tile? GetTile(int id)
         {
@@ -180,26 +258,43 @@ namespace TheAdventure
                 gameObject.Render(_renderer);
             }
 
-            _player.Render(_renderer);
+            if (_player != null) // Asigură-te că player-ul este desenat doar dacă există
+            {
+                _player.Render(_renderer);
+            }
         }
+
+
 
         private void AddBomb(int x, int y)
         {
-            var translated = _renderer.TranslateFromScreenToWorldCoordinates(x, y);
-            /*SpriteSheet spriteSheet = new(_renderer, "BombExploding.png", 1, 13, 32, 64, (16, 48));
-            spriteSheet.Animations["Explode"] = new SpriteSheet.Animation()
+            try
             {
-                StartFrame = (0, 0),
-                EndFrame = (0, 12),
-                DurationMs = 2000,
-                Loop = false
-            };*/
-            var spriteSheet = SpriteSheet.LoadSpriteSheet("bomb.json", "Assets", _renderer);
-            if(spriteSheet != null){
-                spriteSheet.ActivateAnimation("Explode");
-                TemporaryGameObject bomb = new(spriteSheet, 2.1, (translated.X, translated.Y));
-                _gameObjects.Add(bomb.Id, bomb);
+                var translated = _renderer.TranslateFromScreenToWorldCoordinates(x, y);
+
+                var spriteSheet = SpriteSheet.LoadSpriteSheet("bomb.json", "Assets", _renderer);
+                if (spriteSheet != null)
+                {
+                    // Verificăm dacă jucătorul este inițializat înainte de a adăuga bomba
+                    if (_player != null)
+                    {
+                        // Activăm animația "Explode" înainte de a crea obiectul bombei
+                        spriteSheet.ActivateAnimation("Explode");
+
+                        TemporaryGameObject bomb = new(spriteSheet, 2.1, (translated.X, translated.Y));
+                        _gameObjects.Add(bomb.Id, bomb);
+                    }
+                    else
+                    {
+                        Console.WriteLine("Eroare: Jucătorul nu este inițializat.");
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Eroare la adăugarea bombei: {ex.Message}");
             }
         }
+
     }
 }
