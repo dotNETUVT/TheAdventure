@@ -54,19 +54,15 @@ namespace TheAdventure
             }
 
             _currentLevel = level;
-            /*SpriteSheet spriteSheet = new(_renderer, Path.Combine("Assets", "player.png"), 10, 6, 48, 48, new FrameOffset() { OffsetX = 24, OffsetY = 42 });
+            SpriteSheet spriteSheet = new(_renderer, Path.Combine("Assets", "player.png"), 10, 6, 48, 48, (24, 42));
             spriteSheet.Animations["IdleDown"] = new SpriteSheet.Animation()
             {
-                StartFrame = new FramePosition(),//(0, 0),
-                EndFrame = new FramePosition() { Row = 0, Col = 5 },
+                StartFrame = (0, 0),
+                EndFrame = (0, 5),
                 DurationMs = 1000,
                 Loop = true
             };
-            */
-            var spriteSheet = SpriteSheet.LoadSpriteSheet("player.json", "Assets", _renderer);
-            if(spriteSheet != null){
-                _player = new PlayerObject(spriteSheet, 100, 100);
-            }
+            _player = new PlayerObject(spriteSheet, 100, 100);
             _renderer.SetWorldBounds(new Rectangle<int>(0, 0, _currentLevel.Width * _currentLevel.TileWidth,
                 _currentLevel.Height * _currentLevel.TileHeight));
         }
@@ -193,20 +189,17 @@ namespace TheAdventure
         private void AddBomb(int x, int y)
         {
             var translated = _renderer.TranslateFromScreenToWorldCoordinates(x, y);
-            /*SpriteSheet spriteSheet = new(_renderer, "BombExploding.png", 1, 13, 32, 64, (16, 48));
+            SpriteSheet spriteSheet = new(_renderer, "BombExploding.png", 1, 13, 32, 64, (16, 48));
             spriteSheet.Animations["Explode"] = new SpriteSheet.Animation()
             {
                 StartFrame = (0, 0),
                 EndFrame = (0, 12),
                 DurationMs = 2000,
                 Loop = false
-            };*/
-            var spriteSheet = SpriteSheet.LoadSpriteSheet("bomb.json", "Assets", _renderer);
-            if(spriteSheet != null){
-                spriteSheet.ActivateAnimation("Explode");
-                TemporaryGameObject bomb = new(spriteSheet, 2.1, (translated.X, translated.Y));
-                _gameObjects.Add(bomb.Id, bomb);
-            }
+            };
+            spriteSheet.ActivateAnimation("Explode");
+            TemporaryGameObject bomb = new(spriteSheet, 2.1, (translated.X, translated.Y));
+            _gameObjects.Add(bomb.Id, bomb);
         }
     }
 }
