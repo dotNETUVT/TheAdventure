@@ -1,85 +1,49 @@
 using Silk.NET.Maths;
 using TheAdventure;
 
-namespace TheAdventure.Models;
-
-public class PlayerObject : RenderableGameObject
+public class PlayerObject : GameObject
 {
-    private int _pixelsPerSecond = 192;
+    /// <summary>
+    /// Player X position in world coordinates.
+    /// </summary>
+    public int X { get; set; }
 
-    private string _currentAnimation = "IdleDown";
+    /// <summary>
+    /// Player Y position in world coordinates.
+    /// </summary>
+    public int Y { get; set; }
 
+    // Offset player sprite to have world position at x=24px y=42px
 
-    public PlayerObject(SpriteSheet spriteSheet, int x, int y) : base(spriteSheet, (x, y))
+    private Rectangle<int> _source = new Rectangle<int>(0, 0, 48, 48);
+    private Rectangle<int> _target = new Rectangle<int>(0,0,48,48);
+    private int _textureId;
+    private int _pixelsPerSecond = 128;
+
+    public PlayerObject(int id) : base(id)
     {
-        SpriteSheet.ActivateAnimation(_currentAnimation);
-       
+        _textureId = GameRenderer.LoadTexture(Path.Combine("Assets", "player.png"), out var textureData);
+        UpdateScreenTarget();
     }
 
-    public void UpdatePlayerPosition(double up, double down, double left, double right, int width, int height,
-        double time)
+    private void UpdateScreenTarget(){
+        var targetX = X + 24;
+        var targetY = Y - 42;
+
+        _target = new Rectangle<int>(targetX, targetY, 48, 48);
+    }
+
+    public void UpdatePlayerPosition(double up, double down, double left, double right, double deltaTime)
     {
+        var pixelsToMove = deltaTime * _pixelsPerSecond;
 
-        if (up <= double.Epsilon &&
-            down <= double.Epsilon &&
-            left <= double.Epsilon &&
-            right <= double.Epsilon &&
-            _currentAnimation == "IdleDown"){
-            return;
-        }
+        X += (int)(right * pixelsToMove - left * pixelsToMove);
+        Y += (int)(down * pixelsToMove - up * pixelsToMove);
 
-        var pixelsToMove = time * _pixelsPerSecond;
+        UpdateScreenTarget();
+    }
 
-        var x = Position.X + (int)(right * pixelsToMove);
-        x -= (int)(left * pixelsToMove);
-
-        var y = Position.Y - (int)(up * pixelsToMove);
-        y += (int)(down * pixelsToMove);
-
-        if (x < 10)
-        {
-            x = 10;
-        }
-
-        if (y < 24)
-        {
-            y = 24;
-        }
-
-        if (x > width - 10)
-        {
-            x = width - 10;
-        }
-
-        if (y > height - 6)
-        {
-            y = height - 6;
-        }
-
-        if (y < Position.Y && _currentAnimation != "MoveUp"){
-            _currentAnimation = "MoveUp";
-            //Console.WriteLine($"Attempt to switch to {_currentAnimation}");
-        }
-        if (y > Position.Y && _currentAnimation != "MoveDown"){
-            _currentAnimation = "MoveDown";
-            //Console.WriteLine($"Attempt to switch to {_currentAnimation}");
-        }
-        if (x > Position.X && _currentAnimation != "MoveRight"){
-            _currentAnimation = "MoveRight";
-            //Console.WriteLine($"Attempt to switch to {_currentAnimation}");
-        }
-        if (x < Position.X && _currentAnimation != "MoveLeft"){
-            _currentAnimation = "MoveLeft";
-            //Console.WriteLine($"Attempt to switch to {_currentAnimation}");
-        }
-        if (x == Position.X && _currentAnimation != "IdleDown" &&
-            y == Position.Y && _currentAnimation != "IdleDown"){
-            _currentAnimation = "IdleDown";
-            //Console.WriteLine($"Attempt to switch to {_currentAnimation}");
-        }
-
-        //Console.WriteLine($"Will to switch to {_currentAnimation}");
-        SpriteSheet.ActivateAnimation(_currentAnimation);
-        Position = (x, y);
+    public void Render(GameRenderer renderer){
+        renderer.RenderTexture(_textureId, _source, _target);
     }
 }

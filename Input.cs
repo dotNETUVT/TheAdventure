@@ -1,85 +1,27 @@
 using Silk.NET.SDL;
 
-namespace TheAdventure
-{
-    public unsafe class Input
+namespace TheAdventure{
+    public unsafe class InputLogic
     {
         private Sdl _sdl;
+        private GameLogic _gameLogic;
         private GameWindow _gameWindow;
         private GameRenderer _renderer;
-        private IntPtr _keyboardState;
-        private bool _lastEscState = false;
-        private int _numKeys;
-        
-        
-        byte[] _mouseButtonStates = new byte[(int)MouseButton.Count];
-        
-        public EventHandler<(int x, int y)> OnMouseClick;
-        
-        public Input(Sdl sdl, GameWindow window, GameRenderer renderer)
-        {
+        private DateTimeOffset _lastUpdate;
+
+        public InputLogic(Sdl sdl, GameWindow window, GameRenderer renderer, GameLogic logic){
             _sdl = sdl;
+            _gameLogic = logic;
             _gameWindow = window;
             _renderer = renderer;
-            UpdateKeyboardState();
+            _lastUpdate = DateTimeOffset.UtcNow;
         }
 
-        private void UpdateKeyboardState()
-        {
-            unsafe
-            {
-                int numKeysLocal = 0;
-                int* pNumKeys = &numKeysLocal;
-
-                _keyboardState = (IntPtr)_sdl.GetKeyboardState(pNumKeys);
-                _numKeys = numKeysLocal;  
-            }
-        }
-        public bool IsEscJustPressed()
-        {
-            UpdateKeyboardState(); // Ensure the latest keyboard state is loaded.
-            unsafe
-            {
-                ReadOnlySpan<byte> keys = new ReadOnlySpan<byte>((void*)_keyboardState, _numKeys);
-                bool currentEscState = keys[(int)KeyCode.Escape] == 1;
-                if (currentEscState && !_lastEscState)
-                {
-                    _lastEscState = true; // Update the last known state only on change.
-                    return true; // Esc was just pressed.
-                }
-                _lastEscState = currentEscState; // Update the last known state.
-                return false; // Esc was not just pressed or is still being held down.
-            }
-        }
-
-
-        public bool IsLeftPressed()
-        {
-            ReadOnlySpan<byte> _keyboardState = new(_sdl.GetKeyboardState(null), (int)KeyCode.Count);
-            return _keyboardState[(int)KeyCode.Left] == 1;
-        }
-        
-        public bool IsRightPressed()
-        {
-            ReadOnlySpan<byte> _keyboardState = new(_sdl.GetKeyboardState(null), (int)KeyCode.Count);
-            return _keyboardState[(int)KeyCode.Right] == 1;
-        }
-        
-        public bool IsUpPressed()
-        {
-            ReadOnlySpan<byte> _keyboardState = new(_sdl.GetKeyboardState(null), (int)KeyCode.Count);
-            return _keyboardState[(int)KeyCode.Up] == 1;
-        }
-        
-        public bool IsDownPressed()
-        {
-            ReadOnlySpan<byte> _keyboardState = new(_sdl.GetKeyboardState(null), (int)KeyCode.Count);
-            return _keyboardState[(int)KeyCode.Down] == 1;
-        }
-        
         public bool ProcessInput()
         {
             var currentTime = DateTimeOffset.UtcNow;
+            ReadOnlySpan<byte> _keyboardState = new(_sdl.GetKeyboardState(null), (int)KeyCode.Count);
+            Span<byte> mouseButtonStates = stackalloc byte[(int)MouseButton.Count];
             Event ev = new Event();
             var mouseX = 0;
             var mouseY = 0;
@@ -163,32 +105,26 @@ namespace TheAdventure
 
                     case (uint)EventType.Fingerdown:
                     {
-                        _mouseButtonStates[(byte)MouseButton.Primary] = 1;
+                        mouseButtonStates[(byte)MouseButton.Primary] = 1;
                         break;
                     }
                     case (uint)EventType.Mousebuttondown:
                     {
                         mouseX = ev.Motion.X;
                         mouseY = ev.Motion.Y;
-                        _mouseButtonStates[ev.Button.Button] = 1;
-                        
-                        if (ev.Button.Button == (byte)MouseButton.Primary)
-                        {
-                            OnMouseClick?.Invoke(this, (mouseX, mouseY));
-                        }
-                        
+                        mouseButtonStates[ev.Button.Button] = 1;
                         break;
                     }
 
                     case (uint)EventType.Fingerup:
                     {
-                        _mouseButtonStates[(byte)MouseButton.Primary] = 0;
+                        mouseButtonStates[(byte)MouseButton.Primary] = 0;
                         break;
                     }
 
                     case (uint)EventType.Mousebuttonup:
                     {
-                        _mouseButtonStates[ev.Button.Button] = 0;
+                        mouseButtonStates[ev.Button.Button] = 0;
                         break;
                     }
 
@@ -199,6 +135,7 @@ namespace TheAdventure
 
                     case (uint)EventType.Keyup:
                     {
+                        
                         break;
                     }
 
@@ -209,6 +146,26 @@ namespace TheAdventure
                 }
             }
 
+            var timeSinceLastUpdate = (DateTimeOffset.UtcNow - _lastUpdate).TotalSeconds;
+    
+            if (_keyboardState[(int)Scancode.ScancodeUp] == 1){
+                _gameLogic.UpdatePlayerPosition(1.0, 0, 0, 0, timeSinceLastUpdate);
+            }
+            else if (_keyboardState[(int)Scancode.ScancodeDown] == 1){
+                _gameLogic.UpdatePlayerPosition(0, 1.0, 0, 0, timeSinceLastUpdate);
+            }
+            else if (_keyboardState[(int)Scancode.ScancodeLeft] == 1){
+                _gameLogic.UpdatePlayerPosition(0, 0, 1.0, 0, timeSinceLastUpdate);
+            }
+            else if (_keyboardState[(int)Scancode.ScancodeRight] == 1){
+                _gameLogic.UpdatePlayerPosition(0, 0, 0, 1.0, timeSinceLastUpdate);
+            }
+
+            _lastUpdate = currentTime;
+
+            if (mouseButtonStates[(byte)MouseButton.Primary] == 1){
+                _gameLogic.AddBomb(mouseX, mouseY);
+            }
             return false;
         }
     }

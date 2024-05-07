@@ -2,149 +2,130 @@ using Silk.NET.Maths;
 using Silk.NET.SDL;
 using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.PixelFormats;
-using TheAdventure.Models;
-using Point = Silk.NET.SDL.Point;
 
-namespace TheAdventure;
-
-public unsafe class GameRenderer
+namespace TheAdventure
 {
-    private Sdl _sdl;
-    private Renderer* _renderer;
-    private GameWindow _window;
-    private Camera _camera;
-
-    private Dictionary<int, IntPtr> _textures = new();
-    private Dictionary<int, TextureInfo> _textureData = new();
-    private int _textureId;
-
-    private IntPtr _pauseButtonTexture;
-    private bool _showPauseButton = false;
-
-    private int _frameCount = 0;
-    private double _lastFpsUpdateTime = 0;
-    private double _fps = 0;
-    public GameRenderer(Sdl sdl, GameWindow window)
+    public unsafe class GameRenderer
     {
-        _window = window;
-        _sdl = sdl;
-
-        _renderer = (Renderer*)window.CreateRenderer();
-        _sdl.SetRenderDrawBlendMode(_renderer, BlendMode.Blend);
-
-        var windowSize = window.Size;
-        _camera = new Camera(windowSize.Width, windowSize.Height);
-
-        _lastFpsUpdateTime = _sdl.GetTicks();
-
-        LoadPauseButton("Assets/pausebtn.png");
-    }
-
-    private void LoadPauseButton(string filePath)
-    {
-        TextureInfo textureInfo;
-        _pauseButtonTexture = LoadTexture(filePath, out textureInfo);
-    }
-
-    public void TogglePauseButtonDisplay(bool show)
-    {
-        _showPauseButton = show;
-    }
-
-    public struct SDL_Color {
-    public byte r, g, b, a;
-    }
-
-    public void Update(double deltaTime)
-    {
-        _frameCount++;
-        if (_sdl.GetTicks() - _lastFpsUpdateTime > 1000) // Update every second
+        public struct TextureInfo
         {
-            _fps = _frameCount / ((_sdl.GetTicks() - _lastFpsUpdateTime) / 1000.0);
-            _frameCount = 0;
-            _lastFpsUpdateTime = _sdl.GetTicks();
-        }
-    }
+            public int Width { get; set; }
+            public int Height { get; set; }
 
-
-    public void SetWorldBounds(Rectangle<int> bounds)
-    {
-        _camera.SetWorldBounds(bounds);
-    }
-
-    public void CameraLookAt(int x, int y)
-    {
-        _camera.LookAt(x, y);
-    }
-
-    public int LoadTexture(string fileName, out TextureInfo textureInfo)
-    {
-        using (var fStream = new FileStream(fileName, FileMode.Open))
-        {
-            var image = Image.Load<Rgba32>(fStream);
-            textureInfo = new TextureInfo()
+            public int PixelDataSize
             {
-                Width = image.Width,
-                Height = image.Height
-            };
-            var imageRAWData = new byte[textureInfo.Width * textureInfo.Height * 4];
-            image.CopyPixelDataTo(imageRAWData.AsSpan());
-            fixed (byte* data = imageRAWData)
-            {
-                var imageSurface = _sdl.CreateRGBSurfaceWithFormatFrom(data, textureInfo.Width,
-                    textureInfo.Height, 8, textureInfo.Width * 4, (uint)PixelFormatEnum.Rgba32);
-                var imageTexture = _sdl.CreateTextureFromSurface(_renderer, imageSurface);
-                _sdl.FreeSurface(imageSurface);
-                _textureData[_textureId] = textureInfo;
-                _textures[_textureId] = (IntPtr)imageTexture;
+                get { return Width * Height * 4; }
             }
         }
 
-        return _textureId++;
-    }
+        private Sdl _sdl;
+        private Renderer* _renderer;
+        private GameWindow _window;
+        private GameLogic _gameLogic;
+        private GameCamera _camera;
 
-    public void RenderTexture(int textureId, Rectangle<int> src, Rectangle<int> dst,
-        RendererFlip flip = RendererFlip.None, double angle = 0.0, Point center = default)
-    {
-        if (_textures.TryGetValue(textureId, out var imageTexture))
+        private Dictionary<int, IntPtr> _textures;
+        private Dictionary<int, TextureData> _textureData;
+        private int _textureId;
+
+        private static GameRenderer? _singleton;
+        private DateTimeOffset _lastFrameRenderedAt = DateTimeOffset.MinValue;
+
+        public GameRenderer(Sdl sdl, GameWindow gameWindow, GameLogic gameLogic)
         {
-            _sdl.RenderCopyEx(_renderer, (Texture*)imageTexture, src,
-                _camera.TranslateToScreenCoordinates(dst),
-                angle,
-                center, flip);
-        }
-    }
+            _window = gameWindow;
+            _gameLogic = gameLogic;
+            _sdl = sdl;
+            _renderer = (Renderer*)gameWindow.CreateRenderer();
+            _textures = new Dictionary<int, IntPtr>();
+            _textureData = new Dictionary<int, TextureData>();
+            _camera = new GameCamera();
+            _camera.Width = 800;
+            _camera.Height = 600;
 
-    public Vector2D<int> TranslateFromScreenToWorldCoordinates(int x, int y)
-    {
-        return _camera.FromScreenToWorld(x, y);
-    }
+            // TODO: Check if _singleton is not null, if it is, clear resources.
 
-    public void SetDrawColor(byte r, byte g, byte b, byte a)
-    {
-        _sdl.SetRenderDrawColor(_renderer, r, g, b, a);
-    }
-
-    public void ClearScreen()
-    {
-        _sdl.RenderClear(_renderer);
-    }
-
-    public void PresentFrame()
-    {
-        _sdl.RenderPresent(_renderer);
-        _sdl.Delay(16); // Cap the frame rate to 60 FPS.
-
-        if (_showPauseButton)
-        {
-            var pauseButtonRect = new Rectangle<int>(0, 0, 64, 64);
-            RenderTexture((int)_pauseButtonTexture, pauseButtonRect, pauseButtonRect); // Explicitly cast _pauseButtonTexture to int
+            _singleton = this;
         }
 
-        //FPS counter
-        SDL_Color fpsColor = new SDL_Color { r = 255, g = 255, b = 255, a = 255 }; // White
+        public static int LoadTexture(string fileName, out TextureData textureData)
+        {
+            using (var fStream = new FileStream(fileName, FileMode.Open))
+            {
+                var image = Image.Load<Rgba32>(fStream);
+                textureData = new TextureData()
+                {
+                    Width = image.Width,
+                    Height = image.Height
+                };
+                var imageRAWData = new byte[textureData.Width * textureData.Height * 4];
+                image.CopyPixelDataTo(imageRAWData.AsSpan());
+                fixed (byte* data = imageRAWData)
+                {
+                    if (_singleton == null)
+                    {
+                        throw new InvalidOperationException("GameRenderer singleton is not initialized.");
+                    }
+                    
+                    var imageSurface = _singleton._sdl.CreateRGBSurfaceWithFormatFrom(data, textureData.Width,
+                        textureData.Height, 8, textureData.Width * 4, (uint)PixelFormatEnum.Rgba32);
+                    var imageTexture = _singleton._sdl.CreateTextureFromSurface(_singleton._renderer, imageSurface);
+                    _singleton._sdl.FreeSurface(imageSurface);
+                    _singleton._textureData[_singleton._textureId] = textureData;
+                    _singleton._textures[_singleton._textureId] = (IntPtr)imageTexture;
+                }
+            }
 
-        
-        
+            return _singleton._textureId++;
+        }
+
+        public void RenderGameObject(RenderableGameObject gameObject)
+        {
+            // Translate to screen coordinates using camera data.
+
+            if (_textures.TryGetValue(gameObject.TextureId, out var imageTexture))
+            {
+                _sdl.RenderCopyEx(_renderer, (Texture*)imageTexture, gameObject.TextureSource,
+                    _camera.TranslateToScreenCoordinates(gameObject.TextureDestination),
+                    gameObject.TextureRotation,
+                    gameObject.TextureRotationCenter, RendererFlip.None);
+            }
+        }
+
+        public void RenderTexture(int textureId, Rectangle<int> src, Rectangle<int> dst)
+        {
+            // Translate to screen coordinates using camera data.
+
+            if (_textures.TryGetValue(textureId, out var imageTexture))
+            {
+                _sdl.RenderCopyEx(_renderer, (Texture*)imageTexture, src,
+                    _camera.TranslateToScreenCoordinates(dst),
+                    0,
+                    new Silk.NET.SDL.Point(0,0), RendererFlip.None);
+            }
+        }
+
+        public void Render()
+        {
+            var playerPos = _gameLogic.GetPlayerCoordinates();
+
+            // TODO: implement the soft margin;
+
+            _camera.X = playerPos.x;
+            _camera.Y = playerPos.y;
+
+            _sdl.RenderClear(_renderer);
+
+            _gameLogic.RenderTerrain(this);
+
+            var timeSinceLastFrameInSeconds = (DateTimeOffset.UtcNow - _lastFrameRenderedAt).TotalSeconds;
+            var timeSinceLastFrameInMilliseconds = (int)(timeSinceLastFrameInSeconds * 1000); // Convert seconds to milliseconds
+
+            _gameLogic.RenderAllObjects(timeSinceLastFrameInMilliseconds, this);
+
+            _lastFrameRenderedAt = DateTimeOffset.UtcNow;
+
+            _sdl.RenderPresent(_renderer);
+        }
     }
 }
