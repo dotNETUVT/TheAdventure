@@ -8,6 +8,8 @@ namespace TheAdventure
 {
     public class Engine
     {
+        private bool _pauseKeyReleased = true;
+        private bool _paused = false;
         private readonly Dictionary<int, GameObject> _gameObjects = new();
         private readonly Dictionary<string, TileSet> _loadedTileSets = new();
 
@@ -69,9 +71,23 @@ namespace TheAdventure
 
         public void ProcessFrame()
         {
-            var currentTime = DateTimeOffset.Now;
-            var secsSinceLastFrame = (currentTime - _lastUpdate).TotalSeconds;
-            _lastUpdate = currentTime;
+                var currentTime = DateTimeOffset.Now;
+                var secsSinceLastFrame = (currentTime - _lastUpdate).TotalSeconds;
+                _lastUpdate = currentTime;
+
+                // Check for pause toggle only if the pause key was released previously
+                if (_input.IsPausePressed() && _pauseKeyReleased)
+                {
+                PauseUnpauseGame();
+                _pauseKeyReleased = false; // Set to false to prevent re-toggling until key release
+                }
+                else if (!_input.IsPausePressed())
+                {
+                _pauseKeyReleased = true; // Set to true when key is released
+                }
+
+                if(_paused) return; // Don't update game logic if paused
+
 
             bool up = _input.IsUpPressed();
             bool down = _input.IsDownPressed();
@@ -103,14 +119,22 @@ namespace TheAdventure
         {
             _renderer.SetDrawColor(0, 0, 0, 255);
             _renderer.ClearScreen();
-            
-            _renderer.CameraLookAt(_player.Position.X, _player.Position.Y);
 
-            RenderTerrain();
-            RenderAllObjects(); 
-            _renderer.RenderPlayerHealth(_player);
+            if(_paused)
+            {
+                _renderer.RenderPauseOverlay(); 
+            }
+            else
+            {
+                _renderer.CameraLookAt(_player.Position.X, _player.Position.Y);
+                RenderTerrain();
+                RenderAllObjects();
+                _renderer.RenderPlayerHealth(_player);
+            }
+
             _renderer.PresentFrame();
         }
+
 
         private Tile? GetTile(int id)
         {
@@ -201,5 +225,19 @@ namespace TheAdventure
             TemporaryGameObject bomb = new(spriteSheet, 2.1, (translated.X, translated.Y));
             _gameObjects.Add(bomb.Id, bomb);
         }
+
+        public bool getPauseState()
+        {
+            return _paused;
+        }
+
+        public void PauseUnpauseGame()
+        {
+            _paused = !_paused;  
+            Console.WriteLine(_paused ? "Game Paused" : "Game Resumed");
+        }
+
+
+
     }
 }

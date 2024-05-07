@@ -55,6 +55,13 @@ namespace TheAdventure
             return _keyboardState[(int)KeyCode.H] == 1;
         }
 
+        public bool IsPausePressed()
+        {
+            ReadOnlySpan<byte> _keyboardState = new(_sdl.GetKeyboardState(null), (int)KeyCode.Count);
+            return _keyboardState[(int)KeyCode.P] == 1; 
+        }
+
+
         
         
         public bool ProcessInput()

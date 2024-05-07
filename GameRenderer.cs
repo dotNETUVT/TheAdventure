@@ -120,6 +120,37 @@ public unsafe class GameRenderer
     _sdl.RenderFillRect(_renderer, &filledRect);
 }
 
+public void RenderPauseOverlay()
+{
+    // Set a semi-transparent overlay to darken the screen
+    _sdl.SetRenderDrawBlendMode(_renderer, BlendMode.Blend);
+    _sdl.SetRenderDrawColor(_renderer, 0, 0, 0, 128); // Semi-transparent black
+    Rectangle<int> fullScreenRect = new Rectangle<int>(0, 0, _screenWidth, _screenHeight);
+    _sdl.RenderFillRect(_renderer, ref fullScreenRect);
+
+    // Draw a simple "pause" symbol in the center of the screen
+    int pauseWidth = 10;
+    int pauseHeight = 50;
+    int centerWidth = _screenWidth / 2;
+    int centerHeight = _screenHeight / 2;
+    int gap = 20;
+
+    // Left part of pause symbol
+    Rectangle<int> leftRect = new Rectangle<int>(
+        centerWidth - gap - pauseWidth, centerHeight - pauseHeight / 2,
+        pauseWidth, pauseHeight
+    );
+    _sdl.SetRenderDrawColor(_renderer, 255, 255, 255, 255); // White
+    _sdl.RenderFillRect(_renderer, ref leftRect);
+
+    // Right part of pause symbol
+    Rectangle<int> rightRect = new Rectangle<int>(
+        centerWidth + gap, centerHeight - pauseHeight / 2,
+        pauseWidth, pauseHeight
+    );
+    _sdl.RenderFillRect(_renderer, ref rightRect);
+}
+
 
 
 

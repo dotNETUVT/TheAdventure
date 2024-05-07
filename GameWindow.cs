@@ -1,4 +1,5 @@
 using Silk.NET.SDL;
+using System.Diagnostics;
 
 namespace TheAdventure;
 
@@ -12,7 +13,7 @@ public unsafe class GameWindow : IDisposable
         get
         {
             int width, height;
-            _sdl.GetWindowSize((Window *)_window, &width, &height);
+            _sdl.GetWindowSize((Window*)_window, &width, &height);
 
             return (width, height);
         }
@@ -29,13 +30,14 @@ public unsafe class GameWindow : IDisposable
         if (_window == IntPtr.Zero)
         {
             var ex = sdl.GetErrorAsException();
-            if (ex != null)
+            if (ex!= null)
             {
                 throw ex;
             }
 
             throw new Exception("Failed to create window.");
         }
+
     }
 
     public IntPtr CreateRenderer()
@@ -44,7 +46,7 @@ public unsafe class GameWindow : IDisposable
         if (renderer == IntPtr.Zero)
         {
             var ex = _sdl.GetErrorAsException();
-            if (ex != null)
+            if (ex!= null)
             {
                 throw ex;
             }
@@ -59,7 +61,7 @@ public unsafe class GameWindow : IDisposable
 
     private void ReleaseUnmanagedResources()
     {
-        if (_window != IntPtr.Zero)
+        if (_window!= IntPtr.Zero)
         {
             _sdl.DestroyWindow((Window*)_window);
             _window = IntPtr.Zero;
@@ -76,4 +78,5 @@ public unsafe class GameWindow : IDisposable
     {
         ReleaseUnmanagedResources();
     }
+
 }
