@@ -19,6 +19,7 @@ namespace TheAdventure
         private DateTimeOffset _lastUpdate = DateTimeOffset.Now;
         private DateTimeOffset _lastPlayerUpdate = DateTimeOffset.Now;
 
+        private Dictionary<int, List<(int, int)>> _layerCoordinates = new Dictionary<int, List<(int, int)>>();
         public bool IsGameOver { get; private set; }
 
         public Engine(GameRenderer renderer, Input input)
@@ -67,6 +68,38 @@ namespace TheAdventure
             }
 
             _currentLevel = level;
+
+            // Getting the coordinates only for the tiles that should be solid (ignores all tile entries that are empty)
+            foreach (var layer in level.Layers)
+            {
+                // Each layer has a boolean property that indicates collision
+                if (layer.Properties[0].Value == true)
+                {
+                    var nonZeroCoordinates = new List<(int, int)>();
+
+                    for (var i = 0; i < layer.Width; i++)
+                    {
+                        for (var j = 0; j < layer.Height; j++)
+                        {
+                            var index = j * layer.Width + i;
+                            if (layer.Data[index] != 0) 
+                            {
+                                nonZeroCoordinates.Add((i, j));
+                            }
+                        }
+                    }
+                    // Adding the layer id and corresponding non-zero coordinates to the dictionary
+                    var layerId = layer.Id;
+
+                    _layerCoordinates[layerId] = nonZeroCoordinates;
+                }  
+            }
+
+            //foreach (var layer_name in _layerCoordinates.Keys)
+            //{
+            //    Console.WriteLine($"Name: {layer_name}");
+            //}
+
             /*SpriteSheet spriteSheet = new(_renderer, Path.Combine("Assets", "player.png"), 10, 6, 48, 48, new FrameOffset() { OffsetX = 24, OffsetY = 42 });
             spriteSheet.Animations["IdleDown"] = new SpriteSheet.Animation()
             {
@@ -100,7 +133,7 @@ namespace TheAdventure
 
             _player.UpdatePlayerPosition(up ? 1.0 : 0.0, down ? 1.0 : 0.0, left ? 1.0 : 0.0, right ? 1.0 : 0.0,
                 _currentLevel.Width * _currentLevel.TileWidth, _currentLevel.Height * _currentLevel.TileHeight,
-                secsSinceLastFrame, GetAllTemporaryGameObjects());
+                secsSinceLastFrame, GetAllTemporaryGameObjects(), _layerCoordinates);
 
             // Check collision between player and bombs
             foreach (var gameObject in GetAllTemporaryGameObjects())

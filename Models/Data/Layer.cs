@@ -7,4 +7,5 @@ public class Layer
     public int Y { get; set; }
     public bool Visible { get; set; }
     public int Id { get; set; }
+    public LayerProperties[] Properties { get; set; }
 }

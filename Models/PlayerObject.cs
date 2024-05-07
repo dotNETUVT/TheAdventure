@@ -16,9 +16,35 @@ public class PlayerObject : RenderableGameObject
        
     }
 
-    public void UpdatePlayerPosition(double up, double down, double left, double right, int width, int height,
-        double time, IEnumerable<TemporaryGameObject> gameObject)
+    public (int, int) SwitchPlayerMovement(int initialX, int initialY)
     {
+        switch (_currentAnimation)
+        {
+            case "MoveUp":
+                initialY += 1;
+                break;
+
+            case "MoveDown":
+                initialY -= 1;
+                break;
+
+            case "MoveLeft":
+                initialX += 1;
+                break;
+
+            case "MoveRight":
+                initialX -= 1;
+                break;
+        }
+
+        return (initialX, initialY);
+    }
+
+    public void UpdatePlayerPosition(double up, double down, double left, double right, int width, int height,
+        double time, IEnumerable<TemporaryGameObject> gameObject, Dictionary<int, List<(int, int)>> layerCoordinates)
+    {
+        var initialX = Position.X;
+        var initialY = Position.Y;
 
         if (up <= double.Epsilon &&
             down <= double.Epsilon &&
@@ -56,12 +82,6 @@ public class PlayerObject : RenderableGameObject
             y = height - 6;
         }
 
-        foreach( var obj in gameObject )
-        {
-            // Calling function for collision, still needs work
-            CollidesWithBomb(x, y, obj);
-        }
-
         if (y < Position.Y && _currentAnimation != "MoveUp"){
             _currentAnimation = "MoveUp";
             //Console.WriteLine($"Attempt to switch to {_currentAnimation}");
@@ -87,20 +107,44 @@ public class PlayerObject : RenderableGameObject
         //Console.WriteLine($"Will to switch to {_currentAnimation}");
         SpriteSheet.ActivateAnimation(_currentAnimation);
         Position = (x, y);
+
+        foreach (var coordinates in layerCoordinates)
+            foreach (var coordTouple in coordinates.Value)
+                if (CollidesWithObject(coordTouple.Item1 * 16, coordTouple.Item2 * 16, 16, 16))
+                    // Console.WriteLine(coordTouple.Item1.ToString());
+                    // Check curent animation to see where the player is moving
+                    Position = SwitchPlayerMovement(initialX, initialY);
+
+        foreach (var obj in gameObject)
+            // Calling function for bomb collision
+            if (CollidesWithBomb(x, y, obj))
+                Position = SwitchPlayerMovement(initialX, initialY);
     }
 
-    // Function to prevent the player colliding with the bomb, stll needs improvements
+    // Function to prevent the player colliding with the bomb
     private bool CollidesWithBomb(int x, int y, TemporaryGameObject bomb)
     {
-        int playerRight = x + 4; ;
+        int playerRight = x + 4;
 
         int bombRight = bomb.Position.X + 16;
-        int bombBottom = bomb.Position.Y + 48;
+        int bombBottom = bomb.Position.Y + 12;
 
         return x - 4 < bombRight &&
-               playerRight > bomb.Position.X &&
+               playerRight > bomb.Position.X - 16 &&
                y < bombBottom &&
-               y > bomb.Position.Y;
+               y > bomb.Position.Y - 16;
+    }
+
+    // Function to prevent the player colliding with the tile objects
+    public bool CollidesWithObject(int x, int y, int tileWidth, int tileHeight)
+    {
+        int playerX = Position.X;
+        int playerY = Position.Y;
+
+        return playerX - 6 >= x - tileWidth / 2 &&
+            playerX - 8 <= x + tileWidth / 2 &&
+            playerY - 10 >= y - tileHeight / 2 &&
+            playerY - 22 <= y - tileHeight / 2;
     }
 
     // Method to get the bounding box of the player
