@@ -9,11 +9,15 @@ public class PlayerObject : RenderableGameObject
 
     private string _currentAnimation = "IdleDown";
 
+    // player stats
+    public int max_health { get; private set; } = 100;
+    public int health { get; private set; } = 100;
+    public int attackDamage { get; private set; } = 10;
+
 
     public PlayerObject(SpriteSheet spriteSheet, int x, int y) : base(spriteSheet, (x, y))
     {
         SpriteSheet.ActivateAnimation(_currentAnimation);
-       
     }
 
     public void UpdatePlayerPosition(double up, double down, double left, double right, int width, int height,
@@ -81,5 +85,11 @@ public class PlayerObject : RenderableGameObject
         //Console.WriteLine($"Will to switch to {_currentAnimation}");
         SpriteSheet.ActivateAnimation(_currentAnimation);
         Position = (x, y);
+    }
+
+    // returns the current health
+    public int takeDamage(int damageToTake) {
+        this.health -= damageToTake;
+        return this.health;
     }
 }

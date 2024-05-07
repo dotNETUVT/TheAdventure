@@ -12,8 +12,8 @@ namespace TheAdventure
         private readonly Dictionary<string, TileSet> _loadedTileSets = new();
 
         private Level? _currentLevel;
-        private PlayerObject _player;
-        private PlayerObject _player2;
+        private PlayerObject? _player;
+        private PlayerObject? _player2;
         private GameRenderer _renderer;
         private Input _input;
 
@@ -82,23 +82,35 @@ namespace TheAdventure
             var secsSinceLastFrame = (currentTime - _lastUpdate).TotalSeconds;
             _lastUpdate = currentTime;
 
-            bool up = _input.IsUpPressed();
-            bool down = _input.IsDownPressed();
-            bool left = _input.IsLeftPressed();
-            bool right = _input.IsRightPressed();
+            if (_player != null) {
+                bool up = _input.IsUpPressed();
+                bool down = _input.IsDownPressed();
+                bool left = _input.IsLeftPressed();
+                bool right = _input.IsRightPressed();
 
-            bool up2 = _input.IsWPressed();
-            bool down2 = _input.IsSPressed();
-            bool left2 = _input.IsAPressed();
-            bool right2 = _input.IsDPressed();
-
-            _player.UpdatePlayerPosition(up ? 1.0 : 0.0, down ? 1.0 : 0.0, left ? 1.0 : 0.0, right ? 1.0 : 0.0,
-                _currentLevel.Width * _currentLevel.TileWidth, _currentLevel.Height * _currentLevel.TileHeight,
-                secsSinceLastFrame);
+                _player.UpdatePlayerPosition(up ? 1.0 : 0.0, down ? 1.0 : 0.0, left ? 1.0 : 0.0, right ? 1.0 : 0.0,
+                    _currentLevel.Width * _currentLevel.TileWidth, _currentLevel.Height * _currentLevel.TileHeight,
+                    secsSinceLastFrame);
+                
+                if (_input.IsKPressed() && _player.takeDamage(_player.attackDamage) <= 0) {
+                    _player = null;
+                }
+            }
             
-            _player2.UpdatePlayerPosition(up2 ? 1.0 : 0.0, down2 ? 1.0 : 0.0, left2 ? 1.0 : 0.0, right2 ? 1.0 : 0.0,
-                _currentLevel.Width * _currentLevel.TileWidth, _currentLevel.Height * _currentLevel.TileHeight,
-                secsSinceLastFrame);
+            if (_player2 != null) {
+                bool up2 = _input.IsWPressed();
+                bool down2 = _input.IsSPressed();
+                bool left2 = _input.IsAPressed();
+                bool right2 = _input.IsDPressed();
+                
+                _player2.UpdatePlayerPosition(up2 ? 1.0 : 0.0, down2 ? 1.0 : 0.0, left2 ? 1.0 : 0.0, right2 ? 1.0 : 0.0,
+                    _currentLevel.Width * _currentLevel.TileWidth, _currentLevel.Height * _currentLevel.TileHeight,
+                    secsSinceLastFrame);
+                
+                if (_input.IsFPressed() && _player2.takeDamage(_player2.attackDamage) <= 0) {
+                    _player2 = null;
+                }
+            }
 
             var itemsToRemove = new List<int>();
             itemsToRemove.AddRange(GetAllTemporaryGameObjects().Where(gameObject => gameObject.IsExpired)
@@ -115,9 +127,19 @@ namespace TheAdventure
             _renderer.SetDrawColor(0, 0, 0, 255);
             _renderer.ClearScreen();
             
-            // average of the positions of both players
-            int x = _player.Position.X + _player2.Position.X;
-            int y = _player.Position.Y + _player2.Position.Y;
+            // average of the positions of both players if both are alive, otherwise keep the only player alive in the center
+            int x = 0;
+            int y = 0;
+            if (_player != null)
+            {
+                x += _player.Position.X;
+                y += _player.Position.Y;
+            }
+            if (_player2 != null)
+            {
+                x += _player2.Position.X;
+                y += _player2.Position.Y;
+            }
             if (x != 0)
                 x /= 2;
             if (y != 0)
@@ -201,8 +223,12 @@ namespace TheAdventure
                 gameObject.Render(_renderer);
             }
 
-            _player.Render(_renderer);
-            _player2.Render(_renderer);
+            if (_player != null) {
+                _player.Render(_renderer);
+            }
+            if (_player2 != null) {
+                _player2.Render(_renderer);
+            }
         }
 
         private void AddBomb(int x, int y)
