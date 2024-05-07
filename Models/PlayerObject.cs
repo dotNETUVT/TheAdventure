@@ -22,7 +22,8 @@ public class PlayerObject : RenderableGameObject
     {
         if (shift)
             _pixelsPerSecond = 384;
-
+        else
+            _pixelsPerSecond = 192;
         if (up <= double.Epsilon &&
             down <= double.Epsilon &&
             left <= double.Epsilon &&
