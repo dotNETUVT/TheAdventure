@@ -18,9 +18,9 @@ public class PlayerObject : RenderableGameObject
     }
 
     public void UpdatePlayerPosition(double up, double down, double left, double right, int width, int height,
-        double time)
+        double time, bool shift)
     {
-        if (_input.IsShiftPressed())
+        if (shift)
             _pixelsPerSecond = 384;
 
         if (up <= double.Epsilon &&
