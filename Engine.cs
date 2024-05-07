@@ -13,6 +13,7 @@ namespace TheAdventure
 
         private Level? _currentLevel;
         private PlayerObject _player;
+        private PlayerObject _player2;
         private GameRenderer _renderer;
         private Input _input;
 
@@ -64,8 +65,12 @@ namespace TheAdventure
             };
             */
             var spriteSheet = SpriteSheet.LoadSpriteSheet("player.json", "Assets", _renderer);
+            var spriteSheet2 = SpriteSheet.LoadSpriteSheet("player.json", "Assets", _renderer);
             if(spriteSheet != null){
                 _player = new PlayerObject(spriteSheet, 100, 100);
+            }
+            if(spriteSheet2 != null){
+                _player2 = new PlayerObject(spriteSheet2, 150, 100);
             }
             _renderer.SetWorldBounds(new Rectangle<int>(0, 0, _currentLevel.Width * _currentLevel.TileWidth,
                 _currentLevel.Height * _currentLevel.TileHeight));
@@ -82,7 +87,16 @@ namespace TheAdventure
             bool left = _input.IsLeftPressed();
             bool right = _input.IsRightPressed();
 
+            bool up2 = _input.IsWPressed();
+            bool down2 = _input.IsSPressed();
+            bool left2 = _input.IsAPressed();
+            bool right2 = _input.IsDPressed();
+
             _player.UpdatePlayerPosition(up ? 1.0 : 0.0, down ? 1.0 : 0.0, left ? 1.0 : 0.0, right ? 1.0 : 0.0,
+                _currentLevel.Width * _currentLevel.TileWidth, _currentLevel.Height * _currentLevel.TileHeight,
+                secsSinceLastFrame);
+            
+            _player2.UpdatePlayerPosition(up2 ? 1.0 : 0.0, down2 ? 1.0 : 0.0, left2 ? 1.0 : 0.0, right2 ? 1.0 : 0.0,
                 _currentLevel.Width * _currentLevel.TileWidth, _currentLevel.Height * _currentLevel.TileHeight,
                 secsSinceLastFrame);
 
@@ -101,7 +115,14 @@ namespace TheAdventure
             _renderer.SetDrawColor(0, 0, 0, 255);
             _renderer.ClearScreen();
             
-            _renderer.CameraLookAt(_player.Position.X, _player.Position.Y);
+            // average of the positions of both players
+            int x = _player.Position.X + _player2.Position.X;
+            int y = _player.Position.Y + _player2.Position.Y;
+            if (x != 0)
+                x /= 2;
+            if (y != 0)
+                y /= 2;
+            _renderer.CameraLookAt(x, y);
 
             RenderTerrain();
             RenderAllObjects();
@@ -181,6 +202,7 @@ namespace TheAdventure
             }
 
             _player.Render(_renderer);
+            _player2.Render(_renderer);
         }
 
         private void AddBomb(int x, int y)
