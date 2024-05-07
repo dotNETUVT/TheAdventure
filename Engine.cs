@@ -140,10 +140,13 @@ namespace TheAdventure
                 x += _player2.Position.X;
                 y += _player2.Position.Y;
             }
-            if (x != 0)
-                x /= 2;
-            if (y != 0)
-                y /= 2;
+            if (_player != null && _player2 != null)
+            {
+                if (x != 0)
+                    x /= 2;
+                if (y != 0)
+                    y /= 2;
+            }
             _renderer.CameraLookAt(x, y);
 
             RenderTerrain();
