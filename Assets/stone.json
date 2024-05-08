@@ -1,0 +1,11 @@
+﻿{
+    "rowCount": 1,
+    "columnCount": 1,
+    "frameWidth": 48,
+    "frameHeight": 48,
+    "frameCenter": {
+        "offsetX": 16,
+        "offsetY": 48
+    },
+    "fileName": "magic_rock.png"
+}

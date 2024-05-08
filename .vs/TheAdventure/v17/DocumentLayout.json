@@ -3,12 +3,20 @@
   "WorkspaceRootPath": "D:\\GitHub\\Repos\\NET\\TheAdventure\\",
   "Documents": [
     {
-      "AbsoluteMoniker": "D:0:0:{ECF6F2E0-F990-4520-83FC-E39AE78A3B8D}|TheAdventure.csproj|d:\\github\\repos\\net\\theadventure\\gamerenderer.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{ECF6F2E0-F990-4520-83FC-E39AE78A3B8D}|TheAdventure.csproj|solutionrelative:gamerenderer.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+      "AbsoluteMoniker": "D:0:0:{ECF6F2E0-F990-4520-83FC-E39AE78A3B8D}|TheAdventure.csproj|d:\\github\\repos\\net\\theadventure\\engine.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{ECF6F2E0-F990-4520-83FC-E39AE78A3B8D}|TheAdventure.csproj|solutionrelative:engine.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     },
     {
-      "AbsoluteMoniker": "D:0:0:{ECF6F2E0-F990-4520-83FC-E39AE78A3B8D}|TheAdventure.csproj|d:\\github\\repos\\net\\theadventure\\program.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{ECF6F2E0-F990-4520-83FC-E39AE78A3B8D}|TheAdventure.csproj|solutionrelative:program.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+      "AbsoluteMoniker": "D:0:0:{ECF6F2E0-F990-4520-83FC-E39AE78A3B8D}|TheAdventure.csproj|d:\\github\\repos\\net\\theadventure\\models\\playerobject.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{ECF6F2E0-F990-4520-83FC-E39AE78A3B8D}|TheAdventure.csproj|solutionrelative:models\\playerobject.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{ECF6F2E0-F990-4520-83FC-E39AE78A3B8D}|TheAdventure.csproj|d:\\github\\repos\\net\\theadventure\\models\\magic stone\\magicstoneobject.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{ECF6F2E0-F990-4520-83FC-E39AE78A3B8D}|TheAdventure.csproj|solutionrelative:models\\magic stone\\magicstoneobject.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{ECF6F2E0-F990-4520-83FC-E39AE78A3B8D}|TheAdventure.csproj|d:\\github\\repos\\net\\theadventure\\models\\magic stone\\magicstones.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{ECF6F2E0-F990-4520-83FC-E39AE78A3B8D}|TheAdventure.csproj|solutionrelative:models\\magic stone\\magicstones.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     }
   ],
   "DocumentGroupContainers": [
@@ -18,32 +26,58 @@
       "DocumentGroups": [
         {
           "DockedWidth": 200,
-          "SelectedChildIndex": 0,
+          "SelectedChildIndex": 3,
           "Children": [
             {
               "$type": "Document",
-              "DocumentIndex": 0,
-              "Title": "GameRenderer.cs",
-              "DocumentMoniker": "D:\\GitHub\\Repos\\NET\\TheAdventure\\GameRenderer.cs",
-              "RelativeDocumentMoniker": "GameRenderer.cs",
-              "ToolTip": "D:\\GitHub\\Repos\\NET\\TheAdventure\\GameRenderer.cs",
-              "RelativeToolTip": "GameRenderer.cs",
-              "ViewState": "AQIAAAAAAAAAAAAAAAAAAAAAAAAAAAAA",
+              "DocumentIndex": 1,
+              "Title": "PlayerObject.cs",
+              "DocumentMoniker": "D:\\GitHub\\Repos\\NET\\TheAdventure\\Models\\PlayerObject.cs",
+              "RelativeDocumentMoniker": "Models\\PlayerObject.cs",
+              "ToolTip": "D:\\GitHub\\Repos\\NET\\TheAdventure\\Models\\PlayerObject.cs",
+              "RelativeToolTip": "Models\\PlayerObject.cs",
+              "ViewState": "AQIAACIAAAAAAAAAAAAcwIoAAAABAAAA",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2024-05-08T13:52:12.991Z",
+              "WhenOpened": "2024-05-08T14:23:18.224Z",
               "EditorCaption": ""
             },
             {
               "$type": "Document",
-              "DocumentIndex": 1,
-              "Title": "Program.cs",
-              "DocumentMoniker": "D:\\GitHub\\Repos\\NET\\TheAdventure\\Program.cs",
-              "RelativeDocumentMoniker": "Program.cs",
-              "ToolTip": "D:\\GitHub\\Repos\\NET\\TheAdventure\\Program.cs",
-              "RelativeToolTip": "Program.cs",
-              "ViewState": "AQIAAAYAAAAAAAAAAADgvxYAAAAhAAAA",
+              "DocumentIndex": 2,
+              "Title": "MagicStoneObject.cs",
+              "DocumentMoniker": "D:\\GitHub\\Repos\\NET\\TheAdventure\\Models\\Magic Stone\\MagicStoneObject.cs",
+              "RelativeDocumentMoniker": "Models\\Magic Stone\\MagicStoneObject.cs",
+              "ToolTip": "D:\\GitHub\\Repos\\NET\\TheAdventure\\Models\\Magic Stone\\MagicStoneObject.cs",
+              "RelativeToolTip": "Models\\Magic Stone\\MagicStoneObject.cs",
+              "ViewState": "AQIAAAAAAAAAAAAAAAAAAAQAAAAAAAAA",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2024-05-08T13:51:13.93Z",
+              "WhenOpened": "2024-05-08T14:19:26.457Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 3,
+              "Title": "MagicStones.cs",
+              "DocumentMoniker": "D:\\GitHub\\Repos\\NET\\TheAdventure\\Models\\Magic Stone\\MagicStones.cs",
+              "RelativeDocumentMoniker": "Models\\Magic Stone\\MagicStones.cs",
+              "ToolTip": "D:\\GitHub\\Repos\\NET\\TheAdventure\\Models\\Magic Stone\\MagicStones.cs",
+              "RelativeToolTip": "Models\\Magic Stone\\MagicStones.cs",
+              "ViewState": "AQIAAAMAAAAAAAAAAAAAABQAAAAjAAAA",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2024-05-08T14:16:35.154Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 0,
+              "Title": "Engine.cs",
+              "DocumentMoniker": "D:\\GitHub\\Repos\\NET\\TheAdventure\\Engine.cs",
+              "RelativeDocumentMoniker": "Engine.cs",
+              "ToolTip": "D:\\GitHub\\Repos\\NET\\TheAdventure\\Engine.cs",
+              "RelativeToolTip": "Engine.cs",
+              "ViewState": "AQIAAOMAAAAAAAAAAAAAwO4AAAAxAAAA",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2024-05-08T14:07:53.839Z",
               "EditorCaption": ""
             }
           ]

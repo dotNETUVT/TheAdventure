@@ -1,3 +1,4 @@
+using System.Diagnostics;
 using System.Text.Json;
 using Silk.NET.Maths;
 using Silk.NET.SDL;
@@ -13,6 +14,7 @@ namespace TheAdventure
 
         private Level? _currentLevel;
         private PlayerObject _player;
+        private MagicStones _magicStones = new();
         private GameRenderer _renderer;
         private Input _input;
 
@@ -63,6 +65,29 @@ namespace TheAdventure
                 Loop = true
             };
             */
+
+            /* generate stones */
+            var stoneSpriteSheet = SpriteSheet.LoadSpriteSheet("stone.json", "Assets", _renderer);
+            if (stoneSpriteSheet != null)
+            {
+                int levelWidth = _currentLevel.Width * _currentLevel.TileWidth;
+                int levelHeight = _currentLevel.Height * _currentLevel.TileHeight;
+                Random rnd = new Random();
+                for (int i = 0; i < rnd.Next(2, 3); i++)
+                {
+                    int xStone = rnd.Next(0, levelWidth);
+                    int yStone = rnd.Next(0, levelHeight);
+
+                    while (!_magicStones.verifyPosition(xStone, yStone))
+                    {
+                        xStone = rnd.Next(0, levelWidth);
+                        yStone = rnd.Next(0, levelHeight);
+                    }
+                    _magicStones.addStone(stoneSpriteSheet, xStone, yStone);
+                }
+            }
+
+
             var spriteSheet = SpriteSheet.LoadSpriteSheet("player.json", "Assets", _renderer);
             if(spriteSheet != null){
                 _player = new PlayerObject(spriteSheet, 100, 100);
@@ -211,6 +236,7 @@ namespace TheAdventure
                 gameObject.Render(_renderer);
             }
 
+            _magicStones.renderStones(_renderer);
             _player.Render(_renderer);
         }
 
