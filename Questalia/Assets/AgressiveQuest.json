@@ -1,0 +1,11 @@
+﻿{
+  "rowCount" : 1,
+  "columnCount" : 1,
+  "frameWidth" : 50,
+  "frameHeight" : 50,
+  "frameCenter" : {
+    "offsetX" : 25,
+    "offsetY" : 25
+  },
+  "fileName" : "AgressiveQuest.png"
+}

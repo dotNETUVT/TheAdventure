@@ -1,0 +1,33 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <TargetFramework>net8.0</TargetFramework>
+        <ImplicitUsings>enable</ImplicitUsings>
+        <Nullable>enable</Nullable>
+        <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    </PropertyGroup>
+
+    <ItemGroup>
+      <PackageReference Include="sdl2.nuget" Version="2.30.2" />
+      <PackageReference Include="Silk.NET.SDL" Version="2.20.0" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <Compile Update="Class1.cs">
+        <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+      </Compile>
+    </ItemGroup>
+
+    <ItemGroup>
+      <ProjectReference Include="..\TheAdventure\TheAdventure.csproj" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <None Remove="Assets\QuestaliaLogo.json" />
+      <Content Include="Assets\QuestaliaLogo.json">
+        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      </Content>
+      <None Remove="Assets\Logo.png" />
+    </ItemGroup>
+
+</Project>

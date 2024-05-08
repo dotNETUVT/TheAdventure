@@ -1,0 +1,11 @@
+{
+  "rowCount" : 1,
+  "columnCount" : 1,
+  "frameWidth" : 100,
+  "frameHeight" : 100,
+  "frameCenter" : {
+    "offsetX" : 50,
+    "offsetY" : 50
+  },
+  "fileName" : "Logo.png"
+}
