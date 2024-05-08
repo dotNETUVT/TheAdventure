@@ -10,23 +10,13 @@ namespace TheAdventure
         
         byte[] _mouseButtonStates = new byte[(int)MouseButton.Count];
         
-        public EventHandler<(int x, int y)> OnMouseClick;
+        public EventHandler<(int x, int y)>? OnMouseClick;
         
         public Input(Sdl sdl, GameWindow window, GameRenderer renderer)
         {
             _sdl = sdl;
             _gameWindow = window;
             _renderer = renderer;
-        }
-
-        public bool IsKeyAPressed(){
-            ReadOnlySpan<byte> _keyboardState = new(_sdl.GetKeyboardState(null), (int)KeyCode.Count);
-            return _keyboardState[(int)KeyCode.A] == 1;
-        }
-
-        public bool IsKeyBPressed(){
-            ReadOnlySpan<byte> _keyboardState = new(_sdl.GetKeyboardState(null), (int)KeyCode.Count);
-            return _keyboardState[(int)KeyCode.B] == 1;
         }
 
         public bool IsLeftPressed()

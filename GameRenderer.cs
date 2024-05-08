@@ -41,7 +41,10 @@ public unsafe class GameRenderer
     }
 
     public int LoadTexture(string fileName, out TextureInfo textureInfo)
-    {
+    {   string fullPath = Path.Combine(Directory.GetCurrentDirectory(), "Assets", "wall.png");
+        Console.WriteLine("Calea completă este: " + fullPath);
+        Console.WriteLine("Există fișierul? " + File.Exists(fullPath));
+
         using (var fStream = new FileStream(fileName, FileMode.Open))
         {
             var image = Image.Load<Rgba32>(fStream);
