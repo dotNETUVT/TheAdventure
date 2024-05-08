@@ -1,95 +1,96 @@
 using Silk.NET.Maths;
 using TheAdventure;
 
-namespace TheAdventure.Models;
-
-public class PlayerObject : RenderableGameObject
+namespace TheAdventure.Models
 {
-    private Input _input;
-    private int _pixelsPerSecond = 192;
-
-    private string _currentAnimation = "IdleDown";
-
-
-    public PlayerObject(SpriteSheet spriteSheet, int x, int y) : base(spriteSheet, (x, y))
+    public class PlayerObject : RenderableGameObject
     {
-        SpriteSheet.ActivateAnimation(_currentAnimation);
+        private Input _input;
+        private Engine _engine;
+        private int _pixelsPerSecond = 192;
+        private string _currentAnimation = "IdleDown";
 
-    }
-
-    public void UpdatePlayerPosition(double up, double down, double left, double right, int width, int height,
-        double time, bool shift)
-    {
-        if (shift)
-            _pixelsPerSecond = 384;
-        else
-            _pixelsPerSecond = 192;
-        if (up <= double.Epsilon &&
-            down <= double.Epsilon &&
-            left <= double.Epsilon &&
-            right <= double.Epsilon &&
-            _currentAnimation == "IdleDown")
+        public PlayerObject(SpriteSheet spriteSheet, int x, int y, Input input, Engine engine) : base(spriteSheet, (x, y))
         {
-            return;
+            SpriteSheet.ActivateAnimation(_currentAnimation);
+            _input = input;
+            _engine = engine;
         }
 
-        var pixelsToMove = time * _pixelsPerSecond;
+        public void UpdatePlayerPosition(double up, double down, double left, double right, int width, int height, double time, bool shift, bool space)
+        {
+            if (shift)
+                _pixelsPerSecond = 384;
+            else
+                _pixelsPerSecond = 192;
 
-        var x = Position.X + (int)(right * pixelsToMove);
-        x -= (int)(left * pixelsToMove);
+            if (up <= double.Epsilon && down <= double.Epsilon && left <= double.Epsilon && right <= double.Epsilon && _currentAnimation == "IdleDown")
+            {
+                return;
+            }
 
-        var y = Position.Y - (int)(up * pixelsToMove);
-        y += (int)(down * pixelsToMove);
+            var pixelsToMove = time * _pixelsPerSecond;
 
-        if (x < 10)
-        {
-            x = 10;
-        }
+            var x = Position.X + (int)(right * pixelsToMove) - (int)(left * pixelsToMove);
+            var y = Position.Y - (int)(up * pixelsToMove) + (int)(down * pixelsToMove);
 
-        if (y < 24)
-        {
-            y = 24;
-        }
+            x = Math.Clamp(x, 10, width - 10);
+            y = Math.Clamp(y, 24, height - 6);
 
-        if (x > width - 10)
-        {
-            x = width - 10;
-        }
+            if (y < Position.Y && _currentAnimation != "MoveUp")
+            {
+                _currentAnimation = "MoveUp";
+            }
+            else if (y > Position.Y && _currentAnimation != "MoveDown")
+            {
+                _currentAnimation = "MoveDown";
+            }
+            else if (x > Position.X && _currentAnimation != "MoveRight")
+            {
+                _currentAnimation = "MoveRight";
+            }
+            else if (x < Position.X && _currentAnimation != "MoveLeft")
+            {
+                _currentAnimation = "MoveLeft";
+            }
+            else if (x == Position.X && y == Position.Y && _currentAnimation != "IdleDown")
+            {
+                _currentAnimation = "IdleDown";
+            }
 
-        if (y > height - 6)
-        {
-            y = height - 6;
-        }
+            SpriteSheet.ActivateAnimation(_currentAnimation);
+            Position = (x, y);
 
-        if (y < Position.Y && _currentAnimation != "MoveUp")
-        {
-            _currentAnimation = "MoveUp";
-            //Console.WriteLine($"Attempt to switch to {_currentAnimation}");
-        }
-        if (y > Position.Y && _currentAnimation != "MoveDown")
-        {
-            _currentAnimation = "MoveDown";
-            //Console.WriteLine($"Attempt to switch to {_currentAnimation}");
-        }
-        if (x > Position.X && _currentAnimation != "MoveRight")
-        {
-            _currentAnimation = "MoveRight";
-            //Console.WriteLine($"Attempt to switch to {_currentAnimation}");
-        }
-        if (x < Position.X && _currentAnimation != "MoveLeft")
-        {
-            _currentAnimation = "MoveLeft";
-            //Console.WriteLine($"Attempt to switch to {_currentAnimation}");
-        }
-        if (x == Position.X && _currentAnimation != "IdleDown" &&
-            y == Position.Y && _currentAnimation != "IdleDown")
-        {
-            _currentAnimation = "IdleDown";
-            //Console.WriteLine($"Attempt to switch to {_currentAnimation}");
-        }
+            if (space)
+            {
+                int xOffset = 0;
+                int yOffset = 0;
 
-        //Console.WriteLine($"Will to switch to {_currentAnimation}");
-        SpriteSheet.ActivateAnimation(_currentAnimation);
-        Position = (x, y);
+                if (_currentAnimation == "MoveUp")
+                {
+                    yOffset = -15;
+                }
+                else if (_currentAnimation == "MoveDown")
+                {
+                    yOffset = 15;
+                }
+                else if (_currentAnimation == "MoveLeft")
+                {
+                    xOffset = -15;
+                }
+                else if (_currentAnimation == "MoveRight")
+                {
+                    xOffset = 15;
+                }
+
+                int newX = Position.X + xOffset;
+                int newY = Position.Y + yOffset;
+
+                newX = Math.Clamp(newX, 0, width);
+                newY = Math.Clamp(newY, 0, height);
+
+                Position = (newX, newY);
+            }
+        }
     }
 }

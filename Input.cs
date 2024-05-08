@@ -22,30 +22,36 @@ namespace TheAdventure
         public bool IsLeftPressed()
         {
             ReadOnlySpan<byte> _keyboardState = new(_sdl.GetKeyboardState(null), (int)KeyCode.Count);
-            return _keyboardState[(int)KeyCode.Left] == 1;
+            return _keyboardState[(int)KeyCode.Left] == 1 || _keyboardState[(int)KeyCode.A] == 1;
         }
 
         public bool IsRightPressed()
         {
             ReadOnlySpan<byte> _keyboardState = new(_sdl.GetKeyboardState(null), (int)KeyCode.Count);
-            return _keyboardState[(int)KeyCode.Right] == 1;
+            return _keyboardState[(int)KeyCode.Right] == 1 || _keyboardState[(int)KeyCode.D] == 1;
         }
 
         public bool IsUpPressed()
         {
             ReadOnlySpan<byte> _keyboardState = new(_sdl.GetKeyboardState(null), (int)KeyCode.Count);
-            return _keyboardState[(int)KeyCode.Up] == 1;
+            return _keyboardState[(int)KeyCode.Up] == 1 || _keyboardState[(int)KeyCode.W] == 1;
         }
 
         public bool IsDownPressed()
         {
             ReadOnlySpan<byte> _keyboardState = new(_sdl.GetKeyboardState(null), (int)KeyCode.Count);
-            return _keyboardState[(int)KeyCode.Down] == 1;
+            return _keyboardState[(int)KeyCode.Down] == 1 || _keyboardState[(int)KeyCode.S] == 1;
         }
         public bool IsShiftPressed()
         {
             ReadOnlySpan<byte> _keyboardState = new(_sdl.GetKeyboardState(null), (int)KeyCode.Count);
             return _keyboardState[(int)KeyCode.LShift] == 1;
+        }
+
+        public bool IsSpacePressed()
+        {
+            ReadOnlySpan<byte> _keyboardState = new(_sdl.GetKeyboardState(null), (int)KeyCode.Count);
+            return _keyboardState[(int)KeyCode.Space] == 1;
         }
 
         public bool ProcessInput()
