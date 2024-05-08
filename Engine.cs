@@ -27,13 +27,13 @@ namespace TheAdventure
             _input.OnMouseClick += (_, coords) => AddBomb(coords.x, coords.y);
         }
 
-        public void InitializeWorld()
+        public Dictionary<int, GameObject> InitializeWorld()
         {
             var jsonSerializerOptions = new JsonSerializerOptions() { PropertyNameCaseInsensitive = true };
             var levelContent = File.ReadAllText(Path.Combine("Assets", "terrain.tmj"));
 
             var level = JsonSerializer.Deserialize<Level>(levelContent, jsonSerializerOptions);
-            if (level == null) return;
+            if (level == null) return null;
             foreach (var refTileSet in level.TileSets)
             {
                 var tileSetContent = File.ReadAllText(Path.Combine("Assets", refTileSet.Source));
@@ -69,6 +69,8 @@ namespace TheAdventure
             }
             _renderer.SetWorldBounds(new Rectangle<int>(0, 0, _currentLevel.Width * _currentLevel.TileWidth,
                 _currentLevel.Height * _currentLevel.TileHeight));
+
+            return _gameObjects;
         }
 
         public void ProcessFrame()

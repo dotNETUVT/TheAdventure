@@ -64,8 +64,4 @@
       <None Remove="Questalia\bin\Debug\net8.0\Questalia.dll" />
     </ItemGroup>
 
-    <ItemGroup>
-      <ProjectReference Include="..\Questalia\Questalia.csproj" />
-    </ItemGroup>
-
 </Project>

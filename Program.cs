@@ -1,17 +1,18 @@
 ﻿using System.Diagnostics;
 using System.Reflection;
 using Silk.NET.SDL;
+using TheAdventure.Models;
 
 namespace TheAdventure;
 
 public static class Program
 {
-    public static void LoadPlugins(Sdl sdl)
+    public static void LoadPlugins(Sdl sdl, GameRenderer renderer, Dictionary<int, GameObject> gameObjects)
     {
-        LoadQuestalia("C:/Users/Stefan/RiderProjects/TheAdventure/Questalia/bin/Debug/net8.0/Questalia.dll", sdl);
+        LoadQuestalia("C:/Users/Stefan/RiderProjects/TheAdventure/Questalia/bin/Debug/net8.0/Questalia.dll", sdl, renderer, gameObjects);
     }
 
-    public static void LoadQuestalia(string path, Sdl sdl)
+    public static void LoadQuestalia(string path, Sdl sdl, GameRenderer renderer, Dictionary<int, GameObject> gameObjects)
     {
         var assembly = Assembly.LoadFrom(path);
         Type? plugin = null;
@@ -43,7 +44,10 @@ public static class Program
         Console.WriteLine(pluginInstance);
         
         var init = plugin.GetMethod("Init");
-        init.Invoke(pluginInstance, new object[] {sdl});
+        init.Invoke(pluginInstance, new object[] {sdl, renderer, gameObjects});
+        
+        var addQuest = plugin.GetMethod("AddQuest");
+        addQuest.Invoke(pluginInstance, new object[] {"Start walking!", 0, 0});
         
         Console.WriteLine("Questalia loaded!");
         Console.WriteLine(constructor);
@@ -51,7 +55,7 @@ public static class Program
     public static void Main()
     {
         var sdl = new Sdl(new SdlContext());
-        LoadPlugins(sdl);
+        
         var sdlInitResult = sdl.Init(Sdl.InitVideo | Sdl.InitEvents | Sdl.InitTimer | Sdl.InitGamecontroller |
                                      Sdl.InitJoystick);
         if (sdlInitResult < 0)
@@ -64,8 +68,9 @@ public static class Program
             var renderer = new GameRenderer(sdl, window);
             var input = new Input(sdl, window, renderer);
             var engine = new Engine(renderer, input);
-
-            engine.InitializeWorld();
+            Dictionary<int, GameObject> gameObjects = engine.InitializeWorld();
+            
+            LoadPlugins(sdl, renderer, gameObjects);
 
             bool quit = false;
             while (!quit)
