@@ -1,0 +1,64 @@
+{
+    "rowCount" : 5,
+    "columnCount" : 13,
+    "frameWidth" : 64,
+    "frameHeight" : 64,
+    "frameCenter" : {
+        "offsetX" : 16,
+        "offsetY" : 48
+    },
+    "fileName" : "Skeleton enemy.png",
+    "animations" : {
+        "Idle" : {
+            "startFrame" : {
+                "row" : 3,
+                "col" : 0
+            },
+            "endFrame" : {
+                "row" : 3,
+                "col" : 3
+            },
+            "durationMs" : 2000,
+            "loop" : true
+        },
+
+        "Attack" : {
+            "startFrame" : {
+                "row" : 0,
+                "col" : 0
+            },
+            "endFrame" : {
+                "row" : 0,
+                "col" : 12
+            },
+            "durationMs" : 2000,
+            "loop" : false
+        },
+
+        "Defeat" : {
+            "startFrame" : {
+                "row" : 1,
+                "col" : 0
+            },
+            "endFrame" : {
+                "row" : 1,
+                "col" : 12
+            },
+            "durationMs" : 2000,
+            "loop" : false
+        },
+
+        "Walk" : {
+            "startFrame" : {
+                "row" : 2,
+                "col" : 0
+            },
+            "endFrame" : {
+                "row" : 2,
+                "col" : 11
+            },
+            "durationMs" : 2000,
+            "loop" : true
+        }
+    }
+}
