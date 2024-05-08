@@ -9,6 +9,8 @@ public class Tile
 
     public bool Solid { get; set;}
 
+    public int NextState {get; set;}
+
     public int InternalTextureId { get; set; } = -1;
 }
 }

@@ -20,10 +20,14 @@ namespace TheAdventure
         private DateTimeOffset _lastUpdate = DateTimeOffset.Now;
         private DateTimeOffset _lastPlayerUpdate = DateTimeOffset.Now;
 
+        private readonly int initialBlockChangeStateCooldown = 15;
+        private int blockChangeStateCooldown;
+
         public Engine(GameRenderer renderer, Input input)
         {
             _renderer = renderer;
             _input = input;
+            blockChangeStateCooldown = initialBlockChangeStateCooldown;
 
             _input.OnMouseClick += (_, coords) => AddBomb(coords.x, coords.y);
         }
@@ -82,6 +86,44 @@ namespace TheAdventure
             return direction;
         }
 
+        private void UpdateBlockStateIfNecessary(bool direction, Layer layer, int blockPoisition)
+        {
+            var tile = GetTile(layer.Data[blockPoisition] - 1);
+            if (direction && tile!.Solid && blockChangeStateCooldown <= 0)
+            {
+                layer.Data[blockPoisition] = tile.NextState + 1;
+            }
+        }
+
+        private void UpdateBlocksState(bool up, bool down, bool left, bool right, int x, int y, int power)
+        {
+            blockChangeStateCooldown -= power;
+
+            for (var layer = 0; layer < _currentLevel?.Layers.Length; ++layer)
+            {
+                var aproximatedPixelsToMove = 3;
+                var blockSize = 16;
+                var cLayer = _currentLevel.Layers[layer];
+
+                var upperTilePosition = (y - aproximatedPixelsToMove - blockSize) / blockSize * cLayer.Width + x / blockSize;
+                UpdateBlockStateIfNecessary(up, cLayer, upperTilePosition);
+
+                var rightTilePosition = y / blockSize * cLayer.Width + (x + (int)(aproximatedPixelsToMove * 2)) / blockSize;
+                UpdateBlockStateIfNecessary(right, cLayer, rightTilePosition);
+
+                var downTilePosition = (y + aproximatedPixelsToMove) / blockSize * cLayer.Width + x / blockSize;
+                UpdateBlockStateIfNecessary(down, cLayer, downTilePosition);
+
+                var leftTilePosition = y / blockSize * cLayer.Width + (x - aproximatedPixelsToMove) / blockSize;
+                UpdateBlockStateIfNecessary(left, cLayer, leftTilePosition);
+            }
+
+            if(blockChangeStateCooldown <= 0)
+            {
+                blockChangeStateCooldown = initialBlockChangeStateCooldown;
+            }
+        }
+
         public void ProcessFrame()
         {
             var currentTime = DateTimeOffset.Now;
@@ -102,7 +144,8 @@ namespace TheAdventure
                 dir += left? 1: 0;
                 dir += right ? 1 : 0;
                 if(dir <= 1){
-                    _player.Attack(up, down, left, right);
+                    _player!.Attack(up, down, left, right);
+                    UpdateBlocksState(up, down, left, right, _player.Position.X, _player.Position.Y, 1);
                 }
                 else{
                     isAttacking = false;
@@ -153,6 +196,10 @@ namespace TheAdventure
                     var deltaY = Math.Abs(_player.Position.Y - tempObject.Position.Y);
                     if(deltaX < 32 && deltaY < 32){
                         _player.GameOver();
+                    }
+                    if(tempObject.IsDestroying)
+                    {
+                        UpdateBlocksState(true, true, true, true, tempObject.Position.X, tempObject.Position.Y, 20);
                     }
                 }
                 _gameObjects.Remove(gameObjectId);
@@ -257,7 +304,7 @@ namespace TheAdventure
             var spriteSheet = SpriteSheet.LoadSpriteSheet("bomb.json", "Assets", _renderer);
             if(spriteSheet != null){
                 spriteSheet.ActivateAnimation("Explode");
-                TemporaryGameObject bomb = new(spriteSheet, 2.1, (translated.X, translated.Y));
+                TemporaryGameObject bomb = new(spriteSheet, 2.1, (translated.X, translated.Y), true);
                 _gameObjects.Add(bomb.Id, bomb);
             }
         }

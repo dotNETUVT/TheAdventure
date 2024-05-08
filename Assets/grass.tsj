@@ -8,7 +8,7 @@
  "margin":0,
  "name":"grass",
  "spacing":0,
- "tilecount":4,
+ "tilecount":10,
  "tiledversion":"1.10.2",
  "tileheight":16,
  "tiles":[
@@ -16,6 +16,7 @@
          "id":0,
          "image":"grass_001.png",
          "solid":false,
+         "nextState": 0,
          "imageheight":16,
          "imagewidth":16
         }, 
@@ -23,6 +24,7 @@
          "id":1,
          "image":"grass_002.png",
          "solid":false,
+         "nextState":1,
          "imageheight":16,
          "imagewidth":16
         }, 
@@ -30,6 +32,7 @@
          "id":2,
          "image":"grass_003.png",
          "solid":false,
+         "nextState":2,
          "imageheight":16,
          "imagewidth":16
         }, 
@@ -37,20 +40,55 @@
          "id":3,
          "image":"grass_004.png",
          "solid":false,
+         "nextState":3,
          "imageheight":16,
          "imagewidth":16
-        },
+        }, 
         {
          "id":4,
          "image":"wall.png",
          "solid":true,
+         "nextState":5,
          "imageheight":16,
          "imagewidth":16
-        },
+        }, 
         {
          "id":5,
+         "image":"wall_semidestoryed.png",
+         "solid":true,
+         "nextState":6,
+         "imageheight":16,
+         "imagewidth":16
+        }, 
+        {
+         "id":6,
+         "image":"wall_destroyed.png",
+         "solid":true,
+         "nextState":0,
+         "imageheight":16,
+         "imagewidth":16
+        }, 
+        {
+         "id":7,
          "image":"wall2.png",
          "solid":true,
+         "nextState":8,
+         "imageheight":16,
+         "imagewidth":16
+        }, 
+        {
+         "id":8,
+         "image":"wall2_semidestroyed.png",
+         "solid":true,
+         "nextState":9,
+         "imageheight":16,
+         "imagewidth":16
+        }, 
+        {
+         "id":9,
+         "image":"wall2_destroyed.png",
+         "solid":true,
+         "nextState":2,
          "imageheight":16,
          "imagewidth":16
         }],
