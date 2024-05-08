@@ -1,0 +1,54 @@
+{
+  "Version": 1,
+  "WorkspaceRootPath": "D:\\GitHub\\Repos\\NET\\TheAdventure\\",
+  "Documents": [
+    {
+      "AbsoluteMoniker": "D:0:0:{ECF6F2E0-F990-4520-83FC-E39AE78A3B8D}|TheAdventure.csproj|d:\\github\\repos\\net\\theadventure\\gamerenderer.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{ECF6F2E0-F990-4520-83FC-E39AE78A3B8D}|TheAdventure.csproj|solutionrelative:gamerenderer.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{ECF6F2E0-F990-4520-83FC-E39AE78A3B8D}|TheAdventure.csproj|d:\\github\\repos\\net\\theadventure\\program.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{ECF6F2E0-F990-4520-83FC-E39AE78A3B8D}|TheAdventure.csproj|solutionrelative:program.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    }
+  ],
+  "DocumentGroupContainers": [
+    {
+      "Orientation": 0,
+      "VerticalTabListWidth": 256,
+      "DocumentGroups": [
+        {
+          "DockedWidth": 200,
+          "SelectedChildIndex": 0,
+          "Children": [
+            {
+              "$type": "Document",
+              "DocumentIndex": 0,
+              "Title": "GameRenderer.cs",
+              "DocumentMoniker": "D:\\GitHub\\Repos\\NET\\TheAdventure\\GameRenderer.cs",
+              "RelativeDocumentMoniker": "GameRenderer.cs",
+              "ToolTip": "D:\\GitHub\\Repos\\NET\\TheAdventure\\GameRenderer.cs",
+              "RelativeToolTip": "GameRenderer.cs",
+              "ViewState": "AQIAAAAAAAAAAAAAAAAAAAAAAAAAAAAA",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2024-05-08T13:52:12.991Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 1,
+              "Title": "Program.cs",
+              "DocumentMoniker": "D:\\GitHub\\Repos\\NET\\TheAdventure\\Program.cs",
+              "RelativeDocumentMoniker": "Program.cs",
+              "ToolTip": "D:\\GitHub\\Repos\\NET\\TheAdventure\\Program.cs",
+              "RelativeToolTip": "Program.cs",
+              "ViewState": "AQIAAAYAAAAAAAAAAADgvxYAAAAhAAAA",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2024-05-08T13:51:13.93Z",
+              "EditorCaption": ""
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
