@@ -78,9 +78,27 @@ public unsafe class GameRenderer
         }
     }
 
+    public void RenderRectangle(int x, int y, int width, int height, Silk.NET.SDL.Color color)
+    {
+        // Set the draw color
+        _sdl.SetRenderDrawColor(_renderer, color.R, color.G, color.B, color.A);
+
+        // Calculate the SDL_Rect structure
+        var rect = new Rectangle<int>(x, y, width, height);
+
+        // Render the filled rectangle
+        _sdl.RenderFillRect(_renderer, rect);
+    }
+
+
     public Vector2D<int> TranslateFromScreenToWorldCoordinates(int x, int y)
     {
         return _camera.FromScreenToWorld(x, y);
+    }
+
+    public Vector2D<int> TranslateToScreenCoords(int x, int y)
+    {
+        return _camera.TranslateToScreenCoordinates(x, y);
     }
 
     public void SetDrawColor(byte r, byte g, byte b, byte a)

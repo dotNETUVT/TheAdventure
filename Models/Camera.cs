@@ -86,8 +86,17 @@ public class Camera
         return newDestination;
     }
 
+    public Vector2D<int> TranslateToScreenCoordinates(int x, int y)
+    {
+        var screenX = x - _x + (Width / 2);
+        var screenY = y - _y + (Height / 2);
+
+        return new Vector2D<int>(screenX, screenY);
+    }
+
     public Vector2D<int> FromScreenToWorld(int x, int y)
     {
         return new Vector2D<int>(x - (Width / 2 - X), y - (Height / 2 - Y));
     }
+
 }
