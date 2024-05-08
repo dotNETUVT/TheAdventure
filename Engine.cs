@@ -75,18 +75,17 @@ namespace TheAdventure
                 Random rnd = new Random();
                 for (int i = 0; i < rnd.Next(2, 3); i++)
                 {
-                    int xStone = rnd.Next(0, levelWidth);
-                    int yStone = rnd.Next(0, levelHeight);
+                    int xStone = rnd.Next(50, levelWidth);
+                    int yStone = rnd.Next(50, levelHeight);
 
                     while (!_magicStones.verifyPosition(xStone, yStone))
                     {
-                        xStone = rnd.Next(0, levelWidth);
-                        yStone = rnd.Next(0, levelHeight);
+                        xStone = rnd.Next(50, levelWidth);
+                        yStone = rnd.Next(50, levelHeight);
                     }
                     _magicStones.addStone(stoneSpriteSheet, xStone, yStone);
                 }
             }
-
 
             var spriteSheet = SpriteSheet.LoadSpriteSheet("player.json", "Assets", _renderer);
             if(spriteSheet != null){
@@ -111,6 +110,9 @@ namespace TheAdventure
 
             if(isAttacking)
             {
+
+                _magicStones.verifyHit(_player.Position.X, _player.Position.Y);
+
                 var dir = up ? 1: 0;
                 dir += down? 1 : 0;
                 dir += left? 1: 0;

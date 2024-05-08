@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -31,5 +32,17 @@ public class MagicStones
         }
 
         return true;
+    }
+
+    public void verifyHit(int x, int y)
+    {
+        foreach (var stone in magicStoneObjects)
+        {
+            var distance = Math.Sqrt(Math.Pow(stone.Position.X - x, 2) + Math.Pow(stone.Position.Y - y, 2));
+            if (distance <= 30)
+            {
+                stone.takeHit();
+            }
+        }
     }
 }
