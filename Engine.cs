@@ -18,6 +18,8 @@ namespace TheAdventure
 
         private DateTimeOffset _lastUpdate = DateTimeOffset.Now;
         private DateTimeOffset _lastPlayerUpdate = DateTimeOffset.Now;
+        private int _currentTime;
+        private bool _isNight;
 
         public Engine(GameRenderer renderer, Input input)
         {
@@ -25,12 +27,21 @@ namespace TheAdventure
             _input = input;
 
             _input.OnMouseClick += (_, coords) => AddBomb(coords.x, coords.y);
+
+            // Get the current hour
+            _currentTime = DateTime.Now.Hour;
+            // Day interval hours [8,21]
+            _isNight = !(8 <= _currentTime && _currentTime <= 21);
+            //Console.WriteLine(_isNight);
         }
 
         public void InitializeWorld()
         {
             var jsonSerializerOptions = new JsonSerializerOptions() { PropertyNameCaseInsensitive = true };
-            var levelContent = File.ReadAllText(Path.Combine("Assets", "terrain.tmj"));
+
+            // get the terrain texture
+            var levelContent = !(_isNight) ? File.ReadAllText(Path.Combine("Assets", "terrain.tmj")) // if is day
+                : File.ReadAllText(Path.Combine("Assets", "dark_terrain.tmj")); // if is night
 
             var level = JsonSerializer.Deserialize<Level>(levelContent, jsonSerializerOptions);
             if (level == null) return;
@@ -54,16 +65,8 @@ namespace TheAdventure
             }
 
             _currentLevel = level;
-            /*SpriteSheet spriteSheet = new(_renderer, Path.Combine("Assets", "player.png"), 10, 6, 48, 48, new FrameOffset() { OffsetX = 24, OffsetY = 42 });
-            spriteSheet.Animations["IdleDown"] = new SpriteSheet.Animation()
-            {
-                StartFrame = new FramePosition(),//(0, 0),
-                EndFrame = new FramePosition() { Row = 0, Col = 5 },
-                DurationMs = 1000,
-                Loop = true
-            };
-            */
-            var spriteSheet = SpriteSheet.LoadSpriteSheet("player.json", "Assets", _renderer);
+            var spriteSheet = !(_isNight) ? SpriteSheet.LoadSpriteSheet("player.json", "Assets", _renderer)
+                : SpriteSheet.LoadSpriteSheet("dark_player.json", "Assets", _renderer);
             if(spriteSheet != null){
                 _player = new PlayerObject(spriteSheet, 100, 100);
             }
@@ -219,7 +222,8 @@ namespace TheAdventure
 
             var translated = translateCoordinates ? _renderer.TranslateFromScreenToWorldCoordinates(x, y) : new Vector2D<int>(x, y);
             
-            var spriteSheet = SpriteSheet.LoadSpriteSheet("bomb.json", "Assets", _renderer);
+            var spriteSheet = !_isNight ? SpriteSheet.LoadSpriteSheet("bomb.json", "Assets", _renderer)
+                : SpriteSheet.LoadSpriteSheet("dark_bomb.json", "Assets", _renderer);
             if(spriteSheet != null){
                 spriteSheet.ActivateAnimation("Explode");
                 TemporaryGameObject bomb = new(spriteSheet, 2.1, (translated.X, translated.Y));
