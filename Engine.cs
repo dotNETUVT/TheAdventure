@@ -190,13 +190,22 @@ namespace TheAdventure
         private void AddBomb(int x, int y)
         {
             var translated = _renderer.TranslateFromScreenToWorldCoordinates(x, y);
-            var spriteSheet = SpriteSheet.LoadSpriteSheet("bomb.json", "Assets", _renderer);
-            if(spriteSheet != null){
-                spriteSheet.ActivateAnimation("Explode");
+            var spriteSheet = SpriteSheet.LoadSpriteSheet("light.json", "Assets", _renderer);
+            if(spriteSheet != null)
+            {
+                spriteSheet.ActivateAnimation("Light");
                 TemporaryGameObject bomb = new(spriteSheet, 2.1, (translated.X, translated.Y));
                 _gameObjects.Add(bomb.Id, bomb);
+
+
+                if (Math.Abs(translated.X - _player.Position.X) < 50 && Math.Abs(translated.Y - _player.Position.Y) < 50)
+                {
+                    _player.Render(_renderer);
+                    _player.Respawn();
+                }
             }
         }
+
 
          private void GenerateRandomRain()
     {

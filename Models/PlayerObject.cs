@@ -1,5 +1,7 @@
 using Silk.NET.Maths;
 using TheAdventure;
+using System.Threading.Tasks;
+using Silk.NET.SDL;
 
 namespace TheAdventure.Models;
 
@@ -82,4 +84,17 @@ public class PlayerObject : RenderableGameObject
         SpriteSheet.ActivateAnimation(_currentAnimation);
         Position = (x, y);
     }
+
+    public async Task Respawn()
+    {
+        SpriteSheet.ActivateAnimation("Die");
+        await Task.Delay(2000);
+        var X = Position.X;
+        var Y = Position.Y;
+        X = 100;
+        Y = 100;
+        Position = (X, Y);
+        SpriteSheet.ActivateAnimation("IdleDown");
+    }
+
 }
