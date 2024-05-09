@@ -7,6 +7,7 @@ namespace TheAdventure
         private Sdl _sdl;
         private GameWindow _gameWindow;
         private GameRenderer _renderer;
+        private SoundEffectManager _soundEffectManager;
         
         byte[] _mouseButtonStates = new byte[(int)MouseButton.Count];
         
@@ -17,6 +18,8 @@ namespace TheAdventure
             _sdl = sdl;
             _gameWindow = window;
             _renderer = renderer;
+            _soundEffectManager = new SoundEffectManager();
+            _soundEffectManager.LoadSoundEffect("attack", "Assets/att.wav");
         }
 
         public bool IsKeyAPressed(){
@@ -183,6 +186,14 @@ namespace TheAdventure
                         break;
                     }
                 }
+                var isAttackKeyPressed = IsKeyAPressed();
+
+                if (isAttackKeyPressed)
+                {
+                    // Play the attack sound effect
+                    _soundEffectManager.PlaySoundEffect("attack");
+                }
+
             }
 
             return false;
