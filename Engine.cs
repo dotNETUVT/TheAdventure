@@ -77,12 +77,12 @@ namespace TheAdventure
             var secsSinceLastFrame = (currentTime - _lastUpdate).TotalSeconds;
             _lastUpdate = currentTime;
 
-            bool up = _input.IsUpPressed();
-            bool down = _input.IsDownPressed();
-            bool left = _input.IsLeftPressed();
-            bool right = _input.IsRightPressed();
-            bool isAttacking = _input.IsKeyAPressed();
-            bool addBomb = _input.IsKeyBPressed();
+            bool up = _input.IsKeyPressed(KeyCode.Up) || _input.IsKeyPressed(KeyCode.W);
+            bool down = _input.IsKeyPressed(KeyCode.Down) || _input.IsKeyPressed(KeyCode.S);
+            bool left = _input.IsKeyPressed(KeyCode.Left) || _input.IsKeyPressed(KeyCode.A);
+            bool right = _input.IsKeyPressed(KeyCode.Right) || _input.IsKeyPressed(KeyCode.D);
+            bool isAttacking = _input.IsKeyPressed(KeyCode.A);
+            bool addBomb = _input.IsKeyPressed(KeyCode.B);
 
             if(isAttacking)
             {
