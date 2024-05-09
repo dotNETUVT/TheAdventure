@@ -29,46 +29,56 @@ namespace TheAdventure
 
         public void InitializeWorld()
         {
-            var jsonSerializerOptions = new JsonSerializerOptions() { PropertyNameCaseInsensitive = true };
-            var levelContent = File.ReadAllText(Path.Combine("Assets", "terrain.tmj"));
-
-            var level = JsonSerializer.Deserialize<Level>(levelContent, jsonSerializerOptions);
-            if (level == null) return;
-            foreach (var refTileSet in level.TileSets)
+            try
             {
-                var tileSetContent = File.ReadAllText(Path.Combine("Assets", refTileSet.Source));
-                if (!_loadedTileSets.TryGetValue(refTileSet.Source, out var tileSet))
-                {
-                    tileSet = JsonSerializer.Deserialize<TileSet>(tileSetContent, jsonSerializerOptions);
+                var jsonSerializerOptions = new JsonSerializerOptions() { PropertyNameCaseInsensitive = true };
+                var levelContent = File.ReadAllText(Path.Combine("Assets", "terrain.tmj"));
 
-                    foreach (var tile in tileSet.Tiles)
+                var level = JsonSerializer.Deserialize<Level>(levelContent, jsonSerializerOptions);
+                if (level == null) return;
+                foreach (var refTileSet in level.TileSets)
+                {
+                    var tileSetContent = File.ReadAllText(Path.Combine("Assets", refTileSet.Source));
+                    if (!_loadedTileSets.TryGetValue(refTileSet.Source, out var tileSet))
                     {
-                        var internalTextureId = _renderer.LoadTexture(Path.Combine("Assets", tile.Image), out _);
-                        tile.InternalTextureId = internalTextureId;
+                        tileSet = JsonSerializer.Deserialize<TileSet>(tileSetContent, jsonSerializerOptions);
+
+                        foreach (var tile in tileSet.Tiles)
+                        {
+                            var internalTextureId = _renderer.LoadTexture(Path.Combine("Assets", tile.Image), out _);
+                            tile.InternalTextureId = internalTextureId;
+                        }
+
+                        _loadedTileSets[refTileSet.Source] = tileSet;
                     }
 
-                    _loadedTileSets[refTileSet.Source] = tileSet;
+                    refTileSet.Set = tileSet;
+                }
+                
+                _currentLevel = level;
+                /*SpriteSheet spriteSheet = new(_renderer, Path.Combine("Assets", "player.png"), 10, 6, 48, 48, new FrameOffset() { OffsetX = 24, OffsetY = 42 });
+                spriteSheet.Animations["IdleDown"] = new SpriteSheet.Animation()
+                {
+                    StartFrame = new FramePosition(),//(0, 0),
+                    EndFrame = new FramePosition() { Row = 0, Col = 5 },
+                    DurationMs = 1000,
+                    Loop = true
+                };
+                */
+                var spriteSheet = SpriteSheet.LoadSpriteSheet("player.json", "../../../Assets", _renderer);
+                if (spriteSheet != null)
+                {
+                    _player = new PlayerObject(spriteSheet, 100, 100);
                 }
 
-                refTileSet.Set = tileSet;
+                _renderer.SetWorldBounds(new Rectangle<int>(0, 0, _currentLevel.Width * _currentLevel.TileWidth,
+                    _currentLevel.Height * _currentLevel.TileHeight));
             }
-
-            _currentLevel = level;
-            /*SpriteSheet spriteSheet = new(_renderer, Path.Combine("Assets", "player.png"), 10, 6, 48, 48, new FrameOffset() { OffsetX = 24, OffsetY = 42 });
-            spriteSheet.Animations["IdleDown"] = new SpriteSheet.Animation()
+            catch (Exception e)
             {
-                StartFrame = new FramePosition(),//(0, 0),
-                EndFrame = new FramePosition() { Row = 0, Col = 5 },
-                DurationMs = 1000,
-                Loop = true
-            };
-            */
-            var spriteSheet = SpriteSheet.LoadSpriteSheet("player.json", "Assets", _renderer);
-            if(spriteSheet != null){
-                _player = new PlayerObject(spriteSheet, 100, 100);
+                Console.WriteLine(e.Message);
+                Environment.Exit(1);
             }
-            _renderer.SetWorldBounds(new Rectangle<int>(0, 0, _currentLevel.Width * _currentLevel.TileWidth,
-                _currentLevel.Height * _currentLevel.TileHeight));
         }
 
         public void ProcessFrame()
@@ -219,7 +229,7 @@ namespace TheAdventure
 
             var translated = translateCoordinates ? _renderer.TranslateFromScreenToWorldCoordinates(x, y) : new Vector2D<int>(x, y);
             
-            var spriteSheet = SpriteSheet.LoadSpriteSheet("bomb.json", "Assets", _renderer);
+            var spriteSheet = SpriteSheet.LoadSpriteSheet("bomb.json", "../../../Assets", _renderer);
             if(spriteSheet != null){
                 spriteSheet.ActivateAnimation("Explode");
                 TemporaryGameObject bomb = new(spriteSheet, 2.1, (translated.X, translated.Y));
