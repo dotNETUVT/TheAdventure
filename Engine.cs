@@ -2,7 +2,6 @@ using System.Text.Json;
 using Silk.NET.Maths;
 using Silk.NET.SDL;
 using TheAdventure.Models;
-using TheAdventure.Models.Data;
 
 namespace TheAdventure
 {
@@ -13,6 +12,7 @@ namespace TheAdventure
 
         private Level? _currentLevel;
         private PlayerObject _player;
+        private PlayerObject _player2;
         private GameRenderer _renderer;
         private Input _input;
 
@@ -54,19 +54,17 @@ namespace TheAdventure
             }
 
             _currentLevel = level;
-            /*SpriteSheet spriteSheet = new(_renderer, Path.Combine("Assets", "player.png"), 10, 6, 48, 48, new FrameOffset() { OffsetX = 24, OffsetY = 42 });
+            SpriteSheet spriteSheet = new(_renderer, Path.Combine("Assets", "player.png"), 10, 6, 48, 48, (24, 42));
             spriteSheet.Animations["IdleDown"] = new SpriteSheet.Animation()
             {
-                StartFrame = new FramePosition(),//(0, 0),
-                EndFrame = new FramePosition() { Row = 0, Col = 5 },
+                StartFrame = (0, 0),
+                EndFrame = (0, 5),
                 DurationMs = 1000,
                 Loop = true
             };
-            */
-            var spriteSheet = SpriteSheet.LoadSpriteSheet("player.json", "Assets", _renderer);
-            if(spriteSheet != null){
-                _player = new PlayerObject(spriteSheet, 100, 100);
-            }
+            _player = new PlayerObject(spriteSheet, 100, 100);
+            _player2 = new PlayerObject(spriteSheet, 130, 130);
+
             _renderer.SetWorldBounds(new Rectangle<int>(0, 0, _currentLevel.Width * _currentLevel.TileWidth,
                 _currentLevel.Height * _currentLevel.TileHeight));
         }
@@ -81,49 +79,27 @@ namespace TheAdventure
             bool down = _input.IsDownPressed();
             bool left = _input.IsLeftPressed();
             bool right = _input.IsRightPressed();
-            bool isAttacking = _input.IsKeyAPressed();
-            bool addBomb = _input.IsKeyBPressed();
 
-            if(isAttacking)
-            {
-                var dir = up ? 1: 0;
-                dir += down? 1 : 0;
-                dir += left? 1: 0;
-                dir += right ? 1 : 0;
-                if(dir <= 1){
-                    _player.Attack(up, down, left, right);
-                }
-                else{
-                    isAttacking = false;
-                }
-            }
-            if(!isAttacking)
-            {
-                _player.UpdatePlayerPosition(up ? 1.0 : 0.0, down ? 1.0 : 0.0, left ? 1.0 : 0.0, right ? 1.0 : 0.0,
-                    _currentLevel.Width * _currentLevel.TileWidth, _currentLevel.Height * _currentLevel.TileHeight,
-                    secsSinceLastFrame);
-            }
+            _player.UpdatePlayerPosition(up ? 1.0 : 0.0, down ? 1.0 : 0.0, left ? 1.0 : 0.0, right ? 1.0 : 0.0,
+                _currentLevel.Width * _currentLevel.TileWidth, _currentLevel.Height * _currentLevel.TileHeight,
+                secsSinceLastFrame);
+
+
+            bool p2up = _input.P2IsUpPressed();
+            bool p2down = _input.P2IsDownPressed();
+            bool p2left = _input.P2IsLeftPressed();
+            bool p2right = _input.P2IsRightPressed();
+
+            _player2.UpdatePlayerPosition(p2up ? 1.0 : 0.0, p2down ? 1.0 : 0.0, p2left ? 1.0 : 0.0, p2right ? 1.0 : 0.0,
+                _currentLevel.Width * _currentLevel.TileWidth, _currentLevel.Height * _currentLevel.TileHeight,
+                secsSinceLastFrame);
             var itemsToRemove = new List<int>();
             itemsToRemove.AddRange(GetAllTemporaryGameObjects().Where(gameObject => gameObject.IsExpired)
                 .Select(gameObject => gameObject.Id).ToList());
 
-            if (addBomb)
+            foreach (var gameObject in itemsToRemove)
             {
-                AddBomb(_player.Position.X, _player.Position.Y, false);
-            }
-
-            foreach (var gameObjectId in itemsToRemove)
-            {
-                var gameObject = _gameObjects[gameObjectId];
-                if(gameObject is TemporaryGameObject){
-                    var tempObject = (TemporaryGameObject)gameObject;
-                    var deltaX = Math.Abs(_player.Position.X - tempObject.Position.X);
-                    var deltaY = Math.Abs(_player.Position.Y - tempObject.Position.Y);
-                    if(deltaX < 32 && deltaY < 32){
-                        _player.GameOver();
-                    }
-                }
-                _gameObjects.Remove(gameObjectId);
+                _gameObjects.Remove(gameObject);
             }
         }
 
@@ -131,7 +107,7 @@ namespace TheAdventure
         {
             _renderer.SetDrawColor(0, 0, 0, 255);
             _renderer.ClearScreen();
-            
+
             _renderer.CameraLookAt(_player.Position.X, _player.Position.Y);
 
             RenderTerrain();
@@ -212,19 +188,23 @@ namespace TheAdventure
             }
 
             _player.Render(_renderer);
+            _player2.Render(_renderer);
         }
 
-        private void AddBomb(int x, int y, bool translateCoordinates = true)
+        private void AddBomb(int x, int y)
         {
-
-            var translated = translateCoordinates ? _renderer.TranslateFromScreenToWorldCoordinates(x, y) : new Vector2D<int>(x, y);
-            
-            var spriteSheet = SpriteSheet.LoadSpriteSheet("bomb.json", "Assets", _renderer);
-            if(spriteSheet != null){
-                spriteSheet.ActivateAnimation("Explode");
-                TemporaryGameObject bomb = new(spriteSheet, 2.1, (translated.X, translated.Y));
-                _gameObjects.Add(bomb.Id, bomb);
-            }
+            var translated = _renderer.TranslateFromScreenToWorldCoordinates(x, y);
+            SpriteSheet spriteSheet = new(_renderer, "BombExploding.png", 1, 13, 32, 64, (16, 48));
+            spriteSheet.Animations["Explode"] = new SpriteSheet.Animation()
+            {
+                StartFrame = (0, 0),
+                EndFrame = (0, 12),
+                DurationMs = 2000,
+                Loop = false
+            };
+            spriteSheet.ActivateAnimation("Explode");
+            TemporaryGameObject bomb = new(spriteSheet, 2.1, (translated.X, translated.Y));
+            _gameObjects.Add(bomb.Id, bomb);
         }
     }
 }
