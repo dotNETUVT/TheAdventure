@@ -83,6 +83,18 @@ namespace TheAdventure
             bool right = _input.IsRightPressed();
             bool isAttacking = _input.IsKeyAPressed();
             bool addBomb = _input.IsKeyBPressed();
+            bool isDashing = _input.IsKeyDPressed();
+
+            if(this._player.dashCurrentTimer < this._player.dashCooldown){
+
+                double timerIncrease = 0.02;
+
+                this._player.dashCurrentTimer += timerIncrease;
+
+                if(this._player.dashCurrentTimer > this._player.dashCooldown){
+                    this._player.dashCurrentTimer = this._player.dashCooldown;
+                }
+            }
 
             if(isAttacking)
             {
@@ -101,7 +113,7 @@ namespace TheAdventure
             {
                 _player.UpdatePlayerPosition(up ? 1.0 : 0.0, down ? 1.0 : 0.0, left ? 1.0 : 0.0, right ? 1.0 : 0.0,
                     _currentLevel.Width * _currentLevel.TileWidth, _currentLevel.Height * _currentLevel.TileHeight,
-                    secsSinceLastFrame);
+                    secsSinceLastFrame, isDashing);
             }
             var itemsToRemove = new List<int>();
             itemsToRemove.AddRange(GetAllTemporaryGameObjects().Where(gameObject => gameObject.IsExpired)

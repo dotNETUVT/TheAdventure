@@ -23,6 +23,9 @@ public class PlayerObject : RenderableGameObject
 
     private int _pixelsPerSecond = 192;
 
+    public double dashCooldown = 3.0;
+    public double dashCurrentTimer = 3.0;
+
 
     public (PlayerState State, PlayerStateDirection Direction) State{ get; private set; }
 
@@ -76,7 +79,7 @@ public class PlayerObject : RenderableGameObject
     }
 
     public void UpdatePlayerPosition(double up, double down, double left, double right, int width, int height,
-        double time)
+        double time, bool isDashing=false)
     {
         if(State.State == PlayerState.GameOver) return;
         if (up <= double.Epsilon &&
@@ -115,8 +118,6 @@ public class PlayerObject : RenderableGameObject
             y = height - 6;
         }
 
-
-
         if (y < Position.Y){
             SetState(PlayerState.Move, PlayerStateDirection.Up);
         }
@@ -134,6 +135,31 @@ public class PlayerObject : RenderableGameObject
             SetState(PlayerState.Idle, State.Direction);
         }
 
+        if(isDashing == true && this.dashCurrentTimer == this.dashCooldown){
+            
+            this.dashCurrentTimer = 0.0; // reset the timer
+
+            int dashMovementValue = 100;
+
+            if(right > 0.0)
+            {
+                Position = (x+dashMovementValue,y);
+            }
+            if(left > 0.0)
+            {
+                Position = (x-dashMovementValue,y);
+            }
+            if(up > 0.0)
+            {
+                Position = (x,y-dashMovementValue);
+            }
+            if(down > 0.0)
+            {
+                Position = (x,y+dashMovementValue);
+            }
+        }
+        else{
         Position = (x, y);
+        }
     }
 }
