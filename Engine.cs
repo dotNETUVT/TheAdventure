@@ -71,6 +71,13 @@ namespace TheAdventure
                     _player = new PlayerObject(spriteSheet, 100, 100);
                 }
 
+                var rockSprite = new SpriteSheet(_renderer, "../../../Assets/rock.png",
+                    1, 1, 270, 270, 
+                    new FrameOffset(270/2,270/2), 0.1f, 0.1f);
+                var rock = new RenderableGameObject(rockSprite,
+                    (Random.Shared.Next(500), Random.Shared.Next(500)));
+                _gameObjects.Add(rock.Id, rock);
+
                 _renderer.SetWorldBounds(new Rectangle<int>(0, 0, _currentLevel.Width * _currentLevel.TileWidth,
                     _currentLevel.Height * _currentLevel.TileHeight));
             }
@@ -91,7 +98,7 @@ namespace TheAdventure
             bool down = _input.IsKeyPressed(KeyCode.Down) || _input.IsKeyPressed(KeyCode.S);
             bool left = _input.IsKeyPressed(KeyCode.Left) || _input.IsKeyPressed(KeyCode.A);
             bool right = _input.IsKeyPressed(KeyCode.Right) || _input.IsKeyPressed(KeyCode.D);
-            bool isAttacking = _input.IsKeyPressed(KeyCode.A);
+            bool isAttacking = _input.IsKeyPressed(KeyCode.X);
             bool addBomb = _input.IsKeyPressed(KeyCode.B);
 
             if(isAttacking)
