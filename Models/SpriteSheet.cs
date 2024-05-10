@@ -22,6 +22,8 @@ public class SpriteSheet
     public int FrameWidth { get; set; }
     public int FrameHeight { get; set; }
     public FrameOffset FrameCenter { get; set; }
+    public float ScaleX { get; set; } = 1;
+    public float ScaleY { get; set; } = 1;
 
     public string? FileName { get; set; }
 
@@ -53,7 +55,7 @@ public class SpriteSheet
             _textureId = renderer.LoadTexture(filePath, out _);
         }
     }
-
+    
     public SpriteSheet(GameRenderer renderer, string fileName, int rowCount, int columnCount, int frameWidth,
         int frameHeight, FrameOffset frameCenter)
     {
@@ -63,6 +65,21 @@ public class SpriteSheet
         FrameWidth = frameWidth;
         FrameHeight = frameHeight;
         FrameCenter = frameCenter;
+
+        LoadTexture(renderer);
+    }
+    
+    public SpriteSheet(GameRenderer renderer, string fileName, int rowCount, int columnCount, int frameWidth,
+        int frameHeight, FrameOffset frameCenter, float scaleX, float scaleY)
+    {
+        FileName = fileName;
+        RowCount = rowCount;
+        ColumnCount = columnCount;
+        FrameWidth = frameWidth;
+        FrameHeight = frameHeight;
+        FrameCenter = frameCenter;
+        ScaleX = scaleX;
+        ScaleY = scaleY;
 
         LoadTexture(renderer);
     }
@@ -81,9 +98,11 @@ public class SpriteSheet
     {
         if (ActiveAnimation == null)
         {
-            renderer.RenderTexture(_textureId, new Rectangle<int>(0, 0, FrameWidth, FrameHeight),
-                new Rectangle<int>(dest.X - FrameCenter.OffsetX, dest.Y - FrameCenter.OffsetY, FrameWidth, FrameHeight),
-                RendererFlip.None, angle, rotationCenter);
+            var src = new Rectangle<int>(0, 0, FrameWidth, FrameHeight);
+            var dst = new Rectangle<int>(dest.X - FrameCenter.OffsetX, dest.Y - FrameCenter.OffsetY,
+                (int)(FrameWidth * ScaleX), (int)(FrameHeight * ScaleY));
+            
+            renderer.RenderTexture(_textureId,src ,dst, RendererFlip.None, angle, rotationCenter);
         }
         else
         {
@@ -107,10 +126,11 @@ public class SpriteSheet
             var currentRow = ActiveAnimation.StartFrame.Row + currentFrame / ColumnCount;
             var currentCol = ActiveAnimation.StartFrame.Col + currentFrame % ColumnCount;
 
-            renderer.RenderTexture(_textureId,
-                new Rectangle<int>(currentCol * FrameWidth, currentRow * FrameHeight, FrameWidth, FrameHeight),
-                new Rectangle<int>(dest.X - FrameCenter.OffsetX, dest.Y - FrameCenter.OffsetY, FrameWidth, FrameHeight),
-                ActiveAnimation.Flip, angle, rotationCenter);
+            var src = new Rectangle<int>(currentCol * FrameWidth, currentRow * FrameHeight, FrameWidth, FrameHeight);
+            var dst = new Rectangle<int>(dest.X - FrameCenter.OffsetX, dest.Y - FrameCenter.OffsetY,
+                (int)(FrameWidth * ScaleX), (int)(FrameHeight * ScaleY));
+            
+            renderer.RenderTexture(_textureId, src, dst, ActiveAnimation.Flip, angle, rotationCenter);
         }
     }
 }
