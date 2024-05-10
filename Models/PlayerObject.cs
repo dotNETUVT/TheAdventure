@@ -23,12 +23,19 @@ public class PlayerObject : RenderableGameObject
 
     private int _pixelsPerSecond = 192;
 
+    public int MaxHealth { get; private set; }
+    public int CurrentHealth { get; private set; }
+
+    public event Action<int, int> HealthChanged;
+
 
     public (PlayerState State, PlayerStateDirection Direction) State{ get; private set; }
 
-    public PlayerObject(SpriteSheet spriteSheet, int x, int y) : base(spriteSheet, (x, y))
+    public PlayerObject(SpriteSheet spriteSheet, int x, int y, int maxHealth) : base(spriteSheet, (x, y))
     {
         SetState(PlayerState.Idle, PlayerStateDirection.Down);
+        MaxHealth = maxHealth;
+        CurrentHealth = maxHealth;
     }
 
     public void SetState(PlayerState state, PlayerStateDirection direction)
@@ -53,6 +60,18 @@ public class PlayerObject : RenderableGameObject
     public void GameOver(){
         SetState(PlayerState.GameOver, PlayerStateDirection.None);
     }
+
+    public void TakeDamage(int damage)
+        {
+            CurrentHealth -= damage;
+            CurrentHealth = Math.Max(0, CurrentHealth);
+            HealthChanged?.Invoke(CurrentHealth, MaxHealth);
+
+            if (CurrentHealth <= 0)
+            {
+                GameOver();
+            }
+        }
 
     public void Attack(bool up, bool down, bool left, bool right)
     {

@@ -97,4 +97,33 @@ public unsafe class GameRenderer
     {
         _sdl.RenderPresent(_renderer);
     }
+     public void DrawRectangle(Rectangle<int> rect, byte r, byte g, byte b, byte a, bool filled = true)
+    {
+            _sdl.SetRenderDrawColor(_renderer, r, g, b, a);
+            var screenRect = _camera.TranslateToScreenCoordinates(rect);
+            if (filled)
+            {
+                _sdl.RenderFillRect(_renderer, &screenRect);
+            }
+            else
+            {
+                _sdl.RenderDrawRect(_renderer, &screenRect);
+            }
+    }
+    public void DrawHealthBarAtBottomCenter(int maxWidth, int height, byte r, byte g, byte b, byte a, double percentage)
+    {
+        int screenWidth = _window.Size.Width;
+        int screenHeight = _window.Size.Height;
+        
+        int barX = (screenWidth - maxWidth) / 2; 
+        int barY = screenHeight - height - 10;   
+        
+        Vector2D<int> worldPosition = _camera.FromScreenToWorld(barX, barY);
+
+        int filledWidth = (int)(percentage * maxWidth);
+        
+        Rectangle<int> healthBarRect = new Rectangle<int>(worldPosition.X, worldPosition.Y, filledWidth, height);
+        
+        DrawRectangle(healthBarRect, r, g, b, a);
+    }
 }

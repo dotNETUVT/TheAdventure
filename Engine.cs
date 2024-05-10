@@ -65,7 +65,7 @@ namespace TheAdventure
             */
             var spriteSheet = SpriteSheet.LoadSpriteSheet("player.json", "Assets", _renderer);
             if(spriteSheet != null){
-                _player = new PlayerObject(spriteSheet, 100, 100);
+                _player = new PlayerObject(spriteSheet, 100, 100,100);
             }
             _renderer.SetWorldBounds(new Rectangle<int>(0, 0, _currentLevel.Width * _currentLevel.TileWidth,
                 _currentLevel.Height * _currentLevel.TileHeight));
@@ -120,7 +120,7 @@ namespace TheAdventure
                     var deltaX = Math.Abs(_player.Position.X - tempObject.Position.X);
                     var deltaY = Math.Abs(_player.Position.Y - tempObject.Position.Y);
                     if(deltaX < 32 && deltaY < 32){
-                        _player.GameOver();
+                        _player.TakeDamage(50);
                     }
                 }
                 _gameObjects.Remove(gameObjectId);
@@ -137,6 +137,8 @@ namespace TheAdventure
             RenderTerrain();
             RenderAllObjects();
 
+            var percentage = (double)_player.CurrentHealth/100;
+            _renderer.DrawHealthBarAtBottomCenter(200, 10, 255, 0, 0, 255, percentage);
             _renderer.PresentFrame();
         }
 
