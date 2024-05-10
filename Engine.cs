@@ -16,8 +16,6 @@ namespace TheAdventure
         private GameRenderer _renderer;
         private Input _input;
 
-        private List<Models.Data.Object> _objects = new List<Models.Data.Object>();
-
         private DateTimeOffset _lastUpdate = DateTimeOffset.Now;
         private DateTimeOffset _lastPlayerUpdate = DateTimeOffset.Now;
 
@@ -33,7 +31,7 @@ namespace TheAdventure
         {
             var jsonSerializerOptions = new JsonSerializerOptions() { PropertyNameCaseInsensitive = true };
             var levelContent = File.ReadAllText(Path.Combine("Assets", "terrain.tmj"));
-           
+
             var level = JsonSerializer.Deserialize<Level>(levelContent, jsonSerializerOptions);
             if (level == null) return;
             foreach (var refTileSet in level.TileSets)
@@ -66,17 +64,9 @@ namespace TheAdventure
             };
             */
             var spriteSheet = SpriteSheet.LoadSpriteSheet("player.json", "Assets", _renderer);
-            if (spriteSheet != null)
-            {
+            if(spriteSheet != null){
                 _player = new PlayerObject(spriteSheet, 100, 100);
-                _objects.Add(new Models.Data.Object(_renderer, "Assets/casa.png", 400, 100, 50, 100));
-                _objects.Add(new Models.Data.Object(_renderer, "Assets/person.png", 350, 50, 100, 50));
-                _objects.Add(new Models.Data.Object(_renderer, "Assets/casa2.png", 200, 300, 100, 100));
-                _objects.Add(new Models.Data.Object(_renderer, "Assets/skelet.png", 150, 300, 100, 50));
-                _objects.Add(new Models.Data.Object(_renderer, "Assets/casa3.png", 500, 300, 100, 50));
-                _objects.Add(new Models.Data.Object(_renderer, "Assets/ghost.png", 470, 300, 100, 50));
             }
-           
             _renderer.SetWorldBounds(new Rectangle<int>(0, 0, _currentLevel.Width * _currentLevel.TileWidth,
                 _currentLevel.Height * _currentLevel.TileHeight));
         }
@@ -117,16 +107,13 @@ namespace TheAdventure
         {
             _renderer.SetDrawColor(0, 0, 0, 255);
             _renderer.ClearScreen();
-
+            
             _renderer.CameraLookAt(_player.Position.X, _player.Position.Y);
 
             RenderTerrain();
             RenderAllObjects();
-            foreach (var prop in _objects)
-            {
-                prop.Render(_renderer);
-            }
-            _renderer.PresentFrame();  
+
+            _renderer.PresentFrame();
         }
 
         private Tile? GetTile(int id)
@@ -221,8 +208,7 @@ namespace TheAdventure
             var pathCombined = Path.Combine(pathToRepo, pathToSound);
             var soundeffect = new SoundEffects(pathCombined);
             
-            if (spriteSheet != null)
-            {
+            if(spriteSheet != null){
                 spriteSheet.ActivateAnimation("Explode");
                 soundeffect.Play();
                 TemporaryGameObject bomb = new(spriteSheet, 2.1, (translated.X, translated.Y));
