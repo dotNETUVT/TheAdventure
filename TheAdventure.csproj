@@ -49,9 +49,24 @@
         <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
       </Content>
       <None Remove="Assets\terrain.tmj" />
+	  <COMReference Include="WMPLib">
+		<WrapperTool>tlbimp</WrapperTool>
+		<VersionMinor>0</VersionMinor>
+		<VersionMajor>1</VersionMajor>
+		<Guid>6bf52a50-394a-11d3-b153-00c04f79faa6</Guid>
+		<Lcid>0</Lcid>
+		<Isolated>false</Isolated>
+		<EmbedInteropTypes>true</EmbedInteropTypes>
+	  </COMReference>
       <Content Include="Assets\terrain.tmj">
         <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
       </Content>
     </ItemGroup>
+
+	<ItemGroup>
+		<None Update="Backgroundmusic.wav">
+			<CopyToOutputDirectory>Always</CopyToOutputDirectory>
+		</None>
+	</ItemGroup>
 
 </Project>
