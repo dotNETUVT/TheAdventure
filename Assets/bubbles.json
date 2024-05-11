@@ -1,0 +1,25 @@
+{
+    "rowCount" : 7,
+    "columnCount" : 8,
+    "frameWidth" : 100,
+    "frameHeight" : 100,
+    "frameCenter" : {
+        "offsetX" : 50,
+        "offsetY" : 50
+    },
+    "fileName" : "bubbles.png",
+    "animations" : {
+        "bubbles" : {
+            "startFrame" : {
+                "row" : 0,
+                "col" : 0
+            },
+            "endFrame" : {
+                "row" : 6,
+                "col" : 7
+            },
+            "durationMs" : 1000,
+            "loop" : true
+        }
+    }
+}

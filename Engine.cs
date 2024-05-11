@@ -8,7 +8,7 @@ namespace TheAdventure
 {
     public class Engine
     {
-        private readonly Dictionary<int, GameObject> _gameObjects = new();
+        private readonly Dictionary<int, TemporaryGameObject> _gameObjects = new();
         private readonly Dictionary<string, TileSet> _loadedTileSets = new();
 
         private Level? _currentLevel;
@@ -83,6 +83,48 @@ namespace TheAdventure
             bool right = _input.IsRightPressed();
             bool isAttacking = _input.IsKeyAPressed();
             bool addBomb = _input.IsKeyBPressed();
+            bool skill = _input.IsKeyDPressed();
+
+            List<(int, int)> positionList = new List<(int, int)>();
+
+            foreach (var kvp in _gameObjects)
+            {
+                if(kvp.Value.IsExpired && kvp.Value.name == "bubbles.png")
+                {
+                    positionList.Add((kvp.Value.Position.X, kvp.Value.Position.Y));
+                }
+                else if(!kvp.Value.IsExpired && kvp.Value.name == "bubbles.png")
+                {
+                    if(kvp.Value.objectDirection == "Right")
+                    {
+                        kvp.Value.Position = (kvp.Value.Position.X + 1, kvp.Value.Position.Y);
+                    }
+                    else if(kvp.Value.objectDirection == "Left")
+                    {
+                        kvp.Value.Position = (kvp.Value.Position.X - 1, kvp.Value.Position.Y);
+                    }
+                    else if(kvp.Value.objectDirection == "Up")
+                    {
+                        kvp.Value.Position = (kvp.Value.Position.X, kvp.Value.Position.Y - 1);
+                    }
+                    else if(kvp.Value.objectDirection == "Down")
+                    {
+                        kvp.Value.Position = (kvp.Value.Position.X, kvp.Value.Position.Y + 1);
+                    }
+                }
+            }
+
+            foreach (var pos in positionList)
+            {
+                var translated = _renderer.TranslateFromScreenToWorldCoordinates(pos.Item1,pos.Item2);
+
+                var spriteSheet = SpriteSheet.LoadSpriteSheet("vortex.json", "Assets", _renderer);
+                if(spriteSheet != null){
+                    spriteSheet.ActivateAnimation("vortex");
+                    TemporaryGameObject vortex = new(spriteSheet, 2.1, (pos.Item1, pos.Item2));
+                    _gameObjects.Add(vortex.Id, vortex);
+                }
+            }
 
             if(isAttacking)
             {
@@ -106,6 +148,20 @@ namespace TheAdventure
             var itemsToRemove = new List<int>();
             itemsToRemove.AddRange(GetAllTemporaryGameObjects().Where(gameObject => gameObject.IsExpired)
                 .Select(gameObject => gameObject.Id).ToList());
+
+            if(skill)
+            {
+                string playerDirection = this._player.State.Direction.ToString();
+
+                var translated = _renderer.TranslateFromScreenToWorldCoordinates(this._player.Position.X, this._player.Position.Y);
+
+                var spriteSheet = SpriteSheet.LoadSpriteSheet("bubbles.json", "Assets", _renderer);
+                if(spriteSheet != null){
+                    spriteSheet.ActivateAnimation("bubbles");
+                    TemporaryGameObject bubbles = new(spriteSheet, 2.1, (this._player.Position.X,this._player.Position.Y),playerDirection);
+                    _gameObjects.Add(bubbles.Id, bubbles);
+                }
+            }
 
             if (addBomb)
             {
@@ -218,7 +274,7 @@ namespace TheAdventure
         {
 
             var translated = translateCoordinates ? _renderer.TranslateFromScreenToWorldCoordinates(x, y) : new Vector2D<int>(x, y);
-            
+
             var spriteSheet = SpriteSheet.LoadSpriteSheet("bomb.json", "Assets", _renderer);
             if(spriteSheet != null){
                 spriteSheet.ActivateAnimation("Explode");
