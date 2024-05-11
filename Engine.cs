@@ -75,7 +75,7 @@ namespace TheAdventure
                     1, 1, 270, 270, 
                     new FrameOffset(270/2,270/2), 0.1f, 0.1f);
                 var rock = new RenderableGameObject(rockSprite,
-                    (Random.Shared.Next(500), Random.Shared.Next(500)));
+                    (Random.Shared.Next(50, 500), Random.Shared.Next(50, 250)));
                 _gameObjects.Add(rock.Id, rock);
 
                 _renderer.SetWorldBounds(new Rectangle<int>(0, 0, _currentLevel.Width * _currentLevel.TileWidth,
@@ -100,6 +100,7 @@ namespace TheAdventure
             bool right = _input.IsKeyPressed(KeyCode.Right) || _input.IsKeyPressed(KeyCode.D);
             bool isAttacking = _input.IsKeyPressed(KeyCode.X);
             bool addBomb = _input.IsKeyPressed(KeyCode.B);
+            bool addRock = _input.IsKeyPressed(KeyCode.V);
 
             if(isAttacking)
             {
@@ -109,6 +110,13 @@ namespace TheAdventure
                 dir += right ? 1 : 0;
                 if(dir <= 1){
                     _player.Attack(up, down, left, right);
+                    foreach (var gameObject in GetAllRenderableObjects())
+                    {
+                        if (_player.CheckAttackCollision(gameObject))
+                        {
+                            _gameObjects.Remove(gameObject.Id);
+                        }
+                    }
                 }
                 else{
                     isAttacking = false;
@@ -116,8 +124,25 @@ namespace TheAdventure
             }
             if(!isAttacking)
             {
-                _player.UpdatePlayerPosition(up ? 1.0 : 0.0, down ? 1.0 : 0.0, left ? 1.0 : 0.0, right ? 1.0 : 0.0,
-                    _currentLevel.Width * _currentLevel.TileWidth, _currentLevel.Height * _currentLevel.TileHeight,
+                if (_gameObjects.Count == 0)
+                {
+                    var directions = new List<PlayerObject.PlayerStateDirection>();
+                    directions.Add(PlayerObject.PlayerStateDirection.None);
+                    _player.DisableMovementDirection(directions);
+                }
+                else
+                {
+                    foreach (var gameObject in GetAllRenderableObjects())
+                    {
+                        var directions = _player.PredictCollision(gameObject.GetBoundingBox());
+                        _player.DisableMovementDirection(directions);
+                    }
+                }
+
+                _player.UpdatePlayerPosition(
+                    up ? 1.0 : 0.0, down ? 1.0 : 0.0, left ? 1.0 : 0.0, right ? 1.0 : 0.0,
+                    _currentLevel.Width * _currentLevel.TileWidth,
+                    _currentLevel.Height * _currentLevel.TileHeight,
                     secsSinceLastFrame);
             }
             var itemsToRemove = new List<int>();
@@ -127,6 +152,11 @@ namespace TheAdventure
             if (addBomb)
             {
                 AddBomb(_player.Position.X, _player.Position.Y, false);
+            }
+
+            if (addRock)
+            {
+                AddRock(_player.Position.X, _player.Position.Y, false);
             }
 
             foreach (var gameObjectId in itemsToRemove)
@@ -153,6 +183,7 @@ namespace TheAdventure
 
             RenderTerrain();
             RenderAllObjects();
+            // DebugRenderBoundingBoxes();
 
             _renderer.PresentFrame();
         }
@@ -231,6 +262,17 @@ namespace TheAdventure
             _player.Render(_renderer);
         }
 
+        private void DebugRenderBoundingBoxes()
+        {
+            foreach (var gameObject in GetAllRenderableObjects())
+            {
+                _renderer.RenderBoundingBox(gameObject.GetBoundingBox());
+            }
+
+            _renderer.RenderBoundingBox(_player.GetBoundingBox()); 
+            _renderer.RenderBoundingBox(_player.GetAttackBoundingBox());
+        }
+
         private void AddBomb(int x, int y, bool translateCoordinates = true)
         {
 
@@ -242,6 +284,19 @@ namespace TheAdventure
                 TemporaryGameObject bomb = new(spriteSheet, 2.1, (translated.X, translated.Y));
                 _gameObjects.Add(bomb.Id, bomb);
             }
+        }
+
+        private void AddRock(int x, int y, bool translateCoordinates = true)
+        {
+            var translated = translateCoordinates ? _renderer.TranslateFromScreenToWorldCoordinates(x, y) : new Vector2D<int>(x, y);
+            
+            var rockSprite = new SpriteSheet(_renderer, "../../../Assets/rock.png",
+                1, 1, 270, 270, 
+                new FrameOffset(270/2,270/2), 0.1f, 0.1f);
+            
+            // The position of the game object is determined by their
+            var rock = new RenderableGameObject(rockSprite, (translated.X,translated.Y));
+            _gameObjects.Add(rock.Id, rock);
         }
     }
 }

@@ -97,4 +97,18 @@ public unsafe class GameRenderer
     {
         _sdl.RenderPresent(_renderer);
     }
+
+    /// <summary>
+    /// Does not work with world scrolling, but it is good enough for debugging
+    /// </summary>
+    public void RenderBoundingBox(Rectangle<int> boundingBox)
+    {
+        int x = boundingBox.Origin.X;
+        int y = boundingBox.Origin.Y;
+
+        var pos = TranslateFromScreenToWorldCoordinates(x, y);
+
+        boundingBox.Origin = pos;
+        _sdl.RenderDrawRect(_renderer, boundingBox);
+    }
 }

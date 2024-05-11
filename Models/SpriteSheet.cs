@@ -22,8 +22,8 @@ public class SpriteSheet
     public int FrameWidth { get; set; }
     public int FrameHeight { get; set; }
     public FrameOffset FrameCenter { get; set; }
-    public float ScaleX { get; set; } = 1;
-    public float ScaleY { get; set; } = 1;
+    public float ScaleX { get; private set; } = 1;
+    public float ScaleY { get; private set; } = 1;
 
     public string? FileName { get; set; }
 
@@ -77,7 +77,7 @@ public class SpriteSheet
         ColumnCount = columnCount;
         FrameWidth = frameWidth;
         FrameHeight = frameHeight;
-        FrameCenter = frameCenter;
+        FrameCenter = new FrameOffset((int)(frameCenter.OffsetX * scaleX), (int)(frameCenter.OffsetY * scaleY));
         ScaleX = scaleX;
         ScaleY = scaleY;
 
@@ -132,5 +132,12 @@ public class SpriteSheet
             
             renderer.RenderTexture(_textureId, src, dst, ActiveAnimation.Flip, angle, rotationCenter);
         }
+    }
+
+    private void SetScale(int x, int y)
+    {
+        ScaleX = x;   
+        ScaleY = y;   
+        FrameCenter = new FrameOffset((int)(FrameCenter.OffsetX * ScaleX), (int)(FrameCenter.OffsetY * ScaleY));
     }
 }

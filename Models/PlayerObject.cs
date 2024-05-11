@@ -22,7 +22,10 @@ public class PlayerObject : RenderableGameObject
     }
 
     private int _pixelsPerSecond = 192;
-
+    private bool _disabledUp;
+    private bool _disabledDown;
+    private bool _disabledLeft;
+    private bool _disabledRight;
 
     public (PlayerState State, PlayerStateDirection Direction) State{ get; private set; }
 
@@ -75,6 +78,43 @@ public class PlayerObject : RenderableGameObject
         SetState(PlayerState.Attack, direction);
     }
 
+    public bool CheckAttackCollision(RenderableGameObject gameObject)
+    {
+        var target = gameObject.GetBoundingBox();
+
+        var offsetX = 0;
+        var offsetY = 0;
+        if (State.Direction == PlayerStateDirection.Down)
+        {
+            offsetY = 15;
+        }else if (State.Direction == PlayerStateDirection.Up)
+        {
+            offsetY = -15;
+        }else if (State.Direction == PlayerStateDirection.Left)
+        {
+            offsetX = -15;
+        }
+        else
+        {
+            offsetX = 15;
+        }
+        
+        var attackBox = new Rectangle<int>(
+            Position.X - SpriteSheet.FrameCenter.OffsetX / 2 + offsetX, 
+            Position.Y - SpriteSheet.FrameCenter.OffsetY / 2 + offsetY, 
+            20, 20);
+        
+        if (attackBox.Origin.X < target.Origin.X + target.Size.X &&
+            attackBox.Origin.X + attackBox.Size.X > target.Origin.X &&
+            attackBox.Origin.Y + attackBox.Size.Y > target.Origin.Y &&
+            attackBox.Origin.Y < target.Origin.Y + target.Size.Y)
+        {
+            return true;
+        }
+
+        return false;
+    }
+    
     public void UpdatePlayerPosition(double up, double down, double left, double right, int width, int height,
         double time)
     {
@@ -89,11 +129,25 @@ public class PlayerObject : RenderableGameObject
 
         var pixelsToMove = time * _pixelsPerSecond;
 
-        var x = Position.X + (int)(right * pixelsToMove);
-        x -= (int)(left * pixelsToMove);
+        int x = Position.X;
+        if (!_disabledRight)
+        {
+            x += (int)(right * pixelsToMove);
+        }
+        if (!_disabledLeft)
+        {
+            x -= (int)(left * pixelsToMove);
+        }
 
-        var y = Position.Y - (int)(up * pixelsToMove);
-        y += (int)(down * pixelsToMove);
+        int y = Position.Y;
+        if (!_disabledDown)
+        {
+            y += (int)(down * pixelsToMove);
+        }
+        if (!_disabledUp)
+        {
+            y -= (int)(up * pixelsToMove);
+        }
 
         if (x < 10)
         {
@@ -116,17 +170,16 @@ public class PlayerObject : RenderableGameObject
         }
 
 
-
-        if (y < Position.Y){
+        if (up > double.Epsilon){
             SetState(PlayerState.Move, PlayerStateDirection.Up);
         }
-        if (y > Position.Y ){
+        if (down > double.Epsilon){
             SetState(PlayerState.Move, PlayerStateDirection.Down);
         }
-        if (x > Position.X ){
+        if (right > double.Epsilon){
             SetState(PlayerState.Move, PlayerStateDirection.Right);
         }
-        if (x < Position.X){
+        if (left > double.Epsilon){
             SetState(PlayerState.Move, PlayerStateDirection.Left);
         }
         if (x == Position.X &&
@@ -135,5 +188,63 @@ public class PlayerObject : RenderableGameObject
         }
 
         Position = (x, y);
+    }
+
+    public void DisableMovementDirection(List<PlayerStateDirection> directions)
+    {
+        if (directions[0] == PlayerStateDirection.None)
+        {
+            _disabledUp = false;
+            _disabledDown = false;
+            _disabledLeft = false;
+            _disabledRight = false;
+            return;
+        }
+
+        foreach (var direction in directions)
+        {
+            switch (direction)
+            {
+                case PlayerStateDirection.Down: _disabledDown = true; break;
+                case PlayerStateDirection.Up: _disabledUp = true; break;
+                case PlayerStateDirection.Left: _disabledLeft = true; break;
+                case PlayerStateDirection.Right: _disabledRight = true; break;
+            }
+        }
+    }
+    
+    public override Rectangle<int> GetBoundingBox()
+    {
+        return new Rectangle<int>(
+            Position.X - SpriteSheet.FrameCenter.OffsetX / 2, 
+            Position.Y - SpriteSheet.FrameCenter.OffsetY / 2, 
+            20, 20);
+    }
+
+    public Rectangle<int> GetAttackBoundingBox()
+    {
+        var offsetX = 0;
+        var offsetY = 0;
+        if (State.Direction == PlayerStateDirection.Down)
+        {
+            offsetY = 15;
+        }else if (State.Direction == PlayerStateDirection.Up)
+        {
+            offsetY = -15;
+        }else if (State.Direction == PlayerStateDirection.Left)
+        {
+            offsetX = -15;
+        }
+        else
+        {
+            offsetX = 15;
+        }
+        
+        var attackBox = new Rectangle<int>(
+            Position.X - SpriteSheet.FrameCenter.OffsetX / 2 + offsetX, 
+            Position.Y - SpriteSheet.FrameCenter.OffsetY / 2 + offsetY, 
+            20, 20);
+
+        return attackBox;
     }
 }
