@@ -11,12 +11,36 @@ namespace TheAdventure
         byte[] _mouseButtonStates = new byte[(int)MouseButton.Count];
         
         public EventHandler<(int x, int y)> OnMouseClick;
+
+        private Dictionary<int, IntPtr> _gameControllers = new Dictionary<int, IntPtr>();
         
         public Input(Sdl sdl, GameWindow window, GameRenderer renderer)
         {
             _sdl = sdl;
             _gameWindow = window;
             _renderer = renderer;
+        }
+
+        public void InitializeControllers()
+        {
+            int numJoysticks = _sdl.NumJoysticks();
+            Console.WriteLine($"Number of joysticks detected: {numJoysticks}");
+            for (int i = 0; i < numJoysticks; i++)
+            {
+                if (_sdl.IsGameController(i) == SdlBool.True)
+                {
+                    IntPtr controller = (IntPtr)_sdl.GameControllerOpen(i);
+                    if (controller != IntPtr.Zero)
+                    {
+                        _gameControllers[i] = controller;
+                        Console.WriteLine($"Game controller {i} is connected and initialized.");
+                    }
+                    else
+                    {
+                        Console.WriteLine($"Game controller {i} is connected but failed to initialize.");
+                    }
+                }
+            }
         }
 
         public bool IsLeftPressed()
@@ -67,6 +91,134 @@ namespace TheAdventure
             return _keyboardState[(int)KeyCode.D] == 1;
         }
 
+        public bool IsJoystickLeftPressed()
+        {
+            var controller = _gameControllers.FirstOrDefault().Value;
+            if (controller != IntPtr.Zero)
+            {
+                unsafe
+                {
+                    GameController* controllerPtr = (GameController*)controller;
+                    int axisValue = _sdl.GameControllerGetAxis(controllerPtr, GameControllerAxis.Leftx);
+                    return axisValue < -8000;
+                }
+            }
+            return false;
+        }
+
+        public bool IsJoystickRightPressed()
+        {
+            var controller = _gameControllers.FirstOrDefault().Value;
+            if (controller != IntPtr.Zero)
+            {
+                unsafe
+                {
+                    GameController* controllerPtr = (GameController*)controller;
+                    int axisValue = _sdl.GameControllerGetAxis(controllerPtr, GameControllerAxis.Leftx);
+                    return axisValue > 8000;
+                }
+            }
+            return false;
+        }
+
+        public bool IsJoystickUpPressed()
+        {
+            var controller = _gameControllers.FirstOrDefault().Value;
+            if (controller != IntPtr.Zero)
+            {
+                unsafe
+                {
+                    GameController* controllerPtr = (GameController*)controller;
+                    int axisValue = _sdl.GameControllerGetAxis(controllerPtr, GameControllerAxis.Lefty);
+                    return axisValue < -8000;
+                }
+            }
+            return false;
+        }
+
+        public bool IsJoystickDownPressed()
+        {
+            var controller = _gameControllers.FirstOrDefault().Value;
+            if (controller != IntPtr.Zero)
+            {
+                unsafe
+                {
+                    GameController* controllerPtr = (GameController*)controller;
+                    int axisValue = _sdl.GameControllerGetAxis(controllerPtr, GameControllerAxis.Lefty);
+                    return axisValue > 8000;
+                }
+            }
+            return false;
+        }
+
+        public bool IsAButtonPressed()
+        {
+            var controller = _gameControllers.FirstOrDefault().Value;
+            if (controller != IntPtr.Zero)
+            {
+                unsafe
+                {
+                    GameController* controllerPtr = (GameController*)controller;
+                    return _sdl.GameControllerGetButton(controllerPtr, GameControllerButton.A) == 1;
+                }
+            }
+            return false;
+        }
+
+        public bool IsBButtonPressed()
+        {
+            var controller = _gameControllers.FirstOrDefault().Value;
+            if (controller != IntPtr.Zero)
+            {
+                unsafe
+                {
+                    GameController* controllerPtr = (GameController*)controller;
+                    return _sdl.GameControllerGetButton(controllerPtr, GameControllerButton.B) == 1;
+                }
+            }
+            return false;
+        }
+
+        public bool IsXButtonPressed()
+        {
+            var controller = _gameControllers.FirstOrDefault().Value;
+            if (controller != IntPtr.Zero)
+            {
+                unsafe
+                {
+                    GameController* controllerPtr = (GameController*)controller;
+                    return _sdl.GameControllerGetButton(controllerPtr, GameControllerButton.X) == 1;
+                }
+            }
+            return false;
+        }
+
+        public bool IsYButtonPressed()
+        {
+            var controller = _gameControllers.FirstOrDefault().Value;
+            if (controller != IntPtr.Zero)
+            {
+                unsafe
+                {
+                    GameController* controllerPtr = (GameController*)controller;
+                    return _sdl.GameControllerGetButton(controllerPtr, GameControllerButton.Y) == 1;
+                }
+            }
+            return false;
+        }
+
+        private void CleanupControllers()
+        {
+            foreach (var controller in _gameControllers.Values)
+            {
+                if (controller != IntPtr.Zero)
+                {
+                    _sdl.GameControllerClose((GameController*)controller);
+                }
+            }
+            _gameControllers.Clear();
+        }
+
         public bool ProcessInput()
         {
             var currentTime = DateTimeOffset.UtcNow;
@@ -76,7 +228,8 @@ namespace TheAdventure
             while (_sdl.PollEvent(ref ev) != 0)
             {
                 if (ev.Type == (uint)EventType.Quit)
-                {
+                {   
+                    CleanupControllers();
                     return true;
                 }
 

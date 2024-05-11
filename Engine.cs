@@ -17,7 +17,6 @@ namespace TheAdventure
         private Input _input;
 
         private DateTimeOffset _lastUpdate = DateTimeOffset.Now;
-        private DateTimeOffset _lastPlayerUpdate = DateTimeOffset.Now;
 
         private int _currentBombCount = 0;
         private const int MaxBombCount = 5;
@@ -30,6 +29,7 @@ namespace TheAdventure
         private bool _wasMovingFast = false;
         private DateTimeOffset _slidingStartTime;
         private double _lastUp, _lastDown, _lastLeft, _lastRight;
+        private bool _alreadyPressed = false;
 
         public Engine(GameRenderer renderer, Input input)
         {
@@ -40,7 +40,8 @@ namespace TheAdventure
         }
 
         public void InitializeWorld()
-        {
+        {   
+            _input.InitializeControllers();
             var jsonSerializerOptions = new JsonSerializerOptions() { PropertyNameCaseInsensitive = true };
             var levelContent = File.ReadAllText(Path.Combine("Assets", "terrain.tmj"));
 
@@ -96,10 +97,10 @@ namespace TheAdventure
                 _timeSinceLastBombRecharge -= 3.0;
             }
 
-            bool up = _input.IsUpPressed() || _input.IsWPressed();
-            bool down = _input.IsDownPressed() || _input.IsSPressed();
-            bool left = _input.IsLeftPressed() || _input.IsAPressed();
-            bool right = _input.IsRightPressed() || _input.IsDPressed();
+            bool up = _input.IsUpPressed() || _input.IsWPressed() || _input.IsJoystickUpPressed();
+            bool down = _input.IsDownPressed() || _input.IsSPressed() || _input.IsJoystickDownPressed();
+            bool left = _input.IsLeftPressed() || _input.IsAPressed() || _input.IsJoystickLeftPressed();
+            bool right = _input.IsRightPressed() || _input.IsDPressed() || _input.IsJoystickRightPressed();
 
             bool isMovementKeyPressed = up || down || left || right;
 
@@ -141,6 +142,21 @@ namespace TheAdventure
             var itemsToRemove = new List<int>();
             itemsToRemove.AddRange(GetAllTemporaryGameObjects().Where(gameObject => gameObject.IsExpired)
                 .Select(gameObject => gameObject.Id).ToList());
+
+            var controllerButtonPressed = _input.IsAButtonPressed() || _input.IsBButtonPressed() || _input.IsXButtonPressed() || _input.IsYButtonPressed();
+
+            if(controllerButtonPressed)
+            {   
+                if (!_alreadyPressed)
+                {
+                    AddBomb(_player.Position.X, _player.Position.Y);
+                    _alreadyPressed = true;
+                }
+            }
+            else
+            {
+                _alreadyPressed = false;
+            }
 
             foreach (var gameObject in itemsToRemove)
             {
