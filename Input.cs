@@ -11,7 +11,9 @@ namespace TheAdventure
         byte[] _mouseButtonStates = new byte[(int)MouseButton.Count];
         
         public EventHandler<(int x, int y)> OnMouseClick;
-        
+
+        public EventHandler<(int x, int y)> OnRightMouseClick;
+
         public Input(Sdl sdl, GameWindow window, GameRenderer renderer)
         {
             _sdl = sdl;
@@ -153,6 +155,11 @@ namespace TheAdventure
                             OnMouseClick?.Invoke(this, (mouseX, mouseY));
                         }
                         
+                        else if (ev.Button.Button == (byte)MouseButton.Secondary)
+                        {
+                            OnRightMouseClick?.Invoke(this, (mouseX, mouseY));
+                        }
+
                         break;
                     }
 

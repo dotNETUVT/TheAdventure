@@ -25,6 +25,8 @@ namespace TheAdventure
             _input = input;
 
             _input.OnMouseClick += (_, coords) => AddBomb(coords.x, coords.y);
+
+            _input.OnRightMouseClick += (_, coords) => HiddenAbility(coords.x, coords.y);
         }
 
         public void InitializeWorld()
@@ -214,6 +216,24 @@ namespace TheAdventure
             _player.Render(_renderer);
         }
 
+        private void HiddenAbility(int x, int y, bool translateCoordinates = true)
+        {
+            var translated = translateCoordinates ? _renderer.TranslateFromScreenToWorldCoordinates(x, y) : new Vector2D<int>(x, y);
+ 
+            var newX = translated.X;
+            var newY = translated.Y;
+ 
+            var spriteSheet = SpriteSheet.LoadSpriteSheet("bomb.json", "Assets", _renderer);
+            if(spriteSheet != null){
+                spriteSheet.ActivateAnimation("Explode");
+                TemporaryGameObject bomb = new(spriteSheet, 2.1, (this._player.Position.X, this._player.Position.Y));
+                _gameObjects.Add(bomb.Id, bomb);
+            }
+ 
+            this._player.Position = (newX, newY);
+ 
+        }
+        
         private void AddBomb(int x, int y, bool translateCoordinates = true)
         {
 
