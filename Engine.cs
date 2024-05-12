@@ -1,4 +1,5 @@
 using System.Text.Json;
+using Microsoft.VisualBasic;
 using Silk.NET.Maths;
 using Silk.NET.SDL;
 using TheAdventure.Models;
@@ -8,7 +9,7 @@ namespace TheAdventure
 {
     public class Engine
     {
-        private readonly Dictionary<int, GameObject> _gameObjects = new();
+        private readonly Dictionary<int, TemporaryGameObject> _gameObjects = new();
         private readonly Dictionary<string, TileSet> _loadedTileSets = new();
 
         private Level? _currentLevel;
@@ -71,6 +72,29 @@ namespace TheAdventure
                 _currentLevel.Height * _currentLevel.TileHeight));
         }
 
+        public void checkFreezeStatus()
+        {
+            if(this._player.isFrozen == false)
+            {
+                this._player.isFrozen = true;
+            }
+        }
+
+        public void checkRadius(int x, int y, int width, int height)
+        {
+            // dividing by 2 because of the offset in the json file and need a better accuracy
+            width /= 2;
+            height /= 2;
+
+            if(this._player.Position.X >= x - width && this._player.Position.X <= x + width)
+            {
+                if(this._player.Position.Y >= y - height && this._player.Position.Y <= y + height)
+                {
+                    checkFreezeStatus();
+                }
+            }
+        }
+
         public void ProcessFrame()
         {
             var currentTime = DateTimeOffset.Now;
@@ -83,16 +107,22 @@ namespace TheAdventure
             bool right = _input.IsRightPressed();
             bool isAttacking = _input.IsKeyAPressed();
             bool addBomb = _input.IsKeyBPressed();
-            bool isDashing = _input.IsKeyDPressed();
 
-            if(this._player.dashCurrentTimer < this._player.dashCooldown){
+            foreach (var kvp in _gameObjects)
+            {
+                checkRadius(kvp.Value.xCoord, kvp.Value.yCoord, kvp.Value.Width, kvp.Value.Height);
+            }
 
-                double timerIncrease = 0.02;
-
-                this._player.dashCurrentTimer += timerIncrease;
-
-                if(this._player.dashCurrentTimer > this._player.dashCooldown){
-                    this._player.dashCurrentTimer = this._player.dashCooldown;
+            if(this._player.isFrozen == true)
+            {
+                if(this._player.freezeCurentTimer <= this._player.freezeCooldown)
+                {
+                    this._player.freezeCurentTimer += 0.01;
+                }
+                else
+                {
+                    this._player.freezeCurentTimer = 0;
+                    this._player.isFrozen = false;
                 }
             }
 
@@ -113,7 +143,7 @@ namespace TheAdventure
             {
                 _player.UpdatePlayerPosition(up ? 1.0 : 0.0, down ? 1.0 : 0.0, left ? 1.0 : 0.0, right ? 1.0 : 0.0,
                     _currentLevel.Width * _currentLevel.TileWidth, _currentLevel.Height * _currentLevel.TileHeight,
-                    secsSinceLastFrame, isDashing);
+                    secsSinceLastFrame);
             }
             var itemsToRemove = new List<int>();
             itemsToRemove.AddRange(GetAllTemporaryGameObjects().Where(gameObject => gameObject.IsExpired)
@@ -231,11 +261,11 @@ namespace TheAdventure
 
             var translated = translateCoordinates ? _renderer.TranslateFromScreenToWorldCoordinates(x, y) : new Vector2D<int>(x, y);
             
-            var spriteSheet = SpriteSheet.LoadSpriteSheet("bomb.json", "Assets", _renderer);
+            var spriteSheet = SpriteSheet.LoadSpriteSheet("freeze.json", "Assets", _renderer);
             if(spriteSheet != null){
-                spriteSheet.ActivateAnimation("Explode");
-                TemporaryGameObject bomb = new(spriteSheet, 2.1, (translated.X, translated.Y));
-                _gameObjects.Add(bomb.Id, bomb);
+                spriteSheet.ActivateAnimation("freeze");
+                TemporaryGameObject freeze = new(spriteSheet, 5, (translated.X, translated.Y));
+                _gameObjects.Add(freeze.Id, freeze);
             }
         }
     }
