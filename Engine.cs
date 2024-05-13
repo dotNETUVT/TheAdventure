@@ -224,6 +224,8 @@ namespace TheAdventure
                 spriteSheet.ActivateAnimation("Explode");
                 TemporaryGameObject bomb = new(spriteSheet, 2.1, (translated.X, translated.Y));
                 _gameObjects.Add(bomb.Id, bomb);
+                SoundManager explosionSound = new SoundManager("D:\\Facultate\\Anul 3\\Semestrul 2\\.NET\\Forked Repo\\TheAdventure\\Assets\\explosion_sound.mp3");
+                explosionSound.Play();
             }
         }
     }

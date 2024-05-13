@@ -36,10 +36,10 @@ public class SpriteSheet
     }
 
     public static SpriteSheet? LoadSpriteSheet(string fileName, string folder, GameRenderer renderer){
-        var json = File.ReadAllText(Path.Combine(folder, fileName));
+        var json = File.ReadAllText(Path.Combine("D:\\Facultate\\Anul 3\\Semestrul 2\\.NET\\Forked Repo\\TheAdventure\\Assets", fileName));
         var spriteSheet = JsonSerializer.Deserialize<SpriteSheet>(json, new JsonSerializerOptions() { PropertyNameCaseInsensitive = true });
         if(spriteSheet != null){
-            spriteSheet.LoadTexture(renderer, folder);
+            spriteSheet.LoadTexture(renderer, "D:\\Facultate\\Anul 3\\Semestrul 2\\.NET\\Forked Repo\\TheAdventure\\Assets");
         }
         return spriteSheet;
     }
