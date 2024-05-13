@@ -2,7 +2,6 @@ using System.Text.Json;
 using Silk.NET.Maths;
 using Silk.NET.SDL;
 using TheAdventure.Models;
-using TheAdventure.Models.Data;
 
 namespace TheAdventure
 {
@@ -13,11 +12,13 @@ namespace TheAdventure
 
         private Level? _currentLevel;
         private PlayerObject _player;
+        private DogObject _dog;
         private GameRenderer _renderer;
         private Input _input;
 
         private DateTimeOffset _lastUpdate = DateTimeOffset.Now;
-        private DateTimeOffset _lastPlayerUpdate = DateTimeOffset.Now;
+        private DateTimeOffset _lastRandomBombTime = DateTimeOffset.Now;
+        private Random _random = new Random();
 
         public Engine(GameRenderer renderer, Input input)
         {
@@ -54,19 +55,160 @@ namespace TheAdventure
             }
 
             _currentLevel = level;
-            /*SpriteSheet spriteSheet = new(_renderer, Path.Combine("Assets", "player.png"), 10, 6, 48, 48, new FrameOffset() { OffsetX = 24, OffsetY = 42 });
-            spriteSheet.Animations["IdleDown"] = new SpriteSheet.Animation()
+            SpriteSheet spriteSheet = new(_renderer, Path.Combine("Assets", "player.png"), 10, 6, 48, 48, (24, 42));
+            
+            spriteSheet.Animations["WalkRight"] = new SpriteSheet.Animation()
             {
-                StartFrame = new FramePosition(),//(0, 0),
-                EndFrame = new FramePosition() { Row = 0, Col = 5 },
+                StartFrame = (4, 0),
+                EndFrame = (4, 5),
                 DurationMs = 1000,
                 Loop = true
             };
-            */
-            var spriteSheet = SpriteSheet.LoadSpriteSheet("player.json", "Assets", _renderer);
-            if(spriteSheet != null){
-                _player = new PlayerObject(spriteSheet, 100, 100);
-            }
+
+            spriteSheet.Animations["WalkLeft"] = new SpriteSheet.Animation()
+            {
+                StartFrame = (4, 0),
+                EndFrame = (4, 5),
+                DurationMs = 1000,
+                Loop = true,
+                Flip = RendererFlip.Horizontal
+            };
+
+            spriteSheet.Animations["WalkUp"] = new SpriteSheet.Animation()
+            {
+                StartFrame = (5, 0),
+                EndFrame = (5, 5),
+                DurationMs = 1000,
+                Loop = true
+            };
+
+            spriteSheet.Animations["WalkDown"] = new SpriteSheet.Animation()
+            {
+                StartFrame = (3, 0),
+                EndFrame = (3, 5),
+                DurationMs = 1000,
+                Loop = true
+            };
+
+            spriteSheet.Animations["IdleLeft"] = new SpriteSheet.Animation()
+            {
+                StartFrame = (1, 0),
+                EndFrame = (1, 5),
+                DurationMs = 1000,
+                Loop = true,
+                Flip = RendererFlip.Horizontal
+            };
+
+            spriteSheet.Animations["IdleRight"] = new SpriteSheet.Animation()
+            {
+                StartFrame = (1, 0),
+                EndFrame = (1, 5),
+                DurationMs = 1000,
+                Loop = true
+            };
+
+            spriteSheet.Animations["IdleUp"] = new SpriteSheet.Animation()
+            {
+                StartFrame = (2, 0),
+                EndFrame = (2, 5),
+                DurationMs = 1000,
+                Loop = true
+            };
+            
+            spriteSheet.Animations["IdleDown"] = new SpriteSheet.Animation()
+            {
+                StartFrame = (0, 0),
+                EndFrame = (0, 5),
+                DurationMs = 1000,
+                Loop = true
+            };
+            
+            spriteSheet.Animations["Stay"] = new SpriteSheet.Animation()
+            {
+                StartFrame = (9, 0),
+                EndFrame = (9, 3),
+                DurationMs = 2000,
+                Loop = true
+            };
+            
+            _player = new PlayerObject(spriteSheet, 100, 100);
+            
+            SpriteSheet spriteSheet2 = new(_renderer, Path.Combine("Assets", "dog.png"), 10, 6, 32, 32, (24, 52));
+
+             spriteSheet2.Animations["WalkRight"] = new SpriteSheet.Animation()
+            {
+                StartFrame = (1, 0),
+                EndFrame = (1, 3),
+                DurationMs = 1000,
+                Loop = true
+            };
+
+            spriteSheet2.Animations["WalkLeft"] = new SpriteSheet.Animation()
+            {
+                StartFrame = (3, 0),
+                EndFrame = (3, 3),
+                DurationMs = 1000,
+                Loop = true,
+            };
+
+            spriteSheet2.Animations["WalkUp"] = new SpriteSheet.Animation()
+            {
+                StartFrame = (2, 0),
+                EndFrame = (2, 3),
+                DurationMs = 1000,
+                Loop = true
+            };
+
+            spriteSheet2.Animations["WalkDown"] = new SpriteSheet.Animation()
+            {
+                StartFrame = (0, 0),
+                EndFrame = (0, 3),
+                DurationMs = 1000,
+                Loop = true
+            };
+
+            spriteSheet2.Animations["IdleLeft"] = new SpriteSheet.Animation()
+            {
+                StartFrame = (3, 0),
+                EndFrame = (3, 3),
+                DurationMs = 1000,
+                Loop = true
+            };
+
+            spriteSheet2.Animations["IdleRight"] = new SpriteSheet.Animation()
+            {
+                StartFrame = (1, 0),
+                EndFrame = (1, 3),
+                DurationMs = 1000,
+                Loop = true
+            };
+
+            spriteSheet2.Animations["IdleUp"] = new SpriteSheet.Animation()
+            {
+                StartFrame = (2, 0),
+                EndFrame = (2, 3),
+                DurationMs = 1000,
+                Loop = true
+            };
+            
+            spriteSheet2.Animations["IdleDown"] = new SpriteSheet.Animation()
+            {
+                StartFrame = (0, 0),
+                EndFrame = (0, 3),
+                DurationMs = 1000,
+                Loop = true
+            };
+            
+            spriteSheet2.Animations["Stay"] = new SpriteSheet.Animation()
+            {
+                StartFrame = (7, 0),
+                EndFrame = (7, 1),
+                DurationMs = 2000,
+                Loop = true
+            };
+            
+            _dog = new DogObject(spriteSheet2, 85, 120);
+
             _renderer.SetWorldBounds(new Rectangle<int>(0, 0, _currentLevel.Width * _currentLevel.TileWidth,
                 _currentLevel.Height * _currentLevel.TileHeight));
         }
@@ -81,49 +223,30 @@ namespace TheAdventure
             bool down = _input.IsDownPressed();
             bool left = _input.IsLeftPressed();
             bool right = _input.IsRightPressed();
-            bool isAttacking = _input.IsKeyAPressed();
-            bool addBomb = _input.IsKeyBPressed();
 
-            if(isAttacking)
-            {
-                var dir = up ? 1: 0;
-                dir += down? 1 : 0;
-                dir += left? 1: 0;
-                dir += right ? 1 : 0;
-                if(dir <= 1){
-                    _player.Attack(up, down, left, right);
-                }
-                else{
-                    isAttacking = false;
-                }
-            }
-            if(!isAttacking)
-            {
-                _player.UpdatePlayerPosition(up ? 1.0 : 0.0, down ? 1.0 : 0.0, left ? 1.0 : 0.0, right ? 1.0 : 0.0,
-                    _currentLevel.Width * _currentLevel.TileWidth, _currentLevel.Height * _currentLevel.TileHeight,
-                    secsSinceLastFrame);
-            }
+            _player.UpdatePlayerPosition(up ? 1.0 : 0.0, down ? 1.0 : 0.0, left ? 1.0 : 0.0, right ? 1.0 : 0.0,
+                _currentLevel.Width * _currentLevel.TileWidth, _currentLevel.Height * _currentLevel.TileHeight,
+                secsSinceLastFrame);
+            
+            _dog.UpdateDogPosition(up ? 1.0 : 0.0, down ? 1.0 : 0.0, left ? 1.0 : 0.0, right ? 1.0 : 0.0,
+                _currentLevel.Width * _currentLevel.TileWidth, _currentLevel.Height * _currentLevel.TileHeight,
+                secsSinceLastFrame);
+
             var itemsToRemove = new List<int>();
             itemsToRemove.AddRange(GetAllTemporaryGameObjects().Where(gameObject => gameObject.IsExpired)
                 .Select(gameObject => gameObject.Id).ToList());
+            
+            CheckForBombCollisions();
 
-            if (addBomb)
+            foreach (var gameObject in itemsToRemove)
             {
-                AddBomb(_player.Position.X, _player.Position.Y, false);
+                _gameObjects.Remove(gameObject);
             }
 
-            foreach (var gameObjectId in itemsToRemove)
+            if ((currentTime - _lastRandomBombTime).TotalSeconds > _random.Next(1, 2))
             {
-                var gameObject = _gameObjects[gameObjectId];
-                if(gameObject is TemporaryGameObject){
-                    var tempObject = (TemporaryGameObject)gameObject;
-                    var deltaX = Math.Abs(_player.Position.X - tempObject.Position.X);
-                    var deltaY = Math.Abs(_player.Position.Y - tempObject.Position.Y);
-                    if(deltaX < 32 && deltaY < 32){
-                        _player.GameOver();
-                    }
-                }
-                _gameObjects.Remove(gameObjectId);
+                AddRandomBomb();
+                _lastRandomBombTime = currentTime;
             }
         }
 
@@ -131,7 +254,7 @@ namespace TheAdventure
         {
             _renderer.SetDrawColor(0, 0, 0, 255);
             _renderer.ClearScreen();
-            
+
             _renderer.CameraLookAt(_player.Position.X, _player.Position.Y);
 
             RenderTerrain();
@@ -160,6 +283,8 @@ namespace TheAdventure
         private void RenderTerrain()
         {
             if (_currentLevel == null) return;
+            Random random = new Random();
+
             for (var layer = 0; layer < _currentLevel.Layers.Length; ++layer)
             {
                 var cLayer = _currentLevel.Layers[layer];
@@ -169,7 +294,12 @@ namespace TheAdventure
                     for (var j = 0; j < _currentLevel.Height; ++j)
                     {
                         var cTileId = cLayer.Data[j * cLayer.Width + i] - 1;
-                        var cTile = GetTile(cTileId);
+                        var tileVariations = _loadedTileSets
+                            .SelectMany(ts => ts.Value.Tiles.Where(t => t.Id == cTileId)).ToList();
+
+                        var cTile = tileVariations.Count > 1
+                            ? tileVariations[random.Next(tileVariations.Count)]
+                            : GetTile(cTileId);
                         if (cTile == null) continue;
 
                         var src = new Rectangle<int>(0, 0, cTile.ImageWidth, cTile.ImageHeight);
@@ -212,19 +342,55 @@ namespace TheAdventure
             }
 
             _player.Render(_renderer);
+            _dog.Render(_renderer);
         }
 
-        private void AddBomb(int x, int y, bool translateCoordinates = true)
+        private void AddBomb(int x, int y)
         {
+            var translated = _renderer.TranslateFromScreenToWorldCoordinates(x, y);
+            SpriteSheet spriteSheet = new(_renderer, "BombExploding.png", 1, 13, 32, 64, (16, 48));
+            spriteSheet.Animations["Explode"] = new SpriteSheet.Animation()
+            {
+                StartFrame = (0, 0),
+                EndFrame = (0, 12),
+                DurationMs = 2000,
+                Loop = false
+            };
+            TemporaryGameObject bomb = new(spriteSheet, 10, (translated.X, translated.Y));
+            _gameObjects.Add(bomb.Id, bomb);
+        }
 
-            var translated = translateCoordinates ? _renderer.TranslateFromScreenToWorldCoordinates(x, y) : new Vector2D<int>(x, y);
-            
-            var spriteSheet = SpriteSheet.LoadSpriteSheet("bomb.json", "Assets", _renderer);
-            if(spriteSheet != null){
-                spriteSheet.ActivateAnimation("Explode");
-                TemporaryGameObject bomb = new(spriteSheet, 2.1, (translated.X, translated.Y));
-                _gameObjects.Add(bomb.Id, bomb);
+        private void AddRandomBomb()
+        {
+            int randomX = _random.Next(0, _currentLevel.Width);
+            int randomY = _random.Next(0, _currentLevel.Height);
+            AddBomb(randomX * _currentLevel.TileWidth, randomY * _currentLevel.TileHeight);
+        }
+        
+        private void CheckForBombCollisions()
+        {
+            foreach (var gameObject in _gameObjects.Values)
+            {
+                if (gameObject is TemporaryGameObject bomb)
+                {
+                    if (IsPlayerCollidingWithBomb(_player.Position, bomb.Position))
+                    {
+                        TriggerBombExplosion(bomb);
+                    }
+                }
             }
+        }
+
+        private bool IsPlayerCollidingWithBomb((int X, int Y) playerPosition, (int X, int Y) bombPosition)
+        {
+            const int collisionThreshold = 48; 
+            return Math.Abs(playerPosition.X - bombPosition.X) < collisionThreshold &&
+                   Math.Abs(playerPosition.Y - bombPosition.Y) < collisionThreshold;
+        }
+
+        private void TriggerBombExplosion(TemporaryGameObject bomb)
+        {
+            bomb.SpriteSheet.ActivateAnimation("Explode");
         }
     }
 }
