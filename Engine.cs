@@ -25,6 +25,9 @@ namespace TheAdventure
             _input = input;
 
             _input.OnMouseClick += (_, coords) => AddBomb(coords.x, coords.y);
+
+            _input.OnSpaceBar = (_, coords) => AddSlash(coords.x, coords.y);
+
         }
 
         public void InitializeWorld()
@@ -81,6 +84,13 @@ namespace TheAdventure
             bool down = _input.IsDownPressed();
             bool left = _input.IsLeftPressed();
             bool right = _input.IsRightPressed();
+            bool space = _input.IsSpaceBarPressed();
+
+            if(space)
+            {
+                AddSlash(_player.Position.X, _player.Position.Y);
+            }
+
 
             _player.UpdatePlayerPosition(up ? 1.0 : 0.0, down ? 1.0 : 0.0, left ? 1.0 : 0.0, right ? 1.0 : 0.0,
                 _currentLevel.Width * _currentLevel.TileWidth, _currentLevel.Height * _currentLevel.TileHeight,
@@ -196,6 +206,19 @@ namespace TheAdventure
             };*/
             var spriteSheet = SpriteSheet.LoadSpriteSheet("bomb.json", "Assets", _renderer);
             if(spriteSheet != null){
+                spriteSheet.ActivateAnimation("Explode");
+                TemporaryGameObject bomb = new(spriteSheet, 2.1, (translated.X, translated.Y));
+                _gameObjects.Add(bomb.Id, bomb);
+            }
+        }
+
+
+        private void AddSlash(int x, int y)
+        {
+            var translated = _renderer.TranslateFromScreenToWorldCoordinates(x, y);
+            var spriteSheet = SpriteSheet.LoadSpriteSheet("slash.json", "Assets", _renderer);
+            if (spriteSheet != null)
+            {
                 spriteSheet.ActivateAnimation("Explode");
                 TemporaryGameObject bomb = new(spriteSheet, 2.1, (translated.X, translated.Y));
                 _gameObjects.Add(bomb.Id, bomb);
