@@ -22,6 +22,7 @@ public class PlayerObject : RenderableGameObject
     }
 
     private int _pixelsPerSecond = 192;
+    private SoundManager movementSoundManager = new SoundManager("D:\\Facultate\\Anul 3\\Semestrul 2\\.NET\\Forked Repo\\TheAdventure\\Assets\\going-on-a-forest-road-gravel-and-grass-6404.mp3");
 
 
     public (PlayerState State, PlayerStateDirection Direction) State{ get; private set; }
@@ -119,19 +120,24 @@ public class PlayerObject : RenderableGameObject
 
         if (y < Position.Y){
             SetState(PlayerState.Move, PlayerStateDirection.Up);
+            movementSoundManager.Play();
         }
         if (y > Position.Y ){
             SetState(PlayerState.Move, PlayerStateDirection.Down);
+            movementSoundManager.Play();
         }
         if (x > Position.X ){
             SetState(PlayerState.Move, PlayerStateDirection.Right);
+            movementSoundManager.Play();
         }
         if (x < Position.X){
             SetState(PlayerState.Move, PlayerStateDirection.Left);
+            movementSoundManager.Play();
         }
         if (x == Position.X &&
             y == Position.Y){
             SetState(PlayerState.Idle, State.Direction);
+            movementSoundManager.Stop();
         }
 
         Position = (x, y);
