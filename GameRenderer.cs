@@ -17,6 +17,7 @@ public unsafe class GameRenderer
     private Dictionary<int, IntPtr> _textures = new();
     private Dictionary<int, TextureInfo> _textureData = new();
     private int _textureId;
+    private HealthBar _healthBar;
 
     public GameRenderer(Sdl sdl, GameWindow window)
     {
@@ -28,6 +29,10 @@ public unsafe class GameRenderer
 
         var windowSize = window.Size;
         _camera = new Camera(windowSize.Width, windowSize.Height);
+
+        _healthBar = new HealthBar(10, 10, 200, 20,
+       new Silk.NET.SDL.Color(255, 0, 0, 255),
+       new Silk.NET.SDL.Color(128, 128, 128, 255));
     }
 
     public void SetWorldBounds(Rectangle<int> bounds)
@@ -97,4 +102,6 @@ public unsafe class GameRenderer
     {
         _sdl.RenderPresent(_renderer);
     }
+
+
 }
