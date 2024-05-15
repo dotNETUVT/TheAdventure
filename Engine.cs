@@ -24,7 +24,56 @@ namespace TheAdventure
             _input = input;
 
             _input.OnMouseClick += (_, coords) => AddBomb(coords.x, coords.y);
+
         }
+
+        public int health = 100;
+
+
+
+        public void RenderFrame()
+        {
+            _renderer.SetDrawColor(0, 0, 0, 255);
+            _renderer.ClearScreen();
+
+            _renderer.CameraLookAt(_player.Position.X, _player.Position.Y);
+
+            RenderTerrain();
+            RenderAllObjects();
+            RenderHealthBar(); // New method to render health bar
+
+            _renderer.PresentFrame();
+        }
+
+        private void RenderHealthBar()
+        {
+            const int barWidth = 100;
+            const int barHeight = 20;
+            const int x = 10;
+            const int y = 10;
+
+            // Background bar
+            _renderer.SetDrawColor(255, 0, 0, 255); // Red
+            _renderer.RenderFillRect(x, y, barWidth, barHeight);
+
+            // Foreground bar
+            double healthPercentage = health / 100.0;
+            int healthWidth = (int)(barWidth * healthPercentage);
+            _renderer.SetDrawColor(0, 255, 0, 255); // Green
+            _renderer.RenderFillRect(x, y, healthWidth, barHeight);
+        }
+
+        public int TakeDamage(int damage)
+        {
+            if (health > 0)
+            {
+                health -= damage;
+            }
+
+            return health;
+        }
+
+
 
         public void InitializeWorld()
         {
@@ -92,18 +141,6 @@ namespace TheAdventure
             }
         }
 
-        public void RenderFrame()
-        {
-            _renderer.SetDrawColor(0, 0, 0, 255);
-            _renderer.ClearScreen();
-            
-            _renderer.CameraLookAt(_player.Position.X, _player.Position.Y);
-
-            RenderTerrain();
-            RenderAllObjects();
-
-            _renderer.PresentFrame();
-        }
 
         private Tile? GetTile(int id)
         {
@@ -192,7 +229,17 @@ namespace TheAdventure
             };
             spriteSheet.ActivateAnimation("Explode");
             TemporaryGameObject bomb = new(spriteSheet, 2.1, (translated.X, translated.Y));
+
+            if (translated.X <= _player.Position.X)
+            {
+                if (translated.Y <= _player.Position.X)
+                {
+                    health = TakeDamage(10);
+                }
+            }
             _gameObjects.Add(bomb.Id, bomb);
         }
     }
+
+
 }
