@@ -35,6 +35,12 @@ public unsafe class GameRenderer
         _camera.SetWorldBounds(bounds);
     }
 
+    public void OnWindowSizeChanged()
+    {
+        _camera.Width = _window.Size.Width;
+        _camera.Height = _window.Size.Height;
+    }
+
     public void CameraLookAt(int x, int y)
     {
         _camera.LookAt(x, y);

@@ -129,7 +129,7 @@ namespace TheAdventure
 
         public void RenderFrame()
         {
-            _renderer.SetDrawColor(0, 0, 0, 255);
+            _renderer.SetDrawColor(83, 155, 102, 255);
             _renderer.ClearScreen();
             
             _renderer.CameraLookAt(_player.Position.X, _player.Position.Y);

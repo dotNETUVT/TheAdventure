@@ -87,6 +87,8 @@ namespace TheAdventure
                             }
                             case (byte)WindowEventID.SizeChanged:
                             {
+                                _renderer.OnWindowSizeChanged();
+
                                 break;
                             }
                             case (byte)WindowEventID.Minimized:

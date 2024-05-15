@@ -30,8 +30,8 @@ public class Camera
         get { return _y; }
     }
 
-    public int Width { get; init; }
-    public int Height { get; init; }
+    public int Width { get; set; }
+    public int Height { get; set; }
 
     public Camera(int width, int height)
     {
