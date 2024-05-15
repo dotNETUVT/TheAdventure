@@ -18,6 +18,7 @@ namespace TheAdventure
 
         private DateTimeOffset _lastUpdate = DateTimeOffset.Now;
         private DateTimeOffset _lastPlayerUpdate = DateTimeOffset.Now;
+        private DateTimeOffset _lastDash = DateTimeOffset.Now;
 
         public Engine(GameRenderer renderer, Input input)
         {
@@ -83,8 +84,11 @@ namespace TheAdventure
             bool right = _input.IsRightPressed();
             bool isAttacking = _input.IsKeyAPressed();
             bool addBomb = _input.IsKeyBPressed();
+            bool dash = _input.IsSpacePressed();
+            int dashCooldown = 1; //1 second 
 
-            if(isAttacking)
+
+            if (isAttacking)
             {
                 var dir = up ? 1: 0;
                 dir += down? 1 : 0;
@@ -110,6 +114,18 @@ namespace TheAdventure
             if (addBomb)
             {
                 AddBomb(_player.Position.X, _player.Position.Y, false);
+            }
+
+            if (dash)
+            {
+                bool cooldownPassed = (currentTime - _lastDash).TotalSeconds > dashCooldown;
+                if (cooldownPassed)
+                {
+                    _player.UpdatePlayerPosition(up ? 10.0 : 0.0, down ? 10.0 : 0.0, left ? 10.0 : 0.0, right ? 10.0 : 0.0,
+                        _currentLevel.Width * _currentLevel.TileWidth, _currentLevel.Height * _currentLevel.TileHeight,
+                        secsSinceLastFrame);
+                    _lastDash = currentTime;
+                }
             }
 
             foreach (var gameObjectId in itemsToRemove)
