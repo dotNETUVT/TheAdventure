@@ -85,7 +85,7 @@ namespace TheAdventure
             bool isAttacking = _input.IsKeyAPressed();
             bool addBomb = _input.IsKeyBPressed();
             bool dash = _input.IsSpacePressed();
-            int dashCooldown = 1; //1 second 
+            int dashCooldown = 1;
 
 
             if (isAttacking)

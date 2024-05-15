@@ -152,6 +152,6 @@ public class PlayerObject : RenderableGameObject
     public override void Render(GameRenderer renderer)
     {
         base.Render(renderer);
-        healthBar.Render(renderer, new Vector2D<int>(10, 10)); // Adjust position as needed
+        healthBar.Render(renderer, new Vector2D<int>(10, 10));
     }
 }
