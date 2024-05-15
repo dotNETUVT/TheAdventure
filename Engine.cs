@@ -83,8 +83,15 @@ namespace TheAdventure
             bool right = _input.IsRightPressed();
             bool isAttacking = _input.IsKeyAPressed();
             bool addBomb = _input.IsKeyBPressed();
+            bool isBlinking = _input.IsSpacePressed();
 
-            if(isAttacking)
+            if (isBlinking)
+            {
+                RenderBlinkEffect();
+                _player.Blink(_currentLevel.Width * _currentLevel.TileWidth, _currentLevel.Height * _currentLevel.TileHeight);
+            }
+
+            if (isAttacking)
             {
                 var dir = up ? 1: 0;
                 dir += down? 1 : 0;
@@ -224,6 +231,18 @@ namespace TheAdventure
                 spriteSheet.ActivateAnimation("Explode");
                 TemporaryGameObject bomb = new(spriteSheet, 2.1, (translated.X, translated.Y));
                 _gameObjects.Add(bomb.Id, bomb);
+            }
+        }
+
+
+        private void RenderBlinkEffect()
+        {
+            var spriteSheet = SpriteSheet.LoadSpriteSheet("blink.json", "Assets", _renderer);
+            if (spriteSheet != null)
+            {
+                spriteSheet.ActivateAnimation("Blink");
+                var blinkEffect = new TemporaryGameObject(spriteSheet, 0.5, (_player.Position.X, _player.Position.Y));
+                _gameObjects.Add(blinkEffect.Id, blinkEffect);
             }
         }
     }

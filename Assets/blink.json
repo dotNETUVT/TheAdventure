@@ -1,0 +1,25 @@
+{
+    "rowCount": 1,
+    "columnCount": 3,
+    "frameWidth": 50,
+    "frameHeight": 50,
+    "frameCenter": {
+        "offsetX": 26,
+        "offsetY": 48
+    },
+    "fileName": "blink.png",
+    "animations": {
+        "Blink": {
+            "startFrame": {
+                "row": 0,
+                "col": 0
+            },
+            "endFrame": {
+                "row": 0,
+                "col": 6
+            },
+            "durationMs": 500,
+            "loop": true
+        }
+    }
+}

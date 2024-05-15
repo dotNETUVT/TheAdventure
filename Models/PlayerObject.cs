@@ -1,5 +1,6 @@
 using System.Formats.Asn1;
 using Silk.NET.Maths;
+using Silk.NET.SDL;
 using TheAdventure;
 
 namespace TheAdventure.Models;
@@ -22,7 +23,8 @@ public class PlayerObject : RenderableGameObject
     }
 
     private int _pixelsPerSecond = 192;
-
+    private const int BlinkDistance = 100;
+    private const int BlinkEffectDuration = 200;
 
     public (PlayerState State, PlayerStateDirection Direction) State{ get; private set; }
 
@@ -136,4 +138,36 @@ public class PlayerObject : RenderableGameObject
 
         Position = (x, y);
     }
+
+    public async void Blink(int width, int height)
+    {
+        if (State.State == PlayerState.GameOver) return;
+
+        int targetX = Position.X;
+        int targetY = Position.Y;
+
+        switch (State.Direction)
+        {
+            case PlayerStateDirection.Up:
+                targetY -= BlinkDistance;
+                break;
+            case PlayerStateDirection.Down:
+                targetY += BlinkDistance;
+                break;
+            case PlayerStateDirection.Left:
+                targetX -= BlinkDistance;
+                break;
+            case PlayerStateDirection.Right:
+                targetX += BlinkDistance;
+                break;
+        }
+
+        targetX = Math.Clamp(targetX, 10, width - 10);
+        targetY = Math.Clamp(targetY, 24, height - 6);
+
+        await Task.Delay(BlinkEffectDuration);
+
+        Position = (targetX, targetY);
+    }
+
 }
