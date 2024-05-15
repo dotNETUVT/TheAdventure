@@ -4,8 +4,6 @@ using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.PixelFormats;
 using TheAdventure.Models;
 using Point = Silk.NET.SDL.Point;
-using Silk.NET.Maths;
-using Silk.NET.SDL;
 
 namespace TheAdventure;
 
