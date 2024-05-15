@@ -2,6 +2,7 @@ using Silk.NET.Maths;
 using Silk.NET.SDL;
 using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.PixelFormats;
+using System.Runtime.InteropServices;
 using TheAdventure.Models;
 using Point = Silk.NET.SDL.Point;
 
@@ -18,6 +19,9 @@ public unsafe class GameRenderer
     private Dictionary<int, TextureInfo> _textureData = new();
     private int _textureId;
 
+    private int _numberTextureId;
+    private TextureInfo _numberTextureInfo;
+
     public GameRenderer(Sdl sdl, GameWindow window)
     {
         _window = window;
@@ -28,6 +32,13 @@ public unsafe class GameRenderer
 
         var windowSize = window.Size;
         _camera = new Camera(windowSize.Width, windowSize.Height);
+
+        LoadNumberTexture();
+    }
+
+    private void LoadNumberTexture()
+    {
+        _numberTextureId = LoadTexture("Assets/font.png", out _numberTextureInfo);
     }
 
     public void SetWorldBounds(Rectangle<int> bounds)
@@ -83,6 +94,13 @@ public unsafe class GameRenderer
         return _camera.FromScreenToWorld(x, y);
     }
 
+    public Vector2D<int> GetTranslatedCoordinates(int x, int y)
+    {
+        var screenCoordinates = _camera.TranslateToScreenCoordinates(new Rectangle<int>(x, y, 0, 0));
+        return new Vector2D<int>(screenCoordinates.Origin.X, screenCoordinates.Origin.Y);
+    }
+
+
     public void SetDrawColor(byte r, byte g, byte b, byte a)
     {
         _sdl.SetRenderDrawColor(_renderer, r, g, b, a);
@@ -96,5 +114,35 @@ public unsafe class GameRenderer
     public void PresentFrame()
     {
         _sdl.RenderPresent(_renderer);
+    }
+
+    public void RenderRectangle(Rectangle<int> rect)
+    {
+        var sdlRect = new SDL_Rect
+        {
+            x = rect.Origin.X,
+            y = rect.Origin.Y,
+            w = rect.Size.X,
+            h = rect.Size.Y
+        };
+        _sdl.RenderFillRect(_renderer, (Rectangle<int>*)&sdlRect);
+    }
+
+    public void RenderNumber(int number, int x, int y)
+    {
+        string numberStr = number.ToString();
+        int digitWidth = _numberTextureInfo.Width / 10;
+        int digitHeight = _numberTextureInfo.Height;
+
+        foreach (char digit in numberStr)
+        {
+            int digitValue = digit - '0';
+            var srcRect = new Rectangle<int>(digitValue * digitWidth, 0, digitWidth, digitHeight);
+            var dstRect = new Rectangle<int>(x, y, digitWidth, digitHeight);
+
+            RenderTexture(_numberTextureId, srcRect, dstRect);
+
+            x += digitWidth - 6;
+        }
     }
 }

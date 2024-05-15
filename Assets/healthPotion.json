@@ -1,0 +1,25 @@
+{
+    "rowCount": 1,
+    "columnCount": 3,
+    "frameWidth": 20,
+    "frameHeight": 20,
+    "frameCenter": {
+        "offsetX": 16,
+        "offsetY": 48
+    },
+    "fileName": "healthPotion.png",
+    "animations": {
+        "Heal": {
+            "startFrame": {
+                "row": 0,
+                "col": 0
+            },
+            "endFrame": {
+                "row": 0,
+                "col": 1
+            },
+            "durationMs": 500,
+            "loop": true
+        }
+    }
+}

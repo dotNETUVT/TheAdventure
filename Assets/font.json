@@ -1,0 +1,21 @@
+{
+    "rowCount": 1,
+    "columnCount": 10,
+    "frameWidth": 8,  
+    "frameHeight": 10, 
+    "fileName": "font.png",
+    "animations": {
+        "Numbers": {
+            "startFrame": {
+                "row": 0,
+                "col": 0
+            },
+            "endFrame": {
+                "row": 0,
+                "col": 9
+            },
+            "durationMs": 0,
+            "loop": false
+        }
+    }
+}

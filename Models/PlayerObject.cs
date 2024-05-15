@@ -22,7 +22,9 @@ public class PlayerObject : RenderableGameObject
     }
 
     private int _pixelsPerSecond = 192;
+    public int healthAmount { get; private set; } = 100;
 
+    public int MaxHealth = 100;
 
     public (PlayerState State, PlayerStateDirection Direction) State{ get; private set; }
 
@@ -135,5 +137,46 @@ public class PlayerObject : RenderableGameObject
         }
 
         Position = (x, y);
+    }
+
+    public void IncreaseHealth(int amount)
+    {
+        MaxHealth += amount;
+        healthAmount = Math.Min(healthAmount + amount, MaxHealth);
+    }
+
+    public void DecreaseHealth(int amount)
+    {
+        healthAmount -= amount;
+        if (healthAmount <= 0)
+        {
+            GameOver();
+        }
+    }
+
+    public void RenderHealthBar(GameRenderer renderer)
+    {
+        int barWidth = 50;
+        int barHeight = 10;
+
+        var translatedPosition = renderer.GetTranslatedCoordinates(Position.X, Position.Y);
+        var barPosition = new Rectangle<int>(translatedPosition.X - barWidth / 2, translatedPosition.Y - 50, barWidth, barHeight);
+
+        if(healthAmount < MaxHealth / 4)
+        {
+            renderer.SetDrawColor(255, 0, 0, 255);
+
+        }
+        else
+        {
+            renderer.SetDrawColor(0, 255, 0, 255);
+        }
+
+        renderer.RenderRectangle(barPosition);
+
+        int digitX = Position.X - barWidth / 2;
+        int digitY = Position.Y - 58;
+
+        renderer.RenderNumber(healthAmount, digitX, digitY);
     }
 }

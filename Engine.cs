@@ -64,7 +64,28 @@ namespace TheAdventure
             };
             */
             var spriteSheet = SpriteSheet.LoadSpriteSheet("player.json", "Assets", _renderer);
-            if(spriteSheet != null){
+
+            var healthPotionSpriteSheet = SpriteSheet.LoadSpriteSheet("healthPotion.json", "Assets", _renderer);
+            var potionPositions = new List<(int x, int y, PotionType type)>
+            {
+                (200, 200, PotionType.Health),
+                (300, 300, PotionType.Health),
+                (400, 400, PotionType.Health),
+                (500, 500, PotionType.Health),
+                (600, 600, PotionType.Health),
+                (700, 700, PotionType.Health),
+            };
+
+            foreach (var (x, y, type) in potionPositions)
+            {
+                if (type == PotionType.Health && healthPotionSpriteSheet != null)
+                {
+                    var potion = new PotionObject(healthPotionSpriteSheet, x, y, type, 10);
+                    _gameObjects.Add(potion.Id, potion);
+                }
+            }
+
+            if (spriteSheet != null){
                 _player = new PlayerObject(spriteSheet, 100, 100);
             }
             _renderer.SetWorldBounds(new Rectangle<int>(0, 0, _currentLevel.Width * _currentLevel.TileWidth,
@@ -120,10 +141,44 @@ namespace TheAdventure
                     var deltaX = Math.Abs(_player.Position.X - tempObject.Position.X);
                     var deltaY = Math.Abs(_player.Position.Y - tempObject.Position.Y);
                     if(deltaX < 32 && deltaY < 32){
-                        _player.GameOver();
+                        if (_player.healthAmount > 100)
+                        {
+                            _player.DecreaseHealth(100);
+                        }
+                        else
+                        {
+                            _player.GameOver();
+                        }
                     }
                 }
                 _gameObjects.Remove(gameObjectId);
+            }
+            HandlePotionCollection();
+        }
+
+        private void HandlePotionCollection()
+        {
+            var potionsToRemove = new List<int>();
+            foreach (var gameObject in _gameObjects.Values)
+            {
+                if (gameObject is PotionObject potion)
+                {
+                    var deltaX = Math.Abs(_player.Position.X - potion.Position.X);
+                    var deltaY = Math.Abs(_player.Position.Y - potion.Position.Y);
+                    if (deltaX < 32 && deltaY < 32)
+                    {
+                        if (potion.Type == PotionType.Health)
+                        {
+                            _player.IncreaseHealth(potion.Value);
+                        }
+                        potionsToRemove.Add(potion.Id);
+                    }
+                }
+            }
+
+            foreach (var potionId in potionsToRemove)
+            {
+                _gameObjects.Remove(potionId);
             }
         }
 
@@ -136,6 +191,8 @@ namespace TheAdventure
 
             RenderTerrain();
             RenderAllObjects();
+
+            _player.RenderHealthBar(_renderer);
 
             _renderer.PresentFrame();
         }
