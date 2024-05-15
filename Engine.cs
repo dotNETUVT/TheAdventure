@@ -77,12 +77,12 @@ namespace TheAdventure
             var secsSinceLastFrame = (currentTime - _lastUpdate).TotalSeconds;
             _lastUpdate = currentTime;
 
-            bool up = _input.IsUpPressed();
-            bool down = _input.IsDownPressed();
-            bool left = _input.IsLeftPressed();
-            bool right = _input.IsRightPressed();
-            bool isAttacking = _input.IsKeyAPressed();
-            bool addBomb = _input.IsKeyBPressed();
+            bool up = IsUpPressed();
+            bool down = IsDownPressed();
+            bool left = IsLeftPressed();
+            bool right = IsRightPressed();
+            bool isAttacking = IsAttackPressed();
+            bool addBomb = IsBombPressed();
 
             if(isAttacking)
             {
@@ -225,6 +225,36 @@ namespace TheAdventure
                 TemporaryGameObject bomb = new(spriteSheet, 2.1, (translated.X, translated.Y));
                 _gameObjects.Add(bomb.Id, bomb);
             }
+        }
+
+        private bool IsUpPressed()
+        {
+            return _input.IsKeyPressed(KeyCode.W) || _input.IsKeyPressed(KeyCode.Up);
+        }
+
+        private bool IsDownPressed()
+        {
+            return _input.IsKeyPressed(KeyCode.S) || _input.IsKeyPressed(KeyCode.Down);
+        }
+
+        private bool IsLeftPressed()
+        {
+            return _input.IsKeyPressed(KeyCode.A) || _input.IsKeyPressed(KeyCode.Left);
+        }
+
+        private bool IsRightPressed()
+        {
+            return _input.IsKeyPressed(KeyCode.D) || _input.IsKeyPressed(KeyCode.Right);
+        }
+
+        private bool IsAttackPressed()
+        {
+            return _input.IsKeyPressed(KeyCode.V);
+        }
+
+        private bool IsBombPressed()
+        {
+            return _input.IsKeyPressed(KeyCode.B);
         }
     }
 }

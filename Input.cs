@@ -19,40 +19,12 @@ namespace TheAdventure
             _renderer = renderer;
         }
 
-        public bool IsKeyAPressed(){
+        public bool IsKeyPressed(KeyCode key)
+        {
             ReadOnlySpan<byte> _keyboardState = new(_sdl.GetKeyboardState(null), (int)KeyCode.Count);
-            return _keyboardState[(int)KeyCode.A] == 1;
+            return _keyboardState[(int)key] == 1;
         }
 
-        public bool IsKeyBPressed(){
-            ReadOnlySpan<byte> _keyboardState = new(_sdl.GetKeyboardState(null), (int)KeyCode.Count);
-            return _keyboardState[(int)KeyCode.B] == 1;
-        }
-
-        public bool IsLeftPressed()
-        {
-            ReadOnlySpan<byte> _keyboardState = new(_sdl.GetKeyboardState(null), (int)KeyCode.Count);
-            return _keyboardState[(int)KeyCode.Left] == 1;
-        }
-        
-        public bool IsRightPressed()
-        {
-            ReadOnlySpan<byte> _keyboardState = new(_sdl.GetKeyboardState(null), (int)KeyCode.Count);
-            return _keyboardState[(int)KeyCode.Right] == 1;
-        }
-        
-        public bool IsUpPressed()
-        {
-            ReadOnlySpan<byte> _keyboardState = new(_sdl.GetKeyboardState(null), (int)KeyCode.Count);
-            return _keyboardState[(int)KeyCode.Up] == 1;
-        }
-        
-        public bool IsDownPressed()
-        {
-            ReadOnlySpan<byte> _keyboardState = new(_sdl.GetKeyboardState(null), (int)KeyCode.Count);
-            return _keyboardState[(int)KeyCode.Down] == 1;
-        }
-        
         public bool ProcessInput()
         {
             var currentTime = DateTimeOffset.UtcNow;
