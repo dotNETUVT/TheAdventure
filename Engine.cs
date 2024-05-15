@@ -18,6 +18,8 @@ namespace TheAdventure
 
         private DateTimeOffset _lastUpdate = DateTimeOffset.Now;
         private DateTimeOffset _lastPlayerUpdate = DateTimeOffset.Now;
+        private DateTimeOffset _lastShield = DateTimeOffset.Now.AddSeconds(-8);
+        private TemporaryGameObject? _shield;
 
         public Engine(GameRenderer renderer, Input input)
         {
@@ -83,8 +85,12 @@ namespace TheAdventure
             bool right = _input.IsRightPressed();
             bool isAttacking = _input.IsKeyAPressed();
             bool addBomb = _input.IsKeyBPressed();
+            bool shielding = _input.IsKeySPressed();
+            int shieldLife = 3;
+            int shieldCooldown = 5 + shieldLife;
+            bool activeShield = (currentTime - _lastShield).TotalSeconds < shieldLife;
 
-            if(isAttacking)
+            if (isAttacking)
             {
                 var dir = up ? 1: 0;
                 dir += down? 1 : 0;
@@ -112,6 +118,28 @@ namespace TheAdventure
                 AddBomb(_player.Position.X, _player.Position.Y, false);
             }
 
+            if (shielding)
+            {
+                var shieldSpriteSheet = SpriteSheet.LoadSpriteSheet("shield.json", "Assets", _renderer);
+                bool shieldCooldownPassed = (currentTime - _lastShield).TotalSeconds > shieldCooldown;
+                if (shieldSpriteSheet != null)
+                {
+                    if (shieldCooldownPassed)
+                    {
+                        shieldSpriteSheet.ActivateAnimation("Idle");
+                        _shield = new(shieldSpriteSheet, shieldLife, (_player.Position.X, _player.Position.Y - 12));
+                        _gameObjects.Add(_shield.Id, _shield);
+                        _lastShield = currentTime;
+                    }
+                }
+            }
+
+            if (activeShield)
+            {
+                _shield.Position = (_player.Position.X, _player.Position.Y - 12);
+            }
+
+
             foreach (var gameObjectId in itemsToRemove)
             {
                 var gameObject = _gameObjects[gameObjectId];
@@ -119,7 +147,7 @@ namespace TheAdventure
                     var tempObject = (TemporaryGameObject)gameObject;
                     var deltaX = Math.Abs(_player.Position.X - tempObject.Position.X);
                     var deltaY = Math.Abs(_player.Position.Y - tempObject.Position.Y);
-                    if(deltaX < 32 && deltaY < 32){
+                    if(deltaX < 32 && deltaY < 32 && gameObject.Id != _shield.Id && !activeShield){
                         _player.GameOver();
                     }
                 }

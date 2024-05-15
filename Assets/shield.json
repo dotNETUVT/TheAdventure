@@ -1,0 +1,23 @@
+{
+    "frameWidth": 64,
+    "frameHeight": 64,
+    "frameCenter": {
+        "offsetX": 32,
+        "offsetY": 32
+    },
+    "fileName": "shield.png",
+    "animations": {
+        "Active": {
+            "startFrame": {
+                "row": 0,
+                "col": 0
+            },
+            "endFrame": {
+                "row": 0,
+                "col": 0
+            },
+            "durationMs": 0,
+            "loop": false
+        }
+    }
+}
