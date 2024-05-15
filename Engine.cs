@@ -224,19 +224,14 @@ namespace TheAdventure
         private void AddBomb(int x, int y)
         {
             var translated = _renderer.TranslateFromScreenToWorldCoordinates(x, y);
-            /*SpriteSheet spriteSheet = new(_renderer, "BombExploding.png", 1, 13, 32, 64, (16, 48));
-            spriteSheet.Animations["Explode"] = new SpriteSheet.Animation()
-            {
-                StartFrame = (0, 0),
-                EndFrame = (0, 12),
-                DurationMs = 2000,
-                Loop = false
-            };*/
+           
             var spriteSheet = SpriteSheet.LoadSpriteSheet("bomb.json", "Assets", _renderer);
             if(spriteSheet != null){
                 spriteSheet.ActivateAnimation("Explode");
                 TemporaryGameObject bomb = new(spriteSheet, 2.1, (translated.X, translated.Y));
                 _gameObjects.Add(bomb.Id, bomb);
+                SoundManager explosionSound = new SoundManager("C:\\Users\\Codruta Alexandra\\OneDrive\\OneDrive - e-uvt.ro\\Documents\\TheAdventure\\Assets\\bomb_exploding.mp3");
+                explosionSound.Play();;
             }
         }
     }

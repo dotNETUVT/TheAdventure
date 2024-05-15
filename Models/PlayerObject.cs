@@ -1,6 +1,6 @@
 using Silk.NET.Maths;
 using TheAdventure;
-
+using System.Formats.Asn1;
 namespace TheAdventure.Models;
 
 public class PlayerObject : RenderableGameObject
@@ -8,7 +8,7 @@ public class PlayerObject : RenderableGameObject
     private int _pixelsPerSecond = 192;
 
     private string _currentAnimation = "IdleDown";
-
+    private SoundManager movementSoundManager = new SoundManager("C:\\Users\\Codruta Alexandra\\OneDrive\\OneDrive - e-uvt.ro\\Documents\\TheAdventure\\Assets\\walking_on_grass.mp3");
 
     public PlayerObject(SpriteSheet spriteSheet, int x, int y) : base(spriteSheet, (x, y))
     {
@@ -57,23 +57,28 @@ public class PlayerObject : RenderableGameObject
 
         if (y < Position.Y && _currentAnimation != "MoveUp"){
             _currentAnimation = "MoveUp";
+            movementSoundManager.Play();
             //Console.WriteLine($"Attempt to switch to {_currentAnimation}");
         }
         if (y > Position.Y && _currentAnimation != "MoveDown"){
             _currentAnimation = "MoveDown";
+            movementSoundManager.Play();
             //Console.WriteLine($"Attempt to switch to {_currentAnimation}");
         }
         if (x > Position.X && _currentAnimation != "MoveRight"){
             _currentAnimation = "MoveRight";
+            movementSoundManager.Play();
             //Console.WriteLine($"Attempt to switch to {_currentAnimation}");
         }
         if (x < Position.X && _currentAnimation != "MoveLeft"){
             _currentAnimation = "MoveLeft";
+            movementSoundManager.Play();
             //Console.WriteLine($"Attempt to switch to {_currentAnimation}");
         }
         if (x == Position.X && _currentAnimation != "IdleDown" &&
             y == Position.Y && _currentAnimation != "IdleDown"){
             _currentAnimation = "IdleDown";
+            movementSoundManager.Play();
             //Console.WriteLine($"Attempt to switch to {_currentAnimation}");
         }
 

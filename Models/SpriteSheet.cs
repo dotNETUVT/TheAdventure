@@ -36,10 +36,10 @@ public class SpriteSheet
     }
 
     public static SpriteSheet? LoadSpriteSheet(string fileName, string folder, GameRenderer renderer){
-        var json = File.ReadAllText(Path.Combine(folder, fileName));
+        var json = File.ReadAllText(Path.Combine("C:\\Users\\Codruta Alexandra\\OneDrive\\OneDrive - e-uvt.ro\\Documents\\TheAdventure\\Assets", fileName));
         var spriteSheet = JsonSerializer.Deserialize<SpriteSheet>(json, new JsonSerializerOptions() { PropertyNameCaseInsensitive = true });
         if(spriteSheet != null){
-            spriteSheet.LoadTexture(renderer, folder);
+            spriteSheet.LoadTexture(renderer, "C:\\Users\\Codruta Alexandra\\OneDrive\\OneDrive - e-uvt.ro\\Documents\\TheAdventure\\Assets");
         }
         return spriteSheet;
     }
