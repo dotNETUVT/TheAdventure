@@ -24,6 +24,7 @@ namespace TheAdventure
             _renderer = renderer;
             _input = input;
 
+            
             _input.OnMouseClick += (_, coords) => AddBomb(coords.x, coords.y);
             _input.OnRightMouseClick += (_, coords) => MovePlayer(coords.x, coords.y);
         }
@@ -79,6 +80,14 @@ namespace TheAdventure
             }
             _renderer.SetWorldBounds(new Rectangle<int>(0, 0, _currentLevel.Width * _currentLevel.TileWidth,
                 _currentLevel.Height * _currentLevel.TileHeight));
+            
+            int heartTextureId = _renderer.LoadTexture("Assets/heart.png", out TextureInfo heartTextureInfo);
+            if (heartTextureId == -1) {
+                Console.WriteLine("Failed to load heart texture");
+            }
+
+            _renderer.HeartTextureId = heartTextureId;
+            _renderer.HeartTextureInfo = heartTextureInfo;
         }
 
         public void ProcessFrame()
@@ -96,6 +105,8 @@ namespace TheAdventure
                 _currentLevel.Width * _currentLevel.TileWidth, _currentLevel.Height * _currentLevel.TileHeight,
                 secsSinceLastFrame);
 
+            CheckPlayerBombProximity();  
+
             var itemsToRemove = new List<int>();
             itemsToRemove.AddRange(GetAllTemporaryGameObjects().Where(gameObject => gameObject.IsExpired)
                 .Select(gameObject => gameObject.Id).ToList());
@@ -106,18 +117,43 @@ namespace TheAdventure
             }
         }
 
+        
+        public void CheckPlayerBombProximity()
+        {
+            const int proximityThreshold = 50; 
+            foreach (var obj in _gameObjects.Values)
+            {
+                if (obj is TemporaryGameObject tempObj && tempObj.SpriteSheet.FileName.Contains("bomb"))
+                {
+                
+                    int deltaX = _player.Position.X - tempObj.Position.X;
+                    int deltaY = _player.Position.Y - tempObj.Position.Y;
+                    double distance = Math.Sqrt(deltaX * deltaX + deltaY * deltaY);
+
+                    if (distance <= proximityThreshold)
+                    {
+                       _player.SetHealth(_player.GetHealth()-25);
+                       
+                       if(_player.GetHealth() == 0)
+                           Environment.Exit(0);  
+                    }
+                }
+            }
+        }
         public void RenderFrame()
         {
             _renderer.SetDrawColor(0, 0, 0, 255);
             _renderer.ClearScreen();
-            
+
             _renderer.CameraLookAt(_player.Position.X, _player.Position.Y);
 
             RenderTerrain();
             RenderAllObjects();
-
+            
             _renderer.PresentFrame();
         }
+
+        
 
         private Tile? GetTile(int id)
         {
@@ -191,7 +227,13 @@ namespace TheAdventure
             }
 
             _player.Render(_renderer);
+            
+            var windowSize = _renderer.GetWindowSize();
+            int centerX = windowSize.X / 4 - 150;  
+            int yPosition = 10; 
+            _renderer.RenderHearts(_player.GetHealth(), centerX, yPosition);
         }
+        
 
         private void AddBomb(int x, int y)
         {
@@ -212,4 +254,6 @@ namespace TheAdventure
             }
         }
     }
+    
+    
 }

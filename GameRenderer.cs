@@ -17,6 +17,9 @@ public unsafe class GameRenderer
     private Dictionary<int, IntPtr> _textures = new();
     private Dictionary<int, TextureInfo> _textureData = new();
     private int _textureId;
+    
+    public int HeartTextureId { get; set; }
+    public TextureInfo HeartTextureInfo { get; set; }
 
     public GameRenderer(Sdl sdl, GameWindow window)
     {
@@ -29,6 +32,25 @@ public unsafe class GameRenderer
         var windowSize = window.Size;
         _camera = new Camera(windowSize.Width, windowSize.Height);
     }
+    
+  
+    public void RenderHeart(int x, int y)
+    {
+        var src = new Rectangle<int>(0, 0, HeartTextureInfo.Width, HeartTextureInfo.Height);
+        var dst = new Rectangle<int>(x, y, HeartTextureInfo.Width, HeartTextureInfo.Height);
+        RenderTexture(HeartTextureId, src, dst);
+    }
+    
+    public void RenderHearts(int health, int x, int y) {
+        int numHearts = health / 25;
+        Console.WriteLine($"Rendering {numHearts} hearts at position {x}, {y}"); 
+        for (int i = 0; i < numHearts; i++) {
+            Console.WriteLine($"Heart {i}: Position: {x + i * (HeartTextureInfo.Width + 10)}, {y}"); 
+            RenderHeart(x + i * (HeartTextureInfo.Width + 10), y); 
+        }
+    }
+
+
 
     public void SetWorldBounds(Rectangle<int> bounds)
     {
@@ -97,4 +119,10 @@ public unsafe class GameRenderer
     {
         _sdl.RenderPresent(_renderer);
     }
+    
+    public Vector2D<int> GetWindowSize()
+    {
+        return new Vector2D<int>(_window.Size.Width, _window.Size.Height);
+    }
+
 }

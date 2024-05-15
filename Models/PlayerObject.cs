@@ -9,11 +9,29 @@ public class PlayerObject : RenderableGameObject
 
     private string _currentAnimation = "IdleDown";
 
+    private int _health = 100;
+
 
     public PlayerObject(SpriteSheet spriteSheet, int x, int y) : base(spriteSheet, (x, y))
     {
         SpriteSheet.ActivateAnimation(_currentAnimation);
        
+    }
+
+    public int GetHealth()
+    {
+        return this._health;
+    }
+
+    public void SetHealth(int val)
+    {
+        if (val < 0)
+            val = 0;
+        
+        if(val > 100)
+            val = 100;
+
+        this._health = val;
     }
     
     public void MoveTo(int x, int y, int width, int height)
