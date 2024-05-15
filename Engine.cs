@@ -17,7 +17,7 @@ namespace TheAdventure
         private Input _input;
 
         private DateTimeOffset _lastUpdate = DateTimeOffset.Now;
-        private DateTimeOffset _lastPlayerUpdate = DateTimeOffset.Now;
+        private DateTimeOffset _lastBombUpdate = DateTimeOffset.Now;
 
         public Engine(GameRenderer renderer, Input input)
         {
@@ -216,6 +216,12 @@ namespace TheAdventure
 
         private void AddBomb(int x, int y, bool translateCoordinates = true)
         {
+            // Limit the number of bombs that can be placed per second
+            if (DateTime.Now - _lastBombUpdate < TimeSpan.FromSeconds(1))
+            {
+                return;
+            }
+            _lastBombUpdate = DateTime.Now;
 
             var translated = translateCoordinates ? _renderer.TranslateFromScreenToWorldCoordinates(x, y) : new Vector2D<int>(x, y);
             
