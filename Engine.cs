@@ -136,7 +136,7 @@ namespace TheAdventure
                     var deltaX = Math.Abs(_player.Position.X - tempObject.Position.X);
                     var deltaY = Math.Abs(_player.Position.Y - tempObject.Position.Y);
                     if(deltaX < 32 && deltaY < 32){
-                        _player.GameOver();
+                        _player.TakeDamage();
                     }
                 }
                 _gameObjects.Remove(gameObjectId);

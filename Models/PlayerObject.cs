@@ -22,6 +22,7 @@ public class PlayerObject : RenderableGameObject
     }
 
     private int _pixelsPerSecond = 192;
+    private HealthBar healthBar = new HealthBar(100, 100, 10, 255, 0, 0, 255);
 
 
     public (PlayerState State, PlayerStateDirection Direction) State{ get; private set; }
@@ -53,6 +54,17 @@ public class PlayerObject : RenderableGameObject
     public void GameOver(){
         SetState(PlayerState.GameOver, PlayerStateDirection.None);
     }
+
+    public void TakeDamage()
+    {
+        healthBar.SetHealth(healthBar.GetHealth() - 25);
+        if (healthBar.GetHealth() <= 0)
+        {
+            GameOver();
+        }
+    }
+
+
 
     public void Attack(bool up, bool down, bool left, bool right)
     {
@@ -135,5 +147,11 @@ public class PlayerObject : RenderableGameObject
         }
 
         Position = (x, y);
+    }
+
+    public override void Render(GameRenderer renderer)
+    {
+        base.Render(renderer);
+        healthBar.Render(renderer, new Vector2D<int>(10, 10)); // Adjust position as needed
     }
 }
