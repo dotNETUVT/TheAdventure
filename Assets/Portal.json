@@ -1,0 +1,49 @@
+{
+    "rowCount" : 3,
+    "columnCount" : 8,
+    "frameWidth" : 64,
+    "frameHeight" : 64,
+    "frameCenter" : {
+        "offsetX" : 16,
+        "offsetY" : 48
+    },
+    "fileName" : "Portal.png",
+  "animations": {
+    "Spawn": {
+      "startFrame": {
+        "row": 1,
+        "col": 0
+      },
+      "endFrame": {
+        "row": 1,
+        "col": 7
+      },
+      "durationMs": 2000,
+      "loop": true
+    },
+    "Idle": {
+      "startFrame": {
+        "row": 0,
+        "col": 0
+      },
+      "endFrame": {
+        "row": 0,
+        "col": 7
+      },
+      "durationMs": 2000,
+      "loop": true
+    },
+    "Close": {
+      "startFrame": {
+        "row": 2,
+        "col": 0
+      },
+      "endFrame": {
+        "row": 2,
+        "col": 7
+      },
+      "durationMs": 2000,
+      "loop": true
+    }
+  }
+}

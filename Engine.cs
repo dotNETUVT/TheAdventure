@@ -1,3 +1,4 @@
+using System;
 using System.Text.Json;
 using Silk.NET.Maths;
 using Silk.NET.SDL;
@@ -16,6 +17,10 @@ namespace TheAdventure
         private GameRenderer _renderer;
         private Input _input;
 
+        // Creating Portals
+        private Portal? portal1 = null;
+        private Portal? portal2 = null;
+
         private DateTimeOffset _lastUpdate = DateTimeOffset.Now;
         private DateTimeOffset _lastPlayerUpdate = DateTimeOffset.Now;
 
@@ -24,7 +29,7 @@ namespace TheAdventure
             _renderer = renderer;
             _input = input;
 
-            _input.OnMouseClick += (_, coords) => AddBomb(coords.x, coords.y);
+            _input.OnMouseClick += (_, coords) =>AddBomb(coords.x, coords.y);
         }
 
         public void InitializeWorld()
@@ -81,49 +86,30 @@ namespace TheAdventure
             bool down = _input.IsDownPressed();
             bool left = _input.IsLeftPressed();
             bool right = _input.IsRightPressed();
-            bool isAttacking = _input.IsKeyAPressed();
-            bool addBomb = _input.IsKeyBPressed();
+            bool isSpawningPortal = _input.IsPKeyPressed();
+            if (isSpawningPortal)
+            {
+                AddPortal();
+            }
+            _player.UpdatePlayerPosition(up ? 1.0 : 0.0, down ? 1.0 : 0.0, left ? 1.0 : 0.0, right ? 1.0 : 0.0,
+                _currentLevel.Width * _currentLevel.TileWidth, _currentLevel.Height * _currentLevel.TileHeight,
+                secsSinceLastFrame);
 
-            if(isAttacking)
+            var PCheck = CheckPortal(_player.Position.X, _player.Position.Y);
+            if (PCheck.Item1 == true)
             {
-                var dir = up ? 1: 0;
-                dir += down? 1 : 0;
-                dir += left? 1: 0;
-                dir += right ? 1 : 0;
-                if(dir <= 1){
-                    _player.Attack(up, down, left, right);
-                }
-                else{
-                    isAttacking = false;
-                }
+                _player.PortalTeleport(PCheck.Item2, PCheck.Item3, _currentLevel.Width * _currentLevel.TileWidth, _currentLevel.Height * _currentLevel.TileHeight,
+                secsSinceLastFrame);
+                _renderer.CameraLookAt(_player.Position.X,_player.Position.Y);
             }
-            if(!isAttacking)
-            {
-                _player.UpdatePlayerPosition(up ? 1.0 : 0.0, down ? 1.0 : 0.0, left ? 1.0 : 0.0, right ? 1.0 : 0.0,
-                    _currentLevel.Width * _currentLevel.TileWidth, _currentLevel.Height * _currentLevel.TileHeight,
-                    secsSinceLastFrame);
-            }
+
             var itemsToRemove = new List<int>();
             itemsToRemove.AddRange(GetAllTemporaryGameObjects().Where(gameObject => gameObject.IsExpired)
                 .Select(gameObject => gameObject.Id).ToList());
 
-            if (addBomb)
+            foreach (var gameObject in itemsToRemove)
             {
-                AddBomb(_player.Position.X, _player.Position.Y, false);
-            }
-
-            foreach (var gameObjectId in itemsToRemove)
-            {
-                var gameObject = _gameObjects[gameObjectId];
-                if(gameObject is TemporaryGameObject){
-                    var tempObject = (TemporaryGameObject)gameObject;
-                    var deltaX = Math.Abs(_player.Position.X - tempObject.Position.X);
-                    var deltaY = Math.Abs(_player.Position.Y - tempObject.Position.Y);
-                    if(deltaX < 32 && deltaY < 32){
-                        _player.GameOver();
-                    }
-                }
-                _gameObjects.Remove(gameObjectId);
+                _gameObjects.Remove(gameObject);
             }
         }
 
@@ -214,11 +200,17 @@ namespace TheAdventure
             _player.Render(_renderer);
         }
 
-        private void AddBomb(int x, int y, bool translateCoordinates = true)
+        private void AddBomb(int x, int y)
         {
-
-            var translated = translateCoordinates ? _renderer.TranslateFromScreenToWorldCoordinates(x, y) : new Vector2D<int>(x, y);
-            
+            var translated = _renderer.TranslateFromScreenToWorldCoordinates(x, y);
+            /*SpriteSheet spriteSheet = new(_renderer, "BombExploding.png", 1, 13, 32, 64, (16, 48));
+            spriteSheet.Animations["Explode"] = new SpriteSheet.Animation()
+            {
+                StartFrame = (0, 0),
+                EndFrame = (0, 12),
+                DurationMs = 2000,
+                Loop = false
+            };*/
             var spriteSheet = SpriteSheet.LoadSpriteSheet("bomb.json", "Assets", _renderer);
             if(spriteSheet != null){
                 spriteSheet.ActivateAnimation("Explode");
@@ -226,5 +218,96 @@ namespace TheAdventure
                 _gameObjects.Add(bomb.Id, bomb);
             }
         }
+
+
+        private void AddPortal()
+        {
+            (int maxW, int maxH) = (_currentLevel.Width * _currentLevel.TileWidth, _currentLevel.Height * _currentLevel.TileHeight);
+            bool two = false;
+            (int x, int y) = (0, 0);
+            Random r = new Random();
+            do
+            {
+                x = r.Next(maxW);
+                y = r.Next(maxH);
+            } while (x < 25 && x + 25 > maxW && y < 25 && y + 25 > maxH);
+
+            var translated = _renderer.TranslateFromScreenToWorldCoordinates(x, y);
+
+            var spriteSheet = SpriteSheet.LoadSpriteSheet("portal.json", "Assets", _renderer);
+            //1.Check how many portals are there
+            //If 2 closes the first one
+
+            //2. Randomizes an x and y positions
+
+            //3. Add the portal to those random positions and add to the list
+            if ( portal1 == null)
+            {
+                portal1 = new Portal(spriteSheet,x,y);
+                portal1.setPortalAsFirt(ref portal1 ); 
+            }
+            else if (portal2 == null)
+            {             
+                portal2 = new Portal(spriteSheet, x, y);
+                portal2.LinkAnotherPortal(ref portal1,ref portal2);
+                two=true; 
+            }
+            else 
+            {
+                //Delete the first one and transform the second into first
+                _gameObjects.Remove(portal1.Id);
+                portal1 = portal2;
+                portal1.setPortalAsFirt(ref portal1);
+                portal2 = new(spriteSheet, x, y);
+                two = true;
+
+            }
+
+
+
+
+
+            if (spriteSheet != null)
+            {
+                spriteSheet.ActivateAnimation("Idle");
+                TemporaryGameObject portal = new(spriteSheet, 2.1, (translated.X, translated.Y));
+
+                if (two == false) { 
+                _gameObjects.Add(portal1.Id, portal1);
+                }
+                else
+                {
+                _gameObjects.Add(portal2.Id, portal2);
+                }
+            }
+
+        }
+       
+        
+        private (bool,int, int) CheckPortal(int x, int y)
+        {
+            var spriteSheet = SpriteSheet.LoadSpriteSheet("portal.json", "Assets", _renderer);
+            if (portal2 == null || portal1 == null)
+                return (false,x, y);
+            else
+            {
+                if (Math.Abs(x - portal1.Position.X) <15 && Math.Abs(y - portal1.Position.Y) < 15)
+                {
+                    spriteSheet.ActivateAnimation("Spawn");
+                    TemporaryGameObject portal = new(spriteSheet, 2.1, (x, y));
+                    return (true, portal2.Position.X, portal2.Position.Y);
+                }
+                else if (Math.Abs(x - portal2.Position.X) <15 && Math.Abs(y - portal2.Position.Y) < 15)
+                {
+                    spriteSheet.ActivateAnimation("Spawn");
+                    TemporaryGameObject portal = new(spriteSheet, 2.1, (x, y));
+                    return (true, portal1.Position.X, portal1.Position.Y);
+                }
+            }
+            return (false,x, y);
+        }
+
     }
+
+
 }

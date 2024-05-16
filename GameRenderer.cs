@@ -96,5 +96,5 @@ public unsafe class GameRenderer
     public void PresentFrame()
     {
         _sdl.RenderPresent(_renderer);
-    }
+    } 
 }
