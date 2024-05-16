@@ -1,8 +1,8 @@
 using System.Text.Json;
 using Silk.NET.Maths;
-using Silk.NET.SDL;
+
 using TheAdventure.Models;
-using TheAdventure.Models.Data;
+
 
 namespace TheAdventure
 {
@@ -18,6 +18,13 @@ namespace TheAdventure
 
         private DateTimeOffset _lastUpdate = DateTimeOffset.Now;
         private DateTimeOffset _lastPlayerUpdate = DateTimeOffset.Now;
+        private bool _isJumping = false;
+        private int _jumpStartY;
+        private int _jumpHeight = 100;  // Define the jump height
+        private double _jumpDuration = 0.5; // Time in seconds to reach the peak of the jump
+        private DateTimeOffset _jumpStartTime;
+
+        private int score = 0;
 
         public Engine(GameRenderer renderer, Input input)
         {
@@ -54,17 +61,9 @@ namespace TheAdventure
             }
 
             _currentLevel = level;
-            /*SpriteSheet spriteSheet = new(_renderer, Path.Combine("Assets", "player.png"), 10, 6, 48, 48, new FrameOffset() { OffsetX = 24, OffsetY = 42 });
-            spriteSheet.Animations["IdleDown"] = new SpriteSheet.Animation()
-            {
-                StartFrame = new FramePosition(),//(0, 0),
-                EndFrame = new FramePosition() { Row = 0, Col = 5 },
-                DurationMs = 1000,
-                Loop = true
-            };
-            */
             var spriteSheet = SpriteSheet.LoadSpriteSheet("player.json", "Assets", _renderer);
-            if(spriteSheet != null){
+            if (spriteSheet != null)
+            {
                 _player = new PlayerObject(spriteSheet, 100, 100);
             }
             _renderer.SetWorldBounds(new Rectangle<int>(0, 0, _currentLevel.Width * _currentLevel.TileWidth,
@@ -82,44 +81,75 @@ namespace TheAdventure
             bool left = _input.IsLeftPressed();
             bool right = _input.IsRightPressed();
             bool isAttacking = _input.IsKeyAPressed();
-            bool addBomb = _input.IsKeyBPressed();
+            bool addBomb = _input.CanDropBomb();
+            bool isJumping = _input.IsSpacePressed();
 
-            if(isAttacking)
+            if (isJumping && !_isJumping)
             {
-                var dir = up ? 1: 0;
-                dir += down? 1 : 0;
-                dir += left? 1: 0;
-                dir += right ? 1 : 0;
-                if(dir <= 1){
-                    _player.Attack(up, down, left, right);
+                _isJumping = true;
+                _jumpStartY = (int)_player.Position.Y;
+                _jumpStartTime = DateTimeOffset.Now;
+            }
+
+            if (_isJumping)
+            {
+                double elapsedTime = (currentTime - _jumpStartTime).TotalSeconds;
+                double t = elapsedTime / _jumpDuration;
+                if (t > 1.0)
+                {
+                    _isJumping = false;
+                    _player.Position = _player.Position with { Y = _jumpStartY };
                 }
-                else{
-                    isAttacking = false;
+                else
+                {
+                    double jumpProgress = Math.Sin(t * Math.PI);
+                    _player.Position = _player.Position with { Y = (int)(_jumpStartY - _jumpHeight * jumpProgress) };
                 }
             }
-            if(!isAttacking)
+            else
             {
-                _player.UpdatePlayerPosition(up ? 1.0 : 0.0, down ? 1.0 : 0.0, left ? 1.0 : 0.0, right ? 1.0 : 0.0,
-                    _currentLevel.Width * _currentLevel.TileWidth, _currentLevel.Height * _currentLevel.TileHeight,
-                    secsSinceLastFrame);
+                if (isAttacking)
+                {
+                    var dir = up ? 1 : 0;
+                    dir += down ? 1 : 0;
+                    dir += left ? 1 : 0;
+                    dir += right ? 1 : 0;
+                    if (dir <= 1)
+                    {
+                        _player.Attack(up, down, left, right);
+                    }
+                    else
+                    {
+                        isAttacking = false;
+                    }
+                }
+                if (!isAttacking)
+                {
+                    _player.UpdatePlayerPosition(up ? 1 : 0, down ? 1 : 0, left ? 1 : 0, right ? 1 : 0,
+                        _currentLevel.Width * _currentLevel.TileWidth, _currentLevel.Height * _currentLevel.TileHeight,
+                        secsSinceLastFrame);
+                }
             }
+
             var itemsToRemove = new List<int>();
             itemsToRemove.AddRange(GetAllTemporaryGameObjects().Where(gameObject => gameObject.IsExpired)
                 .Select(gameObject => gameObject.Id).ToList());
 
             if (addBomb)
             {
-                AddBomb(_player.Position.X, _player.Position.Y, false);
+                AddBomb((int)_player.Position.X, (int)_player.Position.Y, false);
             }
 
             foreach (var gameObjectId in itemsToRemove)
             {
                 var gameObject = _gameObjects[gameObjectId];
-                if(gameObject is TemporaryGameObject){
+                if (gameObject is TemporaryGameObject)
+                {
                     var tempObject = (TemporaryGameObject)gameObject;
                     var deltaX = Math.Abs(_player.Position.X - tempObject.Position.X);
                     var deltaY = Math.Abs(_player.Position.Y - tempObject.Position.Y);
-                    if(deltaX < 32 && deltaY < 32){
+                    if (deltaX < 32 && deltaY < 32)
+                    {
                         _player.GameOver();
                     }
                 }
@@ -131,11 +161,14 @@ namespace TheAdventure
         {
             _renderer.SetDrawColor(0, 0, 0, 255);
             _renderer.ClearScreen();
-            
-            _renderer.CameraLookAt(_player.Position.X, _player.Position.Y);
+
+            _renderer.CameraLookAt(_player.Position.X, (int)_player.Position.Y);
 
             RenderTerrain();
             RenderAllObjects();
+
+            // Render the score
+            //_renderer.RenderScore(score);
 
             _renderer.PresentFrame();
         }
@@ -160,7 +193,7 @@ namespace TheAdventure
         private void RenderTerrain()
         {
             if (_currentLevel == null) return;
-            for (var layer = 0; layer < _currentLevel.Layers.Length; ++layer)
+            for (var layer = 0; _currentLevel.Layers.Length > layer; ++layer)
             {
                 var cLayer = _currentLevel.Layers[layer];
 
@@ -216,14 +249,15 @@ namespace TheAdventure
 
         private void AddBomb(int x, int y, bool translateCoordinates = true)
         {
-
             var translated = translateCoordinates ? _renderer.TranslateFromScreenToWorldCoordinates(x, y) : new Vector2D<int>(x, y);
-            
+
             var spriteSheet = SpriteSheet.LoadSpriteSheet("bomb.json", "Assets", _renderer);
-            if(spriteSheet != null){
+            if (spriteSheet != null)
+            {
                 spriteSheet.ActivateAnimation("Explode");
                 TemporaryGameObject bomb = new(spriteSheet, 2.1, (translated.X, translated.Y));
                 _gameObjects.Add(bomb.Id, bomb);
+                score++; // Increment the score when a bomb is dropped
             }
         }
     }
