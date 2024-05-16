@@ -1,4 +1,4 @@
-using Silk.NET.Maths;
+    using Silk.NET.Maths;
 using Silk.NET.SDL;
 using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.PixelFormats;
@@ -81,6 +81,12 @@ public unsafe class GameRenderer
     public Vector2D<int> TranslateFromScreenToWorldCoordinates(int x, int y)
     {
         return _camera.FromScreenToWorld(x, y);
+    }
+
+    public void RenderSimpleRect(Rectangle<int> rect) // rectangle for the hitbox rendering
+    {
+        var screenRect = _camera.TranslateToScreenCoordinates(rect);
+        _sdl.RenderDrawRect(_renderer, screenRect);
     }
 
     public void SetDrawColor(byte r, byte g, byte b, byte a)

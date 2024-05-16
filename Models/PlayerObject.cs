@@ -17,7 +17,7 @@ public class PlayerObject : RenderableGameObject
     }
 
     public void UpdatePlayerPosition(double up, double down, double left, double right, int width, int height,
-        double time)
+        double time, IEnumerable<Hitbox> hitboxes)
     {
 
         if (up <= double.Epsilon &&
@@ -80,6 +80,25 @@ public class PlayerObject : RenderableGameObject
 
         //Console.WriteLine($"Will to switch to {_currentAnimation}");
         SpriteSheet.ActivateAnimation(_currentAnimation);
+
+        foreach (var hitbox in hitboxes)
+            if (CollidesWithHitbox(x, y, hitbox)) return;
+
         Position = (x, y);
+    }
+
+    private bool CollidesWithHitbox(int x, int y, Hitbox hitbox)
+    {
+        int playerRight = x + SpriteSheet.FrameWidth / 12;
+        int playerTop = y - 18; 
+
+        int hitboxRight = hitbox.x + hitbox.Width;
+        int hitboxBottom = hitbox.y + hitbox.Height;
+
+        // Collision occurs if any of the player's edges overlap with the hitbox boundaries
+        return x - SpriteSheet.FrameWidth / 12 < hitboxRight &&
+               playerRight > hitbox.x &&
+               playerTop < hitboxBottom &&
+               y > hitbox.y;
     }
 }

@@ -1,4 +1,4 @@
-public class Tile
+    public class Tile
 {
     public int Id { get; set; }
     public string Image { get; set; }

@@ -1,0 +1,252 @@
+{ "columns":0,
+ "grid":
+    {
+     "height":1,
+     "orientation":"orthogonal",
+     "width":1
+    },
+ "margin":0,
+ "name":"Plants",
+ "spacing":0,
+ "tilecount":39,
+ "tiledversion":"1.10.2",
+ "tileheight":32,
+ "tiles":[
+        {
+         "id":0,
+         "image":"plants_1\/TX-Plant (1).png",
+         "imageheight":32,
+         "imagewidth":32
+        }, 
+        {
+         "id":1,
+         "image":"plants_1\/TX-Plant (2).png",
+         "imageheight":32,
+         "imagewidth":32
+        }, 
+        {
+         "id":2,
+         "image":"plants_1\/TX-Plant (3).png",
+         "imageheight":32,
+         "imagewidth":32
+        }, 
+        {
+         "id":3,
+         "image":"plants_1\/TX-Plant (4).png",
+         "imageheight":32,
+         "imagewidth":32
+        }, 
+        {
+         "id":4,
+         "image":"plants_1\/TX-Plant (5).png",
+         "imageheight":32,
+         "imagewidth":32
+        }, 
+        {
+         "id":5,
+         "image":"plants_1\/TX-Plant (6).png",
+         "imageheight":32,
+         "imagewidth":32
+        }, 
+        {
+         "id":6,
+         "image":"plants_1\/TX-Plant (7).png",
+         "imageheight":32,
+         "imagewidth":32
+        }, 
+        {
+         "id":7,
+         "image":"plants_1\/TX-Plant (8).png",
+         "imageheight":32,
+         "imagewidth":32
+        }, 
+        {
+         "id":8,
+         "image":"plants_1\/TX-Plant (9).png",
+         "imageheight":32,
+         "imagewidth":32
+        }, 
+        {
+         "id":9,
+         "image":"plants_1\/TX-Plant (10).png",
+         "imageheight":32,
+         "imagewidth":32
+        }, 
+        {
+         "id":10,
+         "image":"plants_1\/TX-Plant (11).png",
+         "imageheight":32,
+         "imagewidth":32
+        }, 
+        {
+         "id":11,
+         "image":"plants_1\/TX-Plant (12).png",
+         "imageheight":32,
+         "imagewidth":32
+        }, 
+        {
+         "id":12,
+         "image":"plants_1\/TX-Plant (13).png",
+         "imageheight":32,
+         "imagewidth":32
+        }, 
+        {
+         "id":13,
+         "image":"plants_1\/TX-Plant (14).png",
+         "imageheight":32,
+         "imagewidth":32
+        }, 
+        {
+         "id":14,
+         "image":"plants_1\/TX-Plant (15).png",
+         "imageheight":32,
+         "imagewidth":32
+        }, 
+        {
+         "id":15,
+         "image":"plants_1\/TX-Plant (16).png",
+         "imageheight":32,
+         "imagewidth":32
+        }, 
+        {
+         "id":16,
+         "image":"plants_1\/TX-Plant (17).png",
+         "imageheight":32,
+         "imagewidth":32
+        }, 
+        {
+         "id":17,
+         "image":"plants_1\/TX-Plant (18).png",
+         "imageheight":32,
+         "imagewidth":32
+        }, 
+        {
+         "id":18,
+         "image":"plants_1\/TX-Plant (19).png",
+         "imageheight":32,
+         "imagewidth":32
+        }, 
+        {
+         "id":19,
+         "image":"plants_1\/TX-Plant (20).png",
+         "imageheight":32,
+         "imagewidth":32
+        }, 
+        {
+         "id":20,
+         "image":"plants_1\/TX-Plant (21).png",
+         "imageheight":32,
+         "imagewidth":32
+        }, 
+        {
+         "id":21,
+         "image":"plants_1\/TX-Plant (22).png",
+         "imageheight":32,
+         "imagewidth":32
+        }, 
+        {
+         "id":22,
+         "image":"plants_1\/TX-Plant (23).png",
+         "imageheight":32,
+         "imagewidth":32
+        }, 
+        {
+         "id":23,
+         "image":"plants_1\/TX-Plant (24).png",
+         "imageheight":32,
+         "imagewidth":32
+        }, 
+        {
+         "id":24,
+         "image":"plants_1\/TX-Plant (25).png",
+         "imageheight":32,
+         "imagewidth":32
+        }, 
+        {
+         "id":25,
+         "image":"plants_1\/TX-Plant (26).png",
+         "imageheight":32,
+         "imagewidth":32
+        }, 
+        {
+         "id":26,
+         "image":"plants_1\/TX-Plant (27).png",
+         "imageheight":32,
+         "imagewidth":32
+        }, 
+        {
+         "id":27,
+         "image":"plants_1\/TX-Plant (28).png",
+         "imageheight":32,
+         "imagewidth":32
+        }, 
+        {
+         "id":28,
+         "image":"plants_1\/TX-Plant (29).png",
+         "imageheight":32,
+         "imagewidth":32
+        }, 
+        {
+         "id":29,
+         "image":"plants_1\/TX-Plant (30).png",
+         "imageheight":32,
+         "imagewidth":32
+        }, 
+        {
+         "id":30,
+         "image":"plants_1\/TX-Plant (31).png",
+         "imageheight":32,
+         "imagewidth":32
+        }, 
+        {
+         "id":31,
+         "image":"plants_1\/TX-Plant (32).png",
+         "imageheight":32,
+         "imagewidth":32
+        }, 
+        {
+         "id":32,
+         "image":"plants_1\/TX-Plant (33).png",
+         "imageheight":32,
+         "imagewidth":32
+        }, 
+        {
+         "id":33,
+         "image":"plants_1\/TX-Plant (34).png",
+         "imageheight":32,
+         "imagewidth":32
+        }, 
+        {
+         "id":34,
+         "image":"plants_1\/TX-Plant (35).png",
+         "imageheight":32,
+         "imagewidth":32
+        }, 
+        {
+         "id":35,
+         "image":"plants_1\/TX-Plant (36).png",
+         "imageheight":32,
+         "imagewidth":32
+        }, 
+        {
+         "id":36,
+         "image":"plants_1\/TX-Plant (37).png",
+         "imageheight":32,
+         "imagewidth":32
+        }, 
+        {
+         "id":37,
+         "image":"plants_1\/TX-Plant (38).png",
+         "imageheight":32,
+         "imagewidth":32
+        }, 
+        {
+         "id":38,
+         "image":"plants_1\/TX-Plant (39).png",
+         "imageheight":32,
+         "imagewidth":32
+        }],
+ "tilewidth":32,
+ "type":"tileset",
+ "version":"1.10"
+}

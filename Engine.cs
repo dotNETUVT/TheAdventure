@@ -15,6 +15,7 @@ namespace TheAdventure
         private PlayerObject _player;
         private GameRenderer _renderer;
         private Input _input;
+        private Hitbox[] _Hitboxes;
 
         private DateTimeOffset _lastUpdate = DateTimeOffset.Now;
         private DateTimeOffset _lastPlayerUpdate = DateTimeOffset.Now;
@@ -30,7 +31,7 @@ namespace TheAdventure
         public void InitializeWorld()
         {
             var jsonSerializerOptions = new JsonSerializerOptions() { PropertyNameCaseInsensitive = true };
-            var levelContent = File.ReadAllText(Path.Combine("Assets", "terrain.tmj"));
+            var levelContent = File.ReadAllText(Path.Combine("Assets", "map_2.tmj"));
 
             var level = JsonSerializer.Deserialize<Level>(levelContent, jsonSerializerOptions);
             if (level == null) return;
@@ -54,18 +55,26 @@ namespace TheAdventure
             }
 
             _currentLevel = level;
+
+            foreach (var layer in _currentLevel.Layers)
+            {
+                if (layer.name == "Hitboxes")
+                    _Hitboxes = layer.objects;
+                Console.WriteLine(layer.ToString());
+            }
+
             /*SpriteSheet spriteSheet = new(_renderer, Path.Combine("Assets", "player.png"), 10, 6, 48, 48, new FrameOffset() { OffsetX = 24, OffsetY = 42 });
             spriteSheet.Animations["IdleDown"] = new SpriteSheet.Animation()
             {
                 StartFrame = new FramePosition(),//(0, 0),
                 EndFrame = new FramePosition() { Row = 0, Col = 5 },
-                DurationMs = 1000,
+                //DurationMs = 1000,
                 Loop = true
             };
             */
             var spriteSheet = SpriteSheet.LoadSpriteSheet("player.json", "Assets", _renderer);
             if(spriteSheet != null){
-                _player = new PlayerObject(spriteSheet, 100, 100);
+                _player = new PlayerObject(spriteSheet, 150, 150);
             }
             _renderer.SetWorldBounds(new Rectangle<int>(0, 0, _currentLevel.Width * _currentLevel.TileWidth,
                 _currentLevel.Height * _currentLevel.TileHeight));
@@ -84,7 +93,7 @@ namespace TheAdventure
 
             _player.UpdatePlayerPosition(up ? 1.0 : 0.0, down ? 1.0 : 0.0, left ? 1.0 : 0.0, right ? 1.0 : 0.0,
                 _currentLevel.Width * _currentLevel.TileWidth, _currentLevel.Height * _currentLevel.TileHeight,
-                secsSinceLastFrame);
+                secsSinceLastFrame, _Hitboxes);
 
             var itemsToRemove = new List<int>();
             itemsToRemove.AddRange(GetAllTemporaryGameObjects().Where(gameObject => gameObject.IsExpired)
@@ -116,7 +125,7 @@ namespace TheAdventure
             {
                 foreach (var tile in tileSet.Set.Tiles)
                 {
-                    if (tile.Id == id)
+                    if (tile.InternalTextureId == id)
                     {
                         return tile;
                     }
@@ -133,6 +142,15 @@ namespace TheAdventure
             {
                 var cLayer = _currentLevel.Layers[layer];
 
+                // one it hits the hitbox layers it skips them
+                if (cLayer.objects != null)
+                {
+                    if(_input.IsHKeyPressed())
+                        RenderHitboxes(cLayer);
+                    break; // exit out of the loop since they are hitboxes/obj not tiles
+                }
+                    
+
                 for (var i = 0; i < _currentLevel.Width; ++i)
                 {
                     for (var j = 0; j < _currentLevel.Height; ++j)
@@ -147,6 +165,20 @@ namespace TheAdventure
 
                         _renderer.RenderTexture(cTile.InternalTextureId, src, dst);
                     }
+                }
+            }
+        }
+
+        private void RenderHitboxes(Layer cLayer)
+        {
+            if (cLayer.objects != null)
+            {
+                _renderer.SetDrawColor(255, 0, 0, 255); // red
+
+                foreach (var hitbox in cLayer.objects)
+                {
+                    var rect = new Rectangle<int>(hitbox.x, hitbox.y, hitbox.Width, hitbox.Height);
+                    _renderer.RenderSimpleRect(rect);
                 }
             }
         }
@@ -194,6 +226,10 @@ namespace TheAdventure
                 DurationMs = 2000,
                 Loop = false
             };*/
+
+            // Check for invalid bomb positions
+            foreach (var hitbox in _Hitboxes)
+                if (BombCollides(x, y, hitbox)) return;
             var spriteSheet = SpriteSheet.LoadSpriteSheet("bomb.json", "Assets", _renderer);
             if(spriteSheet != null){
                 spriteSheet.ActivateAnimation("Explode");
@@ -201,5 +237,21 @@ namespace TheAdventure
                 _gameObjects.Add(bomb.Id, bomb);
             }
         }
+
+        private bool BombCollides(int x, int y, Hitbox hitbox)
+        {
+            // Translate to world coords
+            var translated = _renderer.TranslateFromScreenToWorldCoordinates(x, y);
+
+            int hitboxRight = hitbox.x + hitbox.Width;
+            int hitboxBottom = hitbox.y + hitbox.Height;
+            
+            // Used constants instead of getting the values from the spreadsheet
+            // Reason: so we don't load the spreadsheet if its not needed
+            return translated.X - 4 / 12 < hitboxRight &&
+                   translated.X + 8 > hitbox.x &&
+                   translated.Y - 8 < hitboxBottom &&
+                   translated.Y > hitbox.y;
+        }
     }
-}
+}   
