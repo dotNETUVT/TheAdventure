@@ -1,0 +1,11 @@
+﻿{
+  "rowCount" : 1,
+  "columnCount" : 13,
+  "frameWidth" : 32,
+  "frameHeight" : 64,
+  "frameCenter" : {
+    "offsetX" : 16,
+    "offsetY" : 48
+  },
+  "fileName" : "coin-euro.png"
+}

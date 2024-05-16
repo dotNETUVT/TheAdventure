@@ -1,4 +1,5 @@
 ﻿using System.Diagnostics;
+using System.Runtime.InteropServices.JavaScript;
 using Silk.NET.SDL;
 
 namespace TheAdventure;
@@ -28,7 +29,11 @@ public static class Program
             while (!quit)
             {
                 quit = input.ProcessInput();
-                if (quit) break;
+                if (quit)
+                {
+                    Console.WriteLine($"Ended the game with {engine.GetCollectedCoins()} coins");
+                    engine.SaveSessionCollectedCoins();
+                }
                 
                 engine.ProcessFrame();
                 engine.RenderFrame();

@@ -2,7 +2,6 @@ using System.Text.Json;
 using Silk.NET.Maths;
 using Silk.NET.SDL;
 using TheAdventure.Models;
-using TheAdventure.Models.Data;
 
 namespace TheAdventure
 {
@@ -15,6 +14,11 @@ namespace TheAdventure
         private PlayerObject _player;
         private GameRenderer _renderer;
         private Input _input;
+        
+        // initializing coins collected by the player
+        private List<Coin> _coins = new List<Coin>();
+        private int _totalCoinsCollected = 0;
+        private Random _random = new Random();
 
         // initializing music player
         private MusicPlayer _musicPlayer = new MusicPlayer(Path.Combine("Assets","background_music.mp3"));
@@ -75,6 +79,38 @@ namespace TheAdventure
             
             // calling the method for playing the music
             _musicPlayer.PlayMusic();
+
+            // generating coins
+            var spriteSheetForCoin = SpriteSheet.LoadSpriteSheet("coin.json", "Assets", _renderer);
+            int numberOfCoinsToGenerate = _random.Next(10, 20);
+            Console.WriteLine($"{numberOfCoinsToGenerate} coins will be generated");
+            for (int i = 0; i < numberOfCoinsToGenerate; i++) 
+            {
+                int x = _random.Next(0, 700); 
+                int y = _random.Next(0, 300);
+                var _newCoin = new Coin(((x, y)), 100, spriteSheetForCoin);
+                _coins.Add(_newCoin);
+                _gameObjects.Add(_newCoin.Id, _newCoin);
+            }
+        }
+
+        public int GetCollectedCoins()
+        {
+            return _totalCoinsCollected;
+        }
+
+        // method for saving the amount of collected coins during a session in a .txt file
+        public void SaveSessionCollectedCoins()
+        {
+            string desktopPath = Environment.GetFolderPath(Environment.SpecialFolder.Desktop);
+            string filePath = Path.Combine(desktopPath, "gameResults.txt");
+            string currentDate = DateTime.Now.ToString("yyyy-MM-dd HH:mm"); 
+            string resultText = $"{currentDate} final - {_totalCoinsCollected} monede";
+            
+            using (StreamWriter file = new StreamWriter(filePath, true))
+            {
+                file.WriteLine(resultText);
+            }
         }
 
         public void ProcessFrame()
@@ -106,7 +142,35 @@ namespace TheAdventure
             {
                 _musicPlayer.ToggleMusic();
             }
+            
+            UpdateGame();
         }
+        
+        private bool IsPlayerCollidingWithCoin((int X_player, int Y_Player) playerPos, (int X_Coin, int Y_Coin) coinPos)
+        {
+            int collisionThreshold = 10; 
+            return (Math.Abs(playerPos.X_player - coinPos.X_Coin) < collisionThreshold &&
+                    Math.Abs(playerPos.Y_Player - coinPos.Y_Coin) < collisionThreshold);
+        }
+        
+        public void UpdateGame()
+        {
+            foreach (var coin in _coins.ToList())
+            {
+                if (!coin.Collected && IsPlayerCollidingWithCoin(_player.Position, coin.Position))
+                {
+                    coin.Collect();
+                    Console.WriteLine($"Collision detected: {_player.Position}, {coin.Position}");
+                    _totalCoinsCollected += coin.Value;
+                    _coins.Remove(coin);
+                    Console.WriteLine($"{_coins.Count} coins left");
+                    Console.WriteLine($"Collected coins: {_totalCoinsCollected}");
+                }
+            }
+            
+            _coins.RemoveAll(coin => coin.Collected); 
+        }
+
 
         public void RenderFrame()
         {
@@ -189,6 +253,11 @@ namespace TheAdventure
         {
             foreach (var gameObject in GetAllRenderableObjects())
             {
+                // not rendering the collected coins
+                if (gameObject is Coin coin && coin.Collected)
+                {
+                    continue;  
+                }
                 gameObject.Render(_renderer);
             }
 

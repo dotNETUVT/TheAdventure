@@ -70,6 +70,21 @@
       <None Update="Assets\background_music.mp3">
         <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
       </None>
+      <None Remove="Assets\coin.png" />
+      <None Remove="Assets\coin.json" />
+      <Content Include="Assets\coin.json">
+        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      </Content>
+      <None Remove="Assets\coin-euro.png" />
+      <Content Include="Assets\coin-euro.png">
+        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      </Content>
+    </ItemGroup>
+
+    <ItemGroup>
+      <Compile Update="Models\Coin.cs">
+        <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+      </Compile>
     </ItemGroup>
 
 </Project>
