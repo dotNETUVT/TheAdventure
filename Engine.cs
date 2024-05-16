@@ -4,6 +4,7 @@ using Silk.NET.SDL;
 using TheAdventure.Models;
 using TheAdventure.Models.Data;
 
+
 namespace TheAdventure
 {
     public class Engine
@@ -15,7 +16,9 @@ namespace TheAdventure
         private PlayerObject _player;
         private GameRenderer _renderer;
         private Input _input;
-
+        
+        private readonly Sound _soundManager;
+        
         private DateTimeOffset _lastUpdate = DateTimeOffset.Now;
         private DateTimeOffset _lastPlayerUpdate = DateTimeOffset.Now;
 
@@ -23,6 +26,11 @@ namespace TheAdventure
         {
             _renderer = renderer;
             _input = input;
+            
+            
+            _soundManager = new Sound();
+            _soundManager.LoadSound("Explosion", "Assets/explosion.wav");
+            _soundManager.LoadSound("Walking", "Assets/walkingplayer.wav");
 
             _input.OnMouseClick += (_, coords) => AddBomb(coords.x, coords.y);
         }
@@ -85,6 +93,16 @@ namespace TheAdventure
             _player.UpdatePlayerPosition(up ? 1.0 : 0.0, down ? 1.0 : 0.0, left ? 1.0 : 0.0, right ? 1.0 : 0.0,
                 _currentLevel.Width * _currentLevel.TileWidth, _currentLevel.Height * _currentLevel.TileHeight,
                 secsSinceLastFrame);
+            
+
+            if (up || down || left || right)
+            {
+                _soundManager.PlaySound("Walking");
+            }
+            else
+            {
+                _soundManager.StopSound("Walking");
+            }
 
             var itemsToRemove = new List<int>();
             itemsToRemove.AddRange(GetAllTemporaryGameObjects().Where(gameObject => gameObject.IsExpired)
@@ -200,6 +218,7 @@ namespace TheAdventure
                 TemporaryGameObject bomb = new(spriteSheet, 2.1, (translated.X, translated.Y));
                 _gameObjects.Add(bomb.Id, bomb);
             }
+            _soundManager.PlaySound("Explosion");
         }
     }
 }
