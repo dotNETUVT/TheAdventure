@@ -31,6 +31,7 @@ namespace TheAdventure
             _soundManager = new Sound();
             _soundManager.LoadSound("Explosion", "Assets/explosion.wav");
             _soundManager.LoadSound("Walking", "Assets/walkingplayer.wav");
+            _soundManager.LoadSound("Star", "Assets/star.wav");
 
             _input.OnMouseClick += (_, coords) => AddBomb(coords.x, coords.y);
         }
@@ -77,6 +78,8 @@ namespace TheAdventure
             }
             _renderer.SetWorldBounds(new Rectangle<int>(0, 0, _currentLevel.Width * _currentLevel.TileWidth,
                 _currentLevel.Height * _currentLevel.TileHeight));
+            
+            PopulateMapWithStars(35);
         }
 
         public void ProcessFrame()
@@ -104,6 +107,7 @@ namespace TheAdventure
                 _soundManager.StopSound("Walking");
             }
 
+            _soundManager.LoadSound("Star", "Assets/star.wav");
             var itemsToRemove = new List<int>();
             itemsToRemove.AddRange(GetAllTemporaryGameObjects().Where(gameObject => gameObject.IsExpired)
                 .Select(gameObject => gameObject.Id).ToList());
@@ -219,6 +223,19 @@ namespace TheAdventure
                 _gameObjects.Add(bomb.Id, bomb);
             }
             _soundManager.PlaySound("Explosion");
+        }
+        
+        public void PopulateMapWithStars(int number)
+        {
+            var random = new Random();
+            var spriteSheet = SpriteSheet.LoadSpriteSheet("Star.json", "Assets", _renderer);
+            for (int i = 0; i < number; i++)
+            {
+                var x = random.Next(0, _currentLevel.Width * _currentLevel.TileWidth);
+                var y = random.Next(0, _currentLevel.Height * _currentLevel.TileHeight);
+                var star = new Star(spriteSheet, (x, y));
+                _gameObjects.Add(star.Id, star);
+            }
         }
     }
 }

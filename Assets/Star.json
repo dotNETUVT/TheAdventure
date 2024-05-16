@@ -1,0 +1,12 @@
+{
+  "rowCount" : 1,
+  "columnCount" : 13,
+  "frameWidth" : 25,
+  "frameHeight" : 25,
+  "frameCenter" : {
+    "offsetX" : 16,
+    "offsetY" : 48
+  },
+  "fileName" : "star.png"
+  
+}
