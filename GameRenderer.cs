@@ -1,103 +1,116 @@
+using System.Text.Json;
 using Silk.NET.Maths;
 using Silk.NET.SDL;
-using SixLabors.ImageSharp;
-using SixLabors.ImageSharp.PixelFormats;
-using TheAdventure.Models;
-using Point = Silk.NET.SDL.Point;
+using TheAdventure.Models.Data;
 
-namespace TheAdventure;
+namespace TheAdventure.Models;
 
-public unsafe class GameRenderer
+public class SpriteSheet
 {
-    private Sdl _sdl;
-    private Renderer* _renderer;
-    private GameWindow _window;
-    private Camera _camera;
-
-    private Dictionary<int, IntPtr> _textures = new();
-    private Dictionary<int, TextureInfo> _textureData = new();
-    private int _textureId;
-
-    private IntPtr _font;
-    
-    public GameRenderer(Sdl sdl, GameWindow window)
+    public class Animation
     {
-        _window = window;
-        _sdl = sdl;
-
-        _renderer = (Renderer*)window.CreateRenderer();
-        _sdl.SetRenderDrawBlendMode(_renderer, BlendMode.Blend);
-
-        var windowSize = window.Size;
-        _camera = new Camera(windowSize.Width, windowSize.Height);
-        
+        public FramePosition StartFrame { get; set; }
+        public FramePosition EndFrame { get; set; }
+        public RendererFlip Flip { get; set; } = RendererFlip.None;
+        public int DurationMs { get; set; }
+        public bool Loop { get; set; }
     }
 
-    public void SetWorldBounds(Rectangle<int> bounds)
-    {
-        _camera.SetWorldBounds(bounds);
+    public int RowCount { get; set; }
+    public int ColumnCount { get; set; }
+
+    public int FrameWidth { get; set; }
+    public int FrameHeight { get; set; }
+    public FrameOffset FrameCenter { get; set; }
+
+    public string? FileName { get; set; }
+
+    public Animation? ActiveAnimation { get; private set; }
+    public Dictionary<string, Animation> Animations { get; init; } = new();
+
+    private int _textureId = -1;
+    private DateTimeOffset _animationStart = DateTimeOffset.MinValue;
+
+    public SpriteSheet(){
+
     }
 
-    public void CameraLookAt(int x, int y)
-    {
-        _camera.LookAt(x, y);
+    public static SpriteSheet? LoadSpriteSheet(string fileName, string folder, GameRenderer renderer){
+        var json = File.ReadAllText(Path.Combine(folder, fileName));
+        var spriteSheet = JsonSerializer.Deserialize<SpriteSheet>(json, new JsonSerializerOptions() { PropertyNameCaseInsensitive = true });
+        if(spriteSheet != null){
+            spriteSheet.LoadTexture(renderer, folder);
+        }
+        return spriteSheet;
     }
 
-    public int LoadTexture(string fileName, out TextureInfo textureInfo)
+    public void LoadTexture(GameRenderer renderer, string? parentFolder = null){
+        var filePath = FileName;
+        if(!string.IsNullOrWhiteSpace(parentFolder) && !string.IsNullOrWhiteSpace(FileName)){
+            filePath = Path.Combine(parentFolder, FileName);
+        }
+        if(_textureId == -1 && !string.IsNullOrWhiteSpace(filePath)){
+            _textureId = renderer.LoadTexture(filePath, out _);
+        }
+    }
+
+    public SpriteSheet(GameRenderer renderer, string fileName, int rowCount, int columnCount, int frameWidth,
+        int frameHeight, FrameOffset frameCenter)
     {
-        using (var fStream = new FileStream(fileName, FileMode.Open))
+        FileName = fileName;
+        RowCount = rowCount;
+        ColumnCount = columnCount;
+        FrameWidth = frameWidth;
+        FrameHeight = frameHeight;
+        FrameCenter = frameCenter;
+
+        LoadTexture(renderer);
+    }
+
+    public void ActivateAnimation(string name)
+    {
+        if(name == null){
+            ActiveAnimation = null;
+        }
+        if (!Animations.TryGetValue(name, out var animation)) return;
+        ActiveAnimation = animation;
+        _animationStart = DateTimeOffset.Now;
+    }
+
+    public void Render(GameRenderer renderer, (int X, double Y) dest, double angle = 0.0, Point rotationCenter = new())
+    {
+        if (ActiveAnimation == null)
         {
-            var image = Image.Load<Rgba32>(fStream);
-            textureInfo = new TextureInfo()
+            renderer.RenderTexture(_textureId, new Rectangle<int>(0, 0, FrameWidth, FrameHeight),
+                new Rectangle<int>(dest.X - FrameCenter.OffsetX, (int)(dest.Y - FrameCenter.OffsetY), FrameWidth, FrameHeight),
+                RendererFlip.None, angle, rotationCenter);
+        }
+        else
+        {
+            var totalFrames = (ActiveAnimation.EndFrame.Row - ActiveAnimation.StartFrame.Row) * ColumnCount +
+                ActiveAnimation.EndFrame.Col - ActiveAnimation.StartFrame.Col;
+            var currentFrame = (int)((DateTimeOffset.Now - _animationStart).TotalMilliseconds /
+                                     (ActiveAnimation.DurationMs / totalFrames));
+            if (currentFrame > totalFrames)
             {
-                Width = image.Width,
-                Height = image.Height
-            };
-            var imageRAWData = new byte[textureInfo.Width * textureInfo.Height * 4];
-            image.CopyPixelDataTo(imageRAWData.AsSpan());
-            fixed (byte* data = imageRAWData)
-            {
-                var imageSurface = _sdl.CreateRGBSurfaceWithFormatFrom(data, textureInfo.Width,
-                    textureInfo.Height, 8, textureInfo.Width * 4, (uint)PixelFormatEnum.Rgba32);
-                var imageTexture = _sdl.CreateTextureFromSurface(_renderer, imageSurface);
-                _sdl.FreeSurface(imageSurface);
-                _textureData[_textureId] = textureInfo;
-                _textures[_textureId] = (IntPtr)imageTexture;
+                if (ActiveAnimation.Loop)
+                {
+                    _animationStart = DateTimeOffset.Now;
+                    currentFrame = 0;
+                }
+                else
+                {
+                    currentFrame = totalFrames;
+                }
             }
+
+            var currentRow = ActiveAnimation.StartFrame.Row + currentFrame / ColumnCount;
+            var currentCol = ActiveAnimation.StartFrame.Col + currentFrame % ColumnCount;
+
+            renderer.RenderTexture(_textureId,
+                new Rectangle<int>(currentCol * FrameWidth, currentRow * FrameHeight, FrameWidth, FrameHeight),
+                new Rectangle<int>(dest.X - FrameCenter.OffsetX, (int)(dest.Y - FrameCenter.OffsetY), FrameWidth, FrameHeight),
+                ActiveAnimation.Flip, angle, rotationCenter);
         }
-
-        return _textureId++;
-    }
-
-    public void RenderTexture(int textureId, Rectangle<int> src, Rectangle<int> dst,
-        RendererFlip flip = RendererFlip.None, double angle = 0.0, Point center = default)
-    {
-        if (_textures.TryGetValue(textureId, out var imageTexture))
-        {
-            _sdl.RenderCopyEx(_renderer, (Texture*)imageTexture, src,
-                _camera.TranslateToScreenCoordinates(dst),
-                angle,
-                center, flip);
-        }
-    }
-
-    public Vector2D<int> TranslateFromScreenToWorldCoordinates(int x, int y)
-    {
-        return _camera.FromScreenToWorld(x, y);
-    }
-
-    public void SetDrawColor(byte r, byte g, byte b, byte a)
-    {
-        _sdl.SetRenderDrawColor(_renderer, r, g, b, a);
-    }
-
-    public void ClearScreen()
-    {
-        _sdl.RenderClear(_renderer);
-    }
-
-    public void PresentFrame()
-    {
-        _sdl.RenderPresent(_renderer); 
     }
 }
