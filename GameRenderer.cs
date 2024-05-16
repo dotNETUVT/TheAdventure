@@ -18,6 +18,8 @@ public unsafe class GameRenderer
     private Dictionary<int, TextureInfo> _textureData = new();
     private int _textureId;
 
+    private IntPtr _font;
+    
     public GameRenderer(Sdl sdl, GameWindow window)
     {
         _window = window;
@@ -28,6 +30,7 @@ public unsafe class GameRenderer
 
         var windowSize = window.Size;
         _camera = new Camera(windowSize.Width, windowSize.Height);
+        
     }
 
     public void SetWorldBounds(Rectangle<int> bounds)
@@ -95,6 +98,6 @@ public unsafe class GameRenderer
 
     public void PresentFrame()
     {
-        _sdl.RenderPresent(_renderer);
+        _sdl.RenderPresent(_renderer); 
     }
 }
