@@ -23,6 +23,7 @@ namespace TheAdventure
 
         private DateTimeOffset _lastUpdate = DateTimeOffset.Now;
         private DateTimeOffset _lastPlayerUpdate = DateTimeOffset.Now;
+        private DateTimeOffset _lastPortalSpawn = DateTimeOffset.Now.AddSeconds(-8);
 
         public Engine(GameRenderer renderer, Input input)
         {
@@ -87,9 +88,13 @@ namespace TheAdventure
             bool left = _input.IsLeftPressed();
             bool right = _input.IsRightPressed();
             bool isSpawningPortal = _input.IsPKeyPressed();
-            if (isSpawningPortal)
+
+            int portalCooldown = 1;
+            bool portalAvailiable = (currentTime - _lastPortalSpawn).TotalSeconds > portalCooldown;
+            if (isSpawningPortal && portalAvailiable)
             {
                 AddPortal();
+                _lastPortalSpawn = currentTime;
             }
             _player.UpdatePlayerPosition(up ? 1.0 : 0.0, down ? 1.0 : 0.0, left ? 1.0 : 0.0, right ? 1.0 : 0.0,
                 _currentLevel.Width * _currentLevel.TileWidth, _currentLevel.Height * _currentLevel.TileHeight,
@@ -100,7 +105,6 @@ namespace TheAdventure
             {
                 _player.PortalTeleport(PCheck.Item2, PCheck.Item3, _currentLevel.Width * _currentLevel.TileWidth, _currentLevel.Height * _currentLevel.TileHeight,
                 secsSinceLastFrame);
-                _renderer.CameraLookAt(_player.Position.X,_player.Position.Y);
             }
 
             var itemsToRemove = new List<int>();
@@ -230,7 +234,7 @@ namespace TheAdventure
             {
                 x = r.Next(maxW);
                 y = r.Next(maxH);
-            } while (x < 25 && x + 25 > maxW && y < 25 && y + 25 > maxH);
+            } while (x < 100 && x + 100 > maxW && y < 100 && y + 100 > maxH);
 
             var translated = _renderer.TranslateFromScreenToWorldCoordinates(x, y);
 
