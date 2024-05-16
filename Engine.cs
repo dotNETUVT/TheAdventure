@@ -13,8 +13,8 @@ namespace TheAdventure
         private Level? _currentLevel;
         private PlayerObject _player;
         private GameRenderer _renderer;
-        private Input _input;
 
+        private Input _input;
         private DateTimeOffset _lastUpdate = DateTimeOffset.Now;
         private DateTimeOffset _lastPlayerUpdate = DateTimeOffset.Now;
 
@@ -29,8 +29,6 @@ namespace TheAdventure
 
         public int health = 100;
 
-
-
         public void RenderFrame()
         {
             _renderer.SetDrawColor(0, 0, 0, 255);
@@ -40,8 +38,8 @@ namespace TheAdventure
 
             RenderTerrain();
             RenderAllObjects();
-            RenderHealthBar(); // New method to render health bar
-
+            RenderHealthBar();
+            HealthRegen();
             _renderer.PresentFrame();
         }
 
@@ -52,11 +50,11 @@ namespace TheAdventure
             const int x = 10;
             const int y = 10;
 
-            // Background bar
+
             _renderer.SetDrawColor(255, 0, 0, 255); // Red
             _renderer.RenderFillRect(x, y, barWidth, barHeight);
 
-            // Foreground bar
+
             double healthPercentage = health / 100.0;
             int healthWidth = (int)(barWidth * healthPercentage);
             _renderer.SetDrawColor(0, 255, 0, 255); // Green
@@ -239,7 +237,17 @@ namespace TheAdventure
             }
             _gameObjects.Add(bomb.Id, bomb);
         }
-    }
 
+        private void HealthRegen()
+        {
+            if (health <= 0)
+            {
+                health = 100;
+                RenderHealthBar();
+            }
+
+        }
+
+    }
 
 }
