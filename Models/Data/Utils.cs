@@ -5,7 +5,8 @@ public struct FramePosition{
     public int Col { get; set; }
 }
 
-public struct FrameOffset{
-    public int OffsetX { get; set; }
-    public int OffsetY { get; set; }
+public struct FrameOffset(int offsetX, int offsetY)
+{
+    public int OffsetX { get; set; } = offsetX;
+    public int OffsetY { get; set; } = offsetY;
 }
