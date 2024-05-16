@@ -9,8 +9,8 @@ namespace TheAdventure;
 
 public unsafe class GameRenderer
 {
-    private Sdl _sdl;
-    private Renderer* _renderer;
+    public Sdl _sdl;
+    public Renderer* _renderer;
     private GameWindow _window;
     private Camera _camera;
 

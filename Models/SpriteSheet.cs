@@ -67,14 +67,17 @@ public class SpriteSheet
         LoadTexture(renderer);
     }
 
-    public void ActivateAnimation(string name)
+    public void ActivateAnimation(string? name)
     {
-        if(name == null){
+        if (name == null)
+        {
             ActiveAnimation = null;
         }
-        if (!Animations.TryGetValue(name, out var animation)) return;
-        ActiveAnimation = animation;
-        _animationStart = DateTimeOffset.Now;
+        else if (Animations.TryGetValue(name, out var animation))
+        {
+            ActiveAnimation = animation;
+            _animationStart = DateTimeOffset.Now;
+        }
     }
 
     public void Render(GameRenderer renderer, (int X, int Y) dest, double angle = 0.0, Point rotationCenter = new())
