@@ -10,6 +10,7 @@ namespace TheAdventure
     {
         private readonly Dictionary<int, GameObject> _gameObjects = new();
         private readonly Dictionary<string, TileSet> _loadedTileSets = new();
+        private readonly Dictionary<string, SpriteSheet> _loadedSpriteSheets = new();
 
         private Level? _currentLevel;
         private PlayerObject _player;
@@ -18,6 +19,9 @@ namespace TheAdventure
 
         private DateTimeOffset _lastUpdate = DateTimeOffset.Now;
         private DateTimeOffset _lastPlayerUpdate = DateTimeOffset.Now;
+        private DateTimeOffset _lastSpawnTime = DateTimeOffset.Now;
+        private readonly TimeSpan _spawnInterval = TimeSpan.FromSeconds(5); // Adjust as needed
+
 
         public Engine(GameRenderer renderer, Input input)
         {
@@ -54,6 +58,20 @@ namespace TheAdventure
             }
 
             _currentLevel = level;
+
+            // Load mushroom sprite sheet
+            var mushroomSpriteSheet = SpriteSheet.LoadSpriteSheet("mushroom.json", "Assets", _renderer);
+            if (mushroomSpriteSheet != null)
+            {
+                _loadedSpriteSheets["mushroom"] = mushroomSpriteSheet;
+                Console.WriteLine("Mushroom sprite sheet loaded successfully.");
+            }
+            else
+            {
+                Console.WriteLine("Failed to load mushroom sprite sheet.");
+            }
+
+
             /*SpriteSheet spriteSheet = new(_renderer, Path.Combine("Assets", "player.png"), 10, 6, 48, 48, new FrameOffset() { OffsetX = 24, OffsetY = 42 });
             spriteSheet.Animations["IdleDown"] = new SpriteSheet.Animation()
             {
@@ -69,6 +87,7 @@ namespace TheAdventure
             }
             _renderer.SetWorldBounds(new Rectangle<int>(0, 0, _currentLevel.Width * _currentLevel.TileWidth,
                 _currentLevel.Height * _currentLevel.TileHeight));
+
         }
 
         public void ProcessFrame()
@@ -124,6 +143,21 @@ namespace TheAdventure
                     }
                 }
                 _gameObjects.Remove(gameObjectId);
+            }
+
+            // Spawn new mushrooms periodically
+            if ((currentTime - _lastSpawnTime) > _spawnInterval)
+            {
+                SpawnMushroom();
+                _lastSpawnTime = currentTime;
+            }
+
+            // Remove expired mushrooms
+            var expiredMushrooms = _gameObjects.Values.OfType<MushroomObject>().Where(m => m.IsExpired).ToList();
+            foreach (var mushroom in expiredMushrooms)
+            {
+                _gameObjects.Remove(mushroom.Id);
+                Console.WriteLine($"Mushroom removed at ({mushroom.Position.X}, {mushroom.Position.Y}) with ID: {mushroom.Id}");
             }
         }
 
@@ -208,7 +242,14 @@ namespace TheAdventure
         {
             foreach (var gameObject in GetAllRenderableObjects())
             {
-                gameObject.Render(_renderer);
+                if (gameObject is MushroomObject mushroom)
+                {
+                    mushroom.Render(_renderer);  // Calls the overridden method with default scale 0.5f
+                }
+                else
+                {
+                    gameObject.Render(_renderer);  // Calls the base class method with default scale 1.0f
+                }
             }
 
             _player.Render(_renderer);
@@ -226,5 +267,31 @@ namespace TheAdventure
                 _gameObjects.Add(bomb.Id, bomb);
             }
         }
+
+        private void AddMushroom(int x, int y, double ttl = 10.0)  
+        {
+            if (_loadedSpriteSheets.TryGetValue("mushroom", out var spriteSheet))
+            {
+                MushroomObject mushroom = new(spriteSheet, (x, y), ttl);
+                _gameObjects.Add(mushroom.Id, mushroom);
+                Console.WriteLine($"Mushroom added at ({x}, {y}) with ID: {mushroom.Id}");
+            }
+            else
+            {
+                Console.WriteLine("Failed to find mushroom sprite sheet.");
+            }
+        }
+
+
+        private void SpawnMushroom()
+        {
+            var random = new Random();
+            int x = random.Next(10, _currentLevel.Width * _currentLevel.TileWidth - 10);
+            int y = random.Next(24, _currentLevel.Height * _currentLevel.TileHeight - 24);
+            AddMushroom(x, y);
+            Console.WriteLine($"Mushroom spawned at ({x}, {y})");
+        }
+
+
     }
 }

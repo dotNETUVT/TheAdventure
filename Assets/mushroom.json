@@ -1,0 +1,11 @@
+{
+  "fileName": "mushroom.png",
+  "rowCount": 1,
+  "columnCount": 1,
+  "frameWidth": 51,
+  "frameHeight": 48,
+  "frameCenter": {
+    "offsetX": 16,
+    "offsetY": 48
+  }
+}
