@@ -1,88 +1,112 @@
+using System.Formats.Asn1;
 using Silk.NET.Maths;
 using TheAdventure.Models.Data;
 
 namespace TheAdventure.Models
 {
+    public enum PlayerStateDirection
+    {
+        None = 0,
+        Down,
+        Up,
+        Left,
+        Right,
+    }
+
+    public enum PlayerState
+    {
+        None = 0,
+        Idle,
+        Move,
+        Attack,
+        GameOver
+    }
+
     public class PlayerObject : RenderableGameObject
     {
         private int _pixelsPerSecond = 192;
-        private string _currentAnimation = "IdleDown";
-
         public bool IsAlive { get; private set; } = true;
+        public (PlayerState State, PlayerStateDirection Direction) State { get; private set; }
 
         public PlayerObject(SpriteSheet spriteSheet, int x, int y) : base(spriteSheet, (x, y))
         {
-            SpriteSheet.ActivateAnimation(_currentAnimation);
+            State = (PlayerState.Idle, PlayerStateDirection.Down);
+            UpdateAnimation();
         }
 
-        public void UpdatePlayerPosition(double up, double down, double left, double right, int width, int height,
-            double time)
+        private void UpdateAnimation()
         {
-            if (up <= double.Epsilon &&
-                down <= double.Epsilon &&
-                left <= double.Epsilon &&
-                right <= double.Epsilon &&
-                _currentAnimation == "IdleDown")
+            if (State.State == PlayerState.GameOver)
             {
-                return;
+                SpriteSheet.ActivateAnimation(Enum.GetName(typeof(PlayerState), PlayerState.GameOver));
             }
+            else if (State.State != PlayerState.None)
+            {
+                var animationName = Enum.GetName(typeof(PlayerState), State.State) + Enum.GetName(typeof(PlayerStateDirection), State.Direction);
+                SpriteSheet.ActivateAnimation(animationName);
+            }
+            else
+            {
+                SpriteSheet.ActivateAnimation(null);
+            }
+        }
+
+        public void SetState(PlayerState state, PlayerStateDirection direction)
+        {
+            if (State.State == PlayerState.GameOver) return;
+            if (State.State == state && State.Direction == direction) return;
+
+            State = (state, direction);
+            UpdateAnimation();
+        }
+
+        public void Attack(bool up, bool down, bool left, bool right)
+        {
+            if (State.State == PlayerState.GameOver) return;
+
+            var direction = State.Direction;
+            if (up)
+                direction = PlayerStateDirection.Up;
+            else if (down)
+                direction = PlayerStateDirection.Down;
+            else if (left)
+                direction = PlayerStateDirection.Left;
+            else if (right)
+                direction = PlayerStateDirection.Right;
+
+            SetState(PlayerState.Attack, direction);
+        }
+
+        public void UpdatePlayerPosition(double up, double down, double left, double right, int width, int height, double time)
+        {
+            if (State.State == PlayerState.GameOver) return;
 
             var pixelsToMove = time * _pixelsPerSecond;
 
-            var x = Position.X + (int)(right * pixelsToMove);
-            x -= (int)(left * pixelsToMove);
+            var newX = Position.X + (int)(right * pixelsToMove) - (int)(left * pixelsToMove);
+            var newY = Position.Y - (int)(up * pixelsToMove) + (int)(down * pixelsToMove);
 
-            var y = Position.Y - (int)(up * pixelsToMove);
-            y += (int)(down * pixelsToMove);
+            // Apply boundaries to prevent the player from moving out of the visible area
+            newX = Math.Clamp(newX, 10, width - 10);
+            newY = Math.Clamp(newY, 24, height - 6);
 
-            if (x < 10)
-            {
-                x = 10;
-            }
+            // Determine new state based on movement
+            PlayerStateDirection direction = State.Direction;
+            if (newY < Position.Y) direction = PlayerStateDirection.Up;
+            if (newY > Position.Y) direction = PlayerStateDirection.Down;
+            if (newX > Position.X) direction = PlayerStateDirection.Right;
+            if (newX < Position.X) direction = PlayerStateDirection.Left;
 
-            if (y < 24)
-            {
-                y = 24;
-            }
+            PlayerState newState = (newX == Position.X && newY == Position.Y) ? PlayerState.Idle : PlayerState.Move;
 
-            if (x > width - 10)
-            {
-                x = width - 10;
-            }
-
-            if (y > height - 6)
-            {
-                y = height - 6;
-            }
-
-            if (y < Position.Y && _currentAnimation != "MoveUp")
-            {
-                _currentAnimation = "MoveUp";
-            }
-            if (y > Position.Y && _currentAnimation != "MoveDown")
-            {
-                _currentAnimation = "MoveDown";
-            }
-            if (x > Position.X && _currentAnimation != "MoveRight")
-            {
-                _currentAnimation = "MoveRight";
-            }
-            if (x < Position.X && _currentAnimation != "MoveLeft")
-            {
-                _currentAnimation = "MoveLeft";
-            }
-            if (x == Position.X && y == Position.Y && _currentAnimation != "IdleDown")
-            {
-                _currentAnimation = "IdleDown";
-            }
-
-            SpriteSheet.ActivateAnimation(_currentAnimation);
-            Position = (x, y);
+            SetState(newState, direction);
+            Position = (newX, newY);
         }
 
         public void HitByExplosion()
         {
             IsAlive = false;
+            SetState(PlayerState.GameOver, PlayerStateDirection.None);
         }
     }
 }

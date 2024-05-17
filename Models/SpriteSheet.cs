@@ -69,8 +69,10 @@ public class SpriteSheet
 
     public void ActivateAnimation(string name)
     {
+        if(name == null){
+            ActiveAnimation = null;
+        }
         if (!Animations.TryGetValue(name, out var animation)) return;
-
         ActiveAnimation = animation;
         _animationStart = DateTimeOffset.Now;
     }
