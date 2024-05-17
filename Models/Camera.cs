@@ -12,6 +12,10 @@ public class Camera
     private int _x;
     private int _y;
     private float _zoom = 1.0f;
+
+    // Camera shake variables
+    private float shakeMagnitude = 0;
+    private float shakeDuration = 0;
     private Rectangle<int> _gameWorld = new();
 
     /// <summary>
@@ -77,6 +81,28 @@ public class Camera
         {
             _x = x;
         }
+    }
+
+    public void Update(float deltaTime)
+    {
+        if (shakeDuration > 0)
+        {
+            shakeDuration -= deltaTime;
+            int shakeX = (int)(Random.Shared.NextDouble() * shakeMagnitude * 2 - shakeMagnitude);
+            int shakeY = (int)(Random.Shared.NextDouble() * shakeMagnitude * 2 - shakeMagnitude);
+            _x += shakeX;
+            _y += shakeY;
+        }
+        else
+        {
+            shakeMagnitude = 0;
+        }
+    }
+
+    public void Shake(float magnitude, float duration)
+    {
+        shakeMagnitude = magnitude;
+        shakeDuration = duration;
     }
 
     /// <summary>

@@ -72,11 +72,27 @@ namespace TheAdventure
                 _currentLevel.Height * _currentLevel.TileHeight));
         }
 
+        private void AddBomb(int x, int y, bool translateCoordinates = true)
+        {
+            var translated = translateCoordinates ? _renderer.TranslateFromScreenToWorldCoordinates(x, y) : new Vector2D<int>(x, y);
+            
+            var spriteSheet = SpriteSheet.LoadSpriteSheet("bomb.json", "Assets", _renderer);
+            if (spriteSheet != null)
+            {
+                spriteSheet.ActivateAnimation("Explode");
+                TemporaryGameObject bomb = new(spriteSheet, 2.1, (translated.X, translated.Y));
+                _gameObjects.Add(bomb.Id, bomb);
+                _camera.Shake(5.0f, 0.5f); 
+            }
+        }
+
+
         public void ProcessFrame()
         {
             var currentTime = DateTimeOffset.Now;
             var secsSinceLastFrame = (currentTime - _lastUpdate).TotalSeconds;
             _lastUpdate = currentTime;
+            _camera.Update((float)deltaTime);
             UpdateZoom();
 
             bool up = _input.IsUpPressed();
