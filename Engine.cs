@@ -109,9 +109,20 @@ namespace TheAdventure
             itemsToRemove.AddRange(GetAllTemporaryGameObjects().Where(gameObject => gameObject.IsExpired)
                 .Select(gameObject => gameObject.Id).ToList());
             
+            var bombX = _player.Position.X;
+            var bombY = _player.Position.Y - 4;
+            // values in px - sprite width is 12 px, but we want to add some space between the bomb spawn point and player
+            if (_player.State.Direction == PlayerObject.PlayerStateDirection.Up)
+                bombY -= 16; // (0, 0) is top left
+            else if (_player.State.Direction == PlayerObject.PlayerStateDirection.Down)
+                bombY += 16;
+            if (_player.State.Direction == PlayerObject.PlayerStateDirection.Left)
+                bombX -= 16;
+            else if (_player.State.Direction == PlayerObject.PlayerStateDirection.Right)
+                bombX += 16;
             // should not be able to add bombs if the player is dead, since the game is basically over
             if (addBomb && _player.State.State != PlayerObject.PlayerState.GameOver)
-                AddBomb(_player.Position.X, _player.Position.Y, false);
+                AddBomb(bombX, bombY, false);
 
             foreach (var gameObjectId in itemsToRemove)
             {
