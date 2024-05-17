@@ -20,7 +20,20 @@ namespace TheAdventure
         private DateTimeOffset _lastUpdate = DateTimeOffset.Now;
         private DateTimeOffset _lastPlayerUpdate = DateTimeOffset.Now;
         private DateTimeOffset _lastSpawnTime = DateTimeOffset.Now;
-        private readonly TimeSpan _spawnInterval = TimeSpan.FromSeconds(5); // Adjust as needed
+        private readonly TimeSpan _spawnInterval = TimeSpan.FromSeconds(5);
+        private Dictionary<char, int> _digitWidths = new()
+    {
+        { '0', 14 },
+        { '1', 8 },
+        { '2', 14 },
+        { '3', 14 },
+        { '4', 14 },
+        { '5', 14 },
+        { '6', 14 },
+        { '7', 14 },
+        { '8', 14 },
+        { '9', 14 }
+    };
 
 
         public Engine(GameRenderer renderer, Input input)
@@ -29,6 +42,10 @@ namespace TheAdventure
             _input = input;
 
             _input.OnMouseClick += (_, coords) => AddBomb(coords.x, coords.y);
+
+            _renderer.LoadMushroomIconTexture("Assets/mushroom_icon.png");
+            _renderer.LoadDigitTexture("Assets/digits.png");
+
         }
 
         public void InitializeWorld()
@@ -145,6 +162,25 @@ namespace TheAdventure
                 _gameObjects.Remove(gameObjectId);
             }
 
+            // Check for mushroom collision
+            var mushrooms = _gameObjects.Values.OfType<MushroomObject>().ToList();
+            foreach (var mushroom in mushrooms)
+            {
+                if (IsCollision(_player.Position, mushroom.Position, 15))  
+                {
+                    _player.CollectMushroom();
+                    _gameObjects.Remove(mushroom.Id);
+                    Console.WriteLine($"Mushroom collected! Total: {_player.MushroomCount}");
+                }
+            }
+
+
+            string mushroomCount = _player?.MushroomCount.ToString() ?? "0";
+            for (int i = 0; i < mushroomCount.Length; i++)
+            {
+                _renderer.RenderDigit(mushroomCount[i], 50 + i * 20, 10);
+            }
+
             // Spawn new mushrooms periodically
             if ((currentTime - _lastSpawnTime) > _spawnInterval)
             {
@@ -160,6 +196,10 @@ namespace TheAdventure
                 Console.WriteLine($"Mushroom removed at ({mushroom.Position.X}, {mushroom.Position.Y}) with ID: {mushroom.Id}");
             }
         }
+        private bool IsCollision((int X, int Y) pos1, (int X, int Y) pos2, int size)
+        {
+            return Math.Abs(pos1.X - pos2.X) < size && Math.Abs(pos1.Y - pos2.Y) < size;
+        }
 
         public void RenderFrame()
         {
@@ -170,6 +210,18 @@ namespace TheAdventure
 
             RenderTerrain();
             RenderAllObjects();
+
+            _renderer.RenderMushroomIcon(10, 10);  
+
+            // Render the mushroom count
+            string mushroomCount = _player?.MushroomCount.ToString() ?? "0";
+            int xPos = 40; // Initial x position after the mushroom icon (considering the icon width of 20px and some padding)
+            for (int i = 0; i < mushroomCount.Length; i++)
+            {
+                char digit = mushroomCount[i];
+                _renderer.RenderDigit(digit, xPos, 10);
+                xPos += _digitWidths[digit] + 2; // Adjust this value based on your digit width
+            }
 
             _renderer.PresentFrame();
         }

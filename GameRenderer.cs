@@ -2,6 +2,7 @@ using Silk.NET.Maths;
 using Silk.NET.SDL;
 using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.PixelFormats;
+using System.Runtime.InteropServices;
 using TheAdventure.Models;
 using Point = Silk.NET.SDL.Point;
 
@@ -17,6 +18,39 @@ public unsafe class GameRenderer
     private Dictionary<int, IntPtr> _textures = new();
     private Dictionary<int, TextureInfo> _textureData = new();
     private int _textureId;
+
+    private int _mushroomIconTextureId;
+    private TextureInfo _mushroomIconTextureInfo;
+    private int _digitTextureId;
+    private TextureInfo _digitTextureInfo;
+    private int _digitHeight = 16;
+    private Dictionary<char, int> _digitWidths = new()
+    {
+        { '0', 14 },
+        { '1', 8 },
+        { '2', 14 },
+        { '3', 14 },
+        { '4', 14 },
+        { '5', 14 },
+        { '6', 14 },
+        { '7', 14 },
+        { '8', 14 },
+        { '9', 14 }
+    };
+    private Dictionary<char, int> _digitOffsets = new()
+    {
+        { '0', 0 },
+        { '1', 16 },
+        { '2', 27 },
+        { '3', 47 },
+        { '4', 63 },
+        { '5', 79 },
+        { '6', 95 },
+        { '7', 111 },
+        { '8', 128 },
+        { '9', 144 }
+    };
+
 
     public GameRenderer(Sdl sdl, GameWindow window)
     {
@@ -39,6 +73,38 @@ public unsafe class GameRenderer
     {
         _camera.LookAt(x, y);
     }
+    public void LoadMushroomIconTexture(string fileName)
+    {
+        _mushroomIconTextureId = LoadTexture(fileName, out _mushroomIconTextureInfo);
+    }
+
+    public void LoadDigitTexture(string fileName)
+    {
+        _digitTextureId = LoadTexture(fileName, out _digitTextureInfo);
+    }
+    public void RenderMushroomIcon(int x, int y)
+    {
+        if (_textures.TryGetValue(_mushroomIconTextureId, out var texture))
+        {
+            Rectangle<int> srcRect = new Rectangle<int>(0, 0, _mushroomIconTextureInfo.Width, _mushroomIconTextureInfo.Height);
+            Rectangle<int> dstRect = new Rectangle<int>(x, y, _mushroomIconTextureInfo.Width, _mushroomIconTextureInfo.Height);
+            _sdl.RenderCopy(_renderer, (Texture*)texture, &srcRect, &dstRect);
+        }
+    }
+
+
+    public void RenderDigit(char digit, int x, int y)
+    {
+        if (_textures.TryGetValue(_digitTextureId, out var texture))
+        {
+            var width = _digitWidths[digit];
+            var offsetX = _digitOffsets[digit];
+            Rectangle<int> srcRect = new Rectangle<int>(offsetX, 0, width, _digitHeight);
+            Rectangle<int> dstRect = new Rectangle<int>(x, y, width, _digitHeight);
+            _sdl.RenderCopy(_renderer, (Texture*)texture, &srcRect, &dstRect);
+        }
+    }
+
 
     public int LoadTexture(string fileName, out TextureInfo textureInfo)
     {
@@ -97,4 +163,21 @@ public unsafe class GameRenderer
     {
         _sdl.RenderPresent(_renderer);
     }
+
+
+    [StructLayout(LayoutKind.Sequential)]
+    public struct SDL_Rect
+    {
+        public int x;
+        public int y;
+        public int w;
+        public int h;
+    }
+    private SDL_Rect ToSDL_Rect(Rectangle<int> rect)
+    {
+        return new SDL_Rect { x = rect.Origin.X, y = rect.Origin.Y, w = rect.Size.X, h = rect.Size.Y };
+    }
+
+
+
 }

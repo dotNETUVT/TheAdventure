@@ -25,6 +25,7 @@ public class PlayerObject : RenderableGameObject
 
 
     public (PlayerState State, PlayerStateDirection Direction) State{ get; private set; }
+    public int MushroomCount { get; private set; } = 0;
 
     public PlayerObject(SpriteSheet spriteSheet, int x, int y) : base(spriteSheet, (x, y))
     {
@@ -135,5 +136,9 @@ public class PlayerObject : RenderableGameObject
         }
 
         Position = (x, y);
+    }
+    public void CollectMushroom()
+    {
+        MushroomCount++;
     }
 }
