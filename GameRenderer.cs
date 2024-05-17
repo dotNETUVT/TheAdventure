@@ -55,7 +55,7 @@ public unsafe class GameRenderer
             fixed (byte* data = imageRAWData)
             {
                 var imageSurface = _sdl.CreateRGBSurfaceWithFormatFrom(data, textureInfo.Width,
-                    textureInfo.Height, 8, textureInfo.Width * 4, (uint)PixelFormatEnum.Rgba32);
+                    textureInfo.Height, 32, textureInfo.Width * 4, (uint)PixelFormatEnum.Rgba32);
                 var imageTexture = _sdl.CreateTextureFromSurface(_renderer, imageSurface);
                 _sdl.FreeSurface(imageSurface);
                 _textureData[_textureId] = textureInfo;
@@ -96,5 +96,26 @@ public unsafe class GameRenderer
     public void PresentFrame()
     {
         _sdl.RenderPresent(_renderer);
+    }
+
+    public void RenderSuperPowerIcon(int textureId, SuperPower superPower, int x, int y, int width, int height)
+    {
+        // Render the icon without using the camera to translate coordinates
+        if (_textures.TryGetValue(textureId, out var imageTexture))
+        {
+            var srcRect = new Rectangle<int>(0, 0, 512, 512);
+            var dstRect = new Rectangle<int>(x, y, width, height);
+            _sdl.RenderCopy(_renderer, (Texture*)imageTexture, &srcRect, &dstRect);
+        }
+
+        // Render cooldown timer
+        var cooldownTime = superPower.GetCooldownTimeRemaining();
+        if (cooldownTime > 0)
+        {
+            var cooldownHeight = (int)(height * ((float)cooldownTime / SuperPower.CooldownTime));
+            SetDrawColor(255, 255, 255, 128); // Semi-transparent white
+            var cooldownRect = new Rectangle<int>(x, y + height - cooldownHeight, width, cooldownHeight);
+            _sdl.RenderFillRect(_renderer, &cooldownRect);
+        }
     }
 }

@@ -10,6 +10,7 @@ namespace TheAdventure.Models
         private readonly Renderer* _renderer;
         private readonly int _maxHealth;
         private int _currentHealth;
+        public int _superPowerIconTextureId = -1;
 
         public HealthBar(Sdl sdl, Renderer* renderer, int maxHealth)
         {
@@ -37,6 +38,11 @@ namespace TheAdventure.Models
             }
         }
 
+        public void LoadSuperPowerIcon(GameRenderer renderer, string filePath)
+        {
+            _superPowerIconTextureId = renderer.LoadTexture(filePath, out _);
+        }
+
         public void Render(int x, int y, int width, int height)
         {
             // Background
@@ -48,6 +54,27 @@ namespace TheAdventure.Models
             _sdl.SetRenderDrawColor(_renderer, 0, 255, 0, 255);
             var healthRect = new Rectangle<int>(x, y, (int)(width * ((float)_currentHealth / _maxHealth)), height);
             _sdl.RenderFillRect(_renderer, &healthRect);
+        }
+
+        public void RenderSuperPower(SuperPower superPower, int x, int y, int width, int height, GameRenderer renderer)
+        {
+            // Render the icon
+            if (_superPowerIconTextureId >= 0)
+            {
+                var srcRect = new Rectangle<int>(0, 0, 512, 512);
+                var dstRect = new Rectangle<int>(x, y, width, height);
+                renderer.RenderTexture(_superPowerIconTextureId, srcRect, dstRect);
+            }
+
+            // Render cooldown timer as a rectangle
+            var cooldownTime = superPower.GetCooldownTimeRemaining();
+            if (cooldownTime > 0)
+            {
+                var cooldownHeight = (int)(height * ((float)cooldownTime / SuperPower.CooldownTime));
+                _sdl.SetRenderDrawColor(_renderer, 255, 255, 255, 128); // Semi-transparent white
+                var cooldownRect = new Rectangle<int>(x, y + height - cooldownHeight, width, cooldownHeight);
+                _sdl.RenderFillRect(_renderer, &cooldownRect);
+            }
         }
     }
 }

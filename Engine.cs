@@ -1,8 +1,11 @@
-
+using System;
+using System.Collections.Generic;
+using System.IO;
 using System.Text.Json;
 using Silk.NET.Maths;
 using Silk.NET.SDL;
 using TheAdventure.Models;
+using TheAdventure.Models.Data;
 
 namespace TheAdventure
 {
@@ -50,11 +53,8 @@ namespace TheAdventure
                             tile.InternalTextureId = internalTextureId;
                         }
                         _loadedTileSets[refTileSet.Source] = tileSet;
+                        refTileSet.Set = tileSet;
                     }
-                }
-                if (tileSet != null)
-                {
-                    refTileSet.Set = tileSet;
                 }
             }
 
@@ -71,6 +71,7 @@ namespace TheAdventure
             if (_player != null)
             {
                 _healthBar = new HealthBar(_renderer._sdl, _renderer._renderer, _player.GetMaxHealth());
+                _healthBar.LoadSuperPowerIcon(_renderer, "Assets/superpower_icon.png");
             }
         }
 
@@ -88,6 +89,7 @@ namespace TheAdventure
             bool right = _input.IsRightPressed();
             bool isAttacking = _input.IsKeyAPressed();
             bool addBomb = _input.IsKeyBPressed();
+            bool activateSuperPower = _input.IsKeyCPressed();
 
             if (isAttacking)
             {
@@ -104,16 +106,24 @@ namespace TheAdventure
                     isAttacking = false;
                 }
             }
+
+            if (activateSuperPower)
+            {
+                _player.SuperPower.Activate();
+            }
+
+            _player.SuperPower.Update();
+
             if (!isAttacking)
             {
                 if (_currentLevel != null)
                 {
-                    _player?.UpdatePlayerPosition(
-                        up ? 1.0 : 0.0, 
-                        down ? 1.0 : 0.0, 
-                        left ? 1.0 : 0.0, 
+                    _player.UpdatePlayerPosition(
+                        up ? 1.0 : 0.0,
+                        down ? 1.0 : 0.0,
+                        left ? 1.0 : 0.0,
                         right ? 1.0 : 0.0,
-                        _currentLevel.Width * _currentLevel.TileWidth, 
+                        _currentLevel.Width * _currentLevel.TileWidth,
                         _currentLevel.Height * _currentLevel.TileHeight,
                         secsSinceLastFrame
                     );
@@ -144,6 +154,12 @@ namespace TheAdventure
                 }
                 _gameObjects.Remove(gameObjectId);
             }
+
+            // Actualiza la cámara para que siga al jugador
+            if (_player != null)
+            {
+                _renderer.CameraLookAt(_player.Position.X, _player.Position.Y);
+            }
         }
 
         public void RenderFrame()
@@ -153,11 +169,17 @@ namespace TheAdventure
             _renderer.SetDrawColor(0, 0, 0, 255);
             _renderer.ClearScreen();
 
+            // Make camera focus on the player
             _renderer.CameraLookAt(_player.Position.X, _player.Position.Y);
 
             RenderTerrain();
             RenderAllObjects();
+
+            // Render health bar
             _healthBar.Render(10, 10, 200, 20);
+
+            // Render superpower icon in a fixed position in the screen
+            _renderer.RenderSuperPowerIcon(_healthBar._superPowerIconTextureId, _player.SuperPower, 220, 10, 50, 50);
 
             _renderer.PresentFrame();
         }

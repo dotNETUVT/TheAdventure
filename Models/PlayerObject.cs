@@ -23,9 +23,12 @@ namespace TheAdventure.Models
             GameOver
         }
 
-        private int _pixelsPerSecond = 192;
+        private int _baseSpeed = 192;
+        private int _pixelsPerSecond => SuperPower.IsActive ? _baseSpeed * 2 : _baseSpeed;
         private int _maxHealth = 100;
         private int _currentHealth;
+
+        public SuperPower SuperPower { get; }
 
         public (PlayerState State, PlayerStateDirection Direction) State { get; private set; }
 
@@ -33,6 +36,7 @@ namespace TheAdventure.Models
         {
             SetState(PlayerState.Idle, PlayerStateDirection.Down);
             _currentHealth = _maxHealth;
+            SuperPower = new SuperPower();
         }
 
         public void SetState(PlayerState state, PlayerStateDirection direction)
