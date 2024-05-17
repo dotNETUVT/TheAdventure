@@ -3,6 +3,7 @@ using Silk.NET.Maths;
 using Silk.NET.SDL;
 using TheAdventure.Models;
 using TheAdventure.Models.Data;
+using System;
 
 namespace TheAdventure
 {
@@ -53,6 +54,8 @@ namespace TheAdventure
                 refTileSet.Set = tileSet;
             }
 
+
+
             _currentLevel = level;
             /*SpriteSheet spriteSheet = new(_renderer, Path.Combine("Assets", "player.png"), 10, 6, 48, 48, new FrameOffset() { OffsetX = 24, OffsetY = 42 });
             spriteSheet.Animations["IdleDown"] = new SpriteSheet.Animation()
@@ -65,7 +68,7 @@ namespace TheAdventure
             */
             var spriteSheet = SpriteSheet.LoadSpriteSheet("player.json", "Assets", _renderer);
             if(spriteSheet != null){
-                _player = new PlayerObject(spriteSheet, 100, 100);
+                _player = new PlayerObject(spriteSheet, 100, 100, _input);
             }
             _renderer.SetWorldBounds(new Rectangle<int>(0, 0, _currentLevel.Width * _currentLevel.TileWidth,
                 _currentLevel.Height * _currentLevel.TileHeight));
@@ -97,12 +100,19 @@ namespace TheAdventure
                     isAttacking = false;
                 }
             }
-            if(!isAttacking)
+            if (!isAttacking)
             {
-                _player.UpdatePlayerPosition(up ? 1.0 : 0.0, down ? 1.0 : 0.0, left ? 1.0 : 0.0, right ? 1.0 : 0.0,
-                    _currentLevel.Width * _currentLevel.TileWidth, _currentLevel.Height * _currentLevel.TileHeight,
-                    secsSinceLastFrame);
+                _player.UpdatePlayerPosition(
+                    up ? 1.0 : 0.0,
+                    down ? 1.0 : 0.0,
+                    left ? 1.0 : 0.0,
+                    right ? 1.0 : 0.0,
+                    _currentLevel.Width * _currentLevel.TileWidth,
+                    _currentLevel.Height * _currentLevel.TileHeight,
+                    secsSinceLastFrame  
+                );
             }
+
             var itemsToRemove = new List<int>();
             itemsToRemove.AddRange(GetAllTemporaryGameObjects().Where(gameObject => gameObject.IsExpired)
                 .Select(gameObject => gameObject.Id).ToList());

@@ -19,6 +19,23 @@ namespace TheAdventure
             _renderer = renderer;
         }
 
+        private static HashSet<KeyCode> pressedKeys = new HashSet<KeyCode>();
+
+        public static void KeyDown(KeyCode key)
+        {
+            pressedKeys.Add(key);
+        }
+
+        public static void KeyUp(KeyCode key)
+        {
+            pressedKeys.Remove(key);
+        }
+
+        public static bool IsKeyPressed(KeyCode key)
+        {
+            return pressedKeys.Contains(key);
+        }
+
         public bool IsKeyAPressed(){
             ReadOnlySpan<byte> _keyboardState = new(_sdl.GetKeyboardState(null), (int)KeyCode.Count);
             return _keyboardState[(int)KeyCode.A] == 1;
@@ -52,7 +69,13 @@ namespace TheAdventure
             ReadOnlySpan<byte> _keyboardState = new(_sdl.GetKeyboardState(null), (int)KeyCode.Count);
             return _keyboardState[(int)KeyCode.Down] == 1;
         }
-        
+
+        public bool IsWPressed()
+        {
+            ReadOnlySpan<byte> _keyboardState = new(_sdl.GetKeyboardState(null), (int)KeyCode.Count);
+            return _keyboardState[(int)KeyCode.W] == 1;
+        }
+
         public bool ProcessInput()
         {
             var currentTime = DateTimeOffset.UtcNow;
