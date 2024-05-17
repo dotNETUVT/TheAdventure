@@ -21,8 +21,10 @@ public class PlayerObject : RenderableGameObject
         GameOver
     }
 
-    private int _pixelsPerSecond = 192;
+ 
 
+    private int _baseSpeed = 192; // Base speed 
+    private double _sprintMultiplier = 2; // SPEEED
 
     public (PlayerState State, PlayerStateDirection Direction) State{ get; private set; }
 
@@ -75,8 +77,7 @@ public class PlayerObject : RenderableGameObject
         SetState(PlayerState.Attack, direction);
     }
 
-    public void UpdatePlayerPosition(double up, double down, double left, double right, int width, int height,
-        double time)
+    public void UpdatePlayerPosition(double up, double down, double left, double right, int width, int height, double time, bool isSprinting )
     {
         if(State.State == PlayerState.GameOver) return;
         if (up <= double.Epsilon &&
@@ -87,7 +88,11 @@ public class PlayerObject : RenderableGameObject
             return;
         }
 
-        var pixelsToMove = time * _pixelsPerSecond;
+        var pixelsPerSecond = isSprinting ? _baseSpeed * _sprintMultiplier : _baseSpeed;
+
+        var pixelsToMove = time * pixelsPerSecond;
+
+       
 
         var x = Position.X + (int)(right * pixelsToMove);
         x -= (int)(left * pixelsToMove);
