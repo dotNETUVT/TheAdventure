@@ -73,7 +73,7 @@ namespace TheAdventure
                 _currentLevel.Height * _currentLevel.TileHeight));
         }
 
-        public void ProcessFrame()
+        public bool ProcessFrame()
         {
             var currentTime = DateTimeOffset.Now;
             var secsSinceLastFrame = (currentTime - _lastUpdate).TotalSeconds;
@@ -108,11 +108,10 @@ namespace TheAdventure
             var itemsToRemove = new List<int>();
             itemsToRemove.AddRange(GetAllTemporaryGameObjects().Where(gameObject => gameObject.IsExpired)
                 .Select(gameObject => gameObject.Id).ToList());
-
-            if (addBomb)
-            {
+            
+            // should not be able to add bombs if the player is dead, since the game is basically over
+            if (addBomb && _player.State.State != PlayerObject.PlayerState.GameOver)
                 AddBomb(_player.Position.X, _player.Position.Y, false);
-            }
 
             foreach (var gameObjectId in itemsToRemove)
             {
@@ -127,6 +126,8 @@ namespace TheAdventure
                 }
                 _gameObjects.Remove(gameObjectId);
             }
+
+            return _player.isGameOver();
         }
 
         public void RenderFrame()

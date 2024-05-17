@@ -22,6 +22,7 @@ public class PlayerObject : RenderableGameObject
     }
 
     private int _pixelsPerSecond = 192;
+    private DateTimeOffset _gameOverStart;
 
 
     public (PlayerState State, PlayerStateDirection Direction) State{ get; private set; }
@@ -52,6 +53,14 @@ public class PlayerObject : RenderableGameObject
 
     public void GameOver(){
         SetState(PlayerState.GameOver, PlayerStateDirection.None);
+        _gameOverStart = DateTimeOffset.Now;
+    }
+
+    public bool isGameOver(){
+        // is 1.75 seconds so the animation has time to play, and the player can process what happened
+        if (State.State == PlayerState.GameOver && (DateTimeOffset.Now - _gameOverStart).TotalMilliseconds >= 1750)
+            return true;
+        return false;
     }
 
     public void Attack(bool up, bool down, bool left, bool right)
