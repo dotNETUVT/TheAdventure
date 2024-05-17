@@ -5,6 +5,7 @@ namespace TheAdventure.Models;
 
 public class RenderableGameObject : GameObject
 {
+    
     public SpriteSheet SpriteSheet { get; set; }
     public (int X, int Y) Position { get; set; }
     public double Angle { get; set; }

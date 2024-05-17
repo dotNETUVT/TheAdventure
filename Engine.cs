@@ -8,10 +8,16 @@ namespace TheAdventure
 {
     public class Engine
     {
+
+
+        
         private readonly Dictionary<int, GameObject> _gameObjects = new();
         private readonly Dictionary<string, TileSet> _loadedTileSets = new();
 
         private Level? _currentLevel;
+
+        private bool _isStartScreenVisible = true;
+        private DateTimeOffset _startScreenTime = DateTimeOffset.Now.AddSeconds(2);
 
          private bool isGameOver = false;
         private PlayerObject _player;
@@ -23,14 +29,14 @@ namespace TheAdventure
 
         public Engine(GameRenderer renderer, Input input)
         {
-            _renderer = renderer;
-            _input = input;
-
+                _renderer = renderer;
+                _input = input;
+                InitializeWorld();
+                InitializeStartScreen(); 
             _input.OnMouseClick += (_, coords) => AddBomb(coords.x, coords.y);
 
-            InitializeWorld(); // Adaugă această linie pentru a inițializa lumea jocului la crearea motorului
+            InitializeWorld(); 
 
-            // Inițializează și adaugă player-ul în lista de obiecte
             var spriteSheet = SpriteSheet.LoadSpriteSheet("player.json", "Assets", _renderer);
             if(spriteSheet != null)
             {
@@ -38,6 +44,13 @@ namespace TheAdventure
                 _gameObjects.Add(_player.Id, _player);
             }
         }
+
+            private void InitializeStartScreen()
+            {
+                _isStartScreenVisible = true;
+                _startScreenTime = DateTimeOffset.Now.AddSeconds(2); // Ecranul de start va fi afișat pentru 2 secunde
+            }
+
 
 
         public void InitializeWorld()
@@ -125,13 +138,16 @@ namespace TheAdventure
         }
 
 
-
-
         public void ProcessFrame()
         {
-            CheckPlayerBombCollisions();
 
             var currentTime = DateTimeOffset.Now;
+        if (_isStartScreenVisible && currentTime >= _startScreenTime)
+        {
+            _isStartScreenVisible = false; // Oprește afișarea ecranului de start după 2 secunde
+        }
+            CheckPlayerBombCollisions();
+
             var secsSinceLastFrame = (currentTime - _lastUpdate).TotalSeconds;
             _lastUpdate = currentTime;
 
@@ -153,38 +169,37 @@ namespace TheAdventure
             {
                 _gameObjects.Remove(gameObject);
             }
+
+            
         }
 
         public void RenderFrame()
         {
             _renderer.SetDrawColor(0, 0, 0, 255);
             _renderer.ClearScreen();
-            
-            // Verificăm dacă _player exista
-            if (_player != null)
+
+            if (_isStartScreenVisible)
             {
-                _renderer.CameraLookAt(_player.Position.X, _player.Position.Y);
+                var textureId = _renderer.LoadTexture("Assets/start.png", out _);
+                // Calcularea centrului pentru ajustarea pozitiei
+                var centerWidth = 400;  
+                var centerHeight = 220; 
+                var imageWidth = 64;
+                var imageHeight = 64;
+                var renderX = centerWidth - imageWidth / 2;
+                var renderY = centerHeight - imageHeight / 2;
+                var dst = new Rectangle<int>(renderX, renderY, imageWidth, imageHeight);
+                var src = new Rectangle<int>(0, 0, 800, 600);  
+                _renderer.RenderTexture(textureId, src, dst);
             }
             else
             {
-                Console.WriteLine("Game over");
+                RenderTerrain();
+                RenderAllObjects();
             }
-
-            RenderTerrain();
-
-            // Desenăm bomba chiar și după ce jucătorul a fost eliminat din joc
-            foreach (var gameObject in GetAllTemporaryGameObjects())
-            {
-                gameObject.Render(_renderer);
-            }
-
-            // Desenăm restul obiectelor
-            RenderAllObjects();
 
             _renderer.PresentFrame();
         }
-
-
 
 
         private Tile? GetTile(int id)
@@ -258,7 +273,7 @@ namespace TheAdventure
                 gameObject.Render(_renderer);
             }
 
-            if (_player != null) // Asigură-te că player-ul este desenat doar dacă există
+            if (_player != null) 
             {
                 _player.Render(_renderer);
             }
