@@ -67,8 +67,7 @@ namespace TheAdventure
             if(spriteSheet != null){
                 _player = new PlayerObject(spriteSheet, 100, 100);
             }
-            _renderer.SetWorldBounds(new Rectangle<int>(0, 0, _currentLevel.Width * _currentLevel.TileWidth,
-                _currentLevel.Height * _currentLevel.TileHeight));
+            _renderer.SetWorldBounds(new Rectangle<int>(0, 0, _currentLevel.TotalWidth, _currentLevel.TotalHeight));
         }
 
         public void ProcessFrame()
@@ -100,8 +99,7 @@ namespace TheAdventure
             if(!isAttacking)
             {
                 _player.UpdatePlayerPosition(up ? 1.0 : 0.0, down ? 1.0 : 0.0, left ? 1.0 : 0.0, right ? 1.0 : 0.0,
-                    _currentLevel.Width * _currentLevel.TileWidth, _currentLevel.Height * _currentLevel.TileHeight,
-                    secsSinceLastFrame);
+                    _currentLevel.TotalWidth, _currentLevel.TotalHeight, secsSinceLastFrame);
             }
             var itemsToRemove = new List<int>();
             itemsToRemove.AddRange(GetAllTemporaryGameObjects().Where(gameObject => gameObject.IsExpired)
@@ -136,6 +134,7 @@ namespace TheAdventure
 
             RenderTerrain();
             RenderAllObjects();
+            RenderUI();
 
             _renderer.PresentFrame();
         }
@@ -212,6 +211,29 @@ namespace TheAdventure
             }
 
             _player.Render(_renderer);
+        }
+
+        private void RenderUI()
+        {
+            if (_player.State.State == PlayerObject.PlayerState.GameOver)
+            {
+                var gameOverMessage = "GAME OVER";
+                var fontSize = 64;
+
+                var windowSize = _renderer.GetWindowSize();
+                var textSize = _renderer.MeasureText(gameOverMessage, fontSize);
+
+                // Interpolate the color from red (255, 0, 0) to white (255, 255, 255)
+                var t = Math.Abs(Math.Sin(DateTime.Now.Ticks / 5000000.0));
+                var r = 255;
+                var gb = (int)(255 * t);
+
+                // Center the text
+                _renderer.RenderText(gameOverMessage, fontSize,
+                    windowSize.Width / 2 - textSize.Width / 2,
+                    windowSize.Height / 2 - textSize.Height / 2,
+                    r, gb, gb);
+            }
         }
 
         private void AddBomb(int x, int y, bool translateCoordinates = true)
