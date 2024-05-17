@@ -76,13 +76,27 @@ namespace TheAdventure
             var currentTime = DateTimeOffset.Now;
             var secsSinceLastFrame = (currentTime - _lastUpdate).TotalSeconds;
             _lastUpdate = currentTime;
+            double speedModifier = 1.0;
 
             bool up = _input.IsUpPressed();
             bool down = _input.IsDownPressed();
             bool left = _input.IsLeftPressed();
             bool right = _input.IsRightPressed();
             bool isAttacking = _input.IsKeyAPressed();
-            bool addBomb = _input.IsKeyBPressed();
+            bool addBomb = _input.IsKeySpacePressed();
+            bool sprint = _input.IsShiftPressed();
+            bool slow = _input.IsCtrlPressed();
+            bool respawn = _input.IsKeyRPressed();
+            
+            if (sprint)
+            {
+                speedModifier = 2.0;
+            }
+
+            if (slow)
+            {
+                speedModifier = 0.5;
+            }
 
             if(isAttacking)
             {
@@ -99,7 +113,7 @@ namespace TheAdventure
             }
             if(!isAttacking)
             {
-                _player.UpdatePlayerPosition(up ? 1.0 : 0.0, down ? 1.0 : 0.0, left ? 1.0 : 0.0, right ? 1.0 : 0.0,
+                _player.UpdatePlayerPosition(up ? speedModifier : 0.0, down ? speedModifier : 0.0, left ? speedModifier : 0.0, right ? speedModifier : 0.0,
                     _currentLevel.Width * _currentLevel.TileWidth, _currentLevel.Height * _currentLevel.TileHeight,
                     secsSinceLastFrame);
             }
@@ -110,6 +124,11 @@ namespace TheAdventure
             if (addBomb)
             {
                 AddBomb(_player.Position.X, _player.Position.Y, false);
+            }
+
+            if (respawn && _player.State.State == PlayerObject.PlayerState.GameOver)
+            {
+                InitializeWorld();
             }
 
             foreach (var gameObjectId in itemsToRemove)
