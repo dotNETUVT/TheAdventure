@@ -29,7 +29,7 @@ public static class Program
             {
                 quit = input.ProcessInput();
                 if (quit) break;
-                
+
                 engine.ProcessFrame();
                 engine.RenderFrame();
             }

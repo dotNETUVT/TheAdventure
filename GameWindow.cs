@@ -12,7 +12,7 @@ public unsafe class GameWindow : IDisposable
         get
         {
             int width, height;
-            _sdl.GetWindowSize((Window *)_window, &width, &height);
+            _sdl.GetWindowSize((Window*)_window, &width, &height);
 
             return (width, height);
         }

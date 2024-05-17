@@ -6,14 +6,16 @@ namespace TheAdventure.Models;
 
 public class PlayerObject : RenderableGameObject
 {
-    public enum PlayerStateDirection{
+    public enum PlayerStateDirection
+    {
         None = 0,
         Down,
         Up,
         Left,
         Right,
     }
-    public enum PlayerState{
+    public enum PlayerState
+    {
         None = 0,
         Idle,
         Move,
@@ -21,12 +23,12 @@ public class PlayerObject : RenderableGameObject
         GameOver
     }
 
- 
+
 
     private int _baseSpeed = 192; // Base speed 
     private double _sprintMultiplier = 2; // SPEEED
 
-    public (PlayerState State, PlayerStateDirection Direction) State{ get; private set; }
+    public (PlayerState State, PlayerStateDirection Direction) State { get; private set; }
 
     public PlayerObject(SpriteSheet spriteSheet, int x, int y) : base(spriteSheet, (x, y))
     {
@@ -35,32 +37,38 @@ public class PlayerObject : RenderableGameObject
 
     public void SetState(PlayerState state, PlayerStateDirection direction)
     {
-        if(State.State == PlayerState.GameOver) return;
-        if(State.State == state && State.Direction == direction){
+        if (State.State == PlayerState.GameOver) return;
+        if (State.State == state && State.Direction == direction)
+        {
             return;
         }
-        else if(state == PlayerState.None && direction == PlayerStateDirection.None){
+        else if (state == PlayerState.None && direction == PlayerStateDirection.None)
+        {
             SpriteSheet.ActivateAnimation(null);
         }
-        else if(state == PlayerState.GameOver){
+        else if (state == PlayerState.GameOver)
+        {
             SpriteSheet.ActivateAnimation(Enum.GetName(state));
         }
-        else{
+        else
+        {
             var animationName = Enum.GetName<PlayerState>(state) + Enum.GetName<PlayerStateDirection>(direction);
             SpriteSheet.ActivateAnimation(animationName);
         }
         State = (state, direction);
     }
 
-    public void GameOver(){
+    public void GameOver()
+    {
         SetState(PlayerState.GameOver, PlayerStateDirection.None);
     }
 
     public void Attack(bool up, bool down, bool left, bool right)
     {
-        if(State.State == PlayerState.GameOver) return;
+        if (State.State == PlayerState.GameOver) return;
         var direction = State.Direction;
-        if(up){
+        if (up)
+        {
             direction = PlayerStateDirection.Up;
         }
         else if (down)
@@ -71,20 +79,22 @@ public class PlayerObject : RenderableGameObject
         {
             direction = PlayerStateDirection.Right;
         }
-        else if (left){
+        else if (left)
+        {
             direction = PlayerStateDirection.Left;
         }
         SetState(PlayerState.Attack, direction);
     }
 
-    public void UpdatePlayerPosition(double up, double down, double left, double right, int width, int height, double time, bool isSprinting )
+    public void UpdatePlayerPosition(double up, double down, double left, double right, int width, int height, double time, bool isSprinting)
     {
-        if(State.State == PlayerState.GameOver) return;
+        if (State.State == PlayerState.GameOver) return;
         if (up <= double.Epsilon &&
             down <= double.Epsilon &&
             left <= double.Epsilon &&
             right <= double.Epsilon &&
-            State.State == PlayerState.Idle){
+            State.State == PlayerState.Idle)
+        {
             return;
         }
 
@@ -92,7 +102,7 @@ public class PlayerObject : RenderableGameObject
 
         var pixelsToMove = time * pixelsPerSecond;
 
-       
+
 
         var x = Position.X + (int)(right * pixelsToMove);
         x -= (int)(left * pixelsToMove);
@@ -122,20 +132,25 @@ public class PlayerObject : RenderableGameObject
 
 
 
-        if (y < Position.Y){
+        if (y < Position.Y)
+        {
             SetState(PlayerState.Move, PlayerStateDirection.Up);
         }
-        if (y > Position.Y ){
+        if (y > Position.Y)
+        {
             SetState(PlayerState.Move, PlayerStateDirection.Down);
         }
-        if (x > Position.X ){
+        if (x > Position.X)
+        {
             SetState(PlayerState.Move, PlayerStateDirection.Right);
         }
-        if (x < Position.X){
+        if (x < Position.X)
+        {
             SetState(PlayerState.Move, PlayerStateDirection.Left);
         }
         if (x == Position.X &&
-            y == Position.Y){
+            y == Position.Y)
+        {
             SetState(PlayerState.Idle, State.Direction);
         }
 
