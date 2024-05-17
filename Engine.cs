@@ -1,8 +1,6 @@
 using System.Text.Json;
 using Silk.NET.Maths;
-using Silk.NET.SDL;
 using TheAdventure.Models;
-using TheAdventure.Models.Data;
 
 namespace TheAdventure
 {
@@ -13,6 +11,7 @@ namespace TheAdventure
 
         private Level? _currentLevel;
         private PlayerObject _player;
+        private TorchObject _torch;
         private GameRenderer _renderer;
         private Input _input;
 
@@ -54,21 +53,25 @@ namespace TheAdventure
             }
 
             _currentLevel = level;
-            /*SpriteSheet spriteSheet = new(_renderer, Path.Combine("Assets", "player.png"), 10, 6, 48, 48, new FrameOffset() { OffsetX = 24, OffsetY = 42 });
-            spriteSheet.Animations["IdleDown"] = new SpriteSheet.Animation()
-            {
-                StartFrame = new FramePosition(),//(0, 0),
-                EndFrame = new FramePosition() { Row = 0, Col = 5 },
-                DurationMs = 1000,
-                Loop = true
-            };
-            */
+
             var spriteSheet = SpriteSheet.LoadSpriteSheet("player.json", "Assets", _renderer);
-            if(spriteSheet != null){
+            if (spriteSheet != null)
+            {
                 _player = new PlayerObject(spriteSheet, 100, 100);
             }
+
+            var torchSpriteSheet = SpriteSheet.LoadSpriteSheet("Torch.json", "Assets", _renderer);
+            if (torchSpriteSheet != null)
+            {
+               _torch = new TorchObject(torchSpriteSheet, 101, 101);
+               torchSpriteSheet.ActivateAnimation("NoBurn");
+            }
+
             _renderer.SetWorldBounds(new Rectangle<int>(0, 0, _currentLevel.Width * _currentLevel.TileWidth,
                 _currentLevel.Height * _currentLevel.TileHeight));
+            
+            var torchLight = new LightSource(new Vector2D<int>(_torch.Position.X, _torch.Position.Y), 2, new LightColor(255, 165, 0, 128));
+            _renderer.AddLightSource(torchLight);
         }
 
         public void ProcessFrame()
@@ -85,7 +88,14 @@ namespace TheAdventure
             _player.UpdatePlayerPosition(up ? 1.0 : 0.0, down ? 1.0 : 0.0, left ? 1.0 : 0.0, right ? 1.0 : 0.0,
                 _currentLevel.Width * _currentLevel.TileWidth, _currentLevel.Height * _currentLevel.TileHeight,
                 secsSinceLastFrame);
-
+            
+            _torch.UpdateTorchPosition(_player.Position.X + 2, _player.Position.Y + 2);
+            var lightSources = _renderer.GetLightSources().ToList();
+            if (lightSources.Count > 0)
+            {
+                var firstLightSource = lightSources[0];
+                firstLightSource.Position = new Vector2D<int>(_torch.Position.X, _torch.Position.Y);
+            }
             var itemsToRemove = new List<int>();
             itemsToRemove.AddRange(GetAllTemporaryGameObjects().Where(gameObject => gameObject.IsExpired)
                 .Select(gameObject => gameObject.Id).ToList());
@@ -100,11 +110,13 @@ namespace TheAdventure
         {
             _renderer.SetDrawColor(0, 0, 0, 255);
             _renderer.ClearScreen();
-            
+
             _renderer.CameraLookAt(_player.Position.X, _player.Position.Y);
 
             RenderTerrain();
             RenderAllObjects();
+            
+            _renderer.RenderLighting();
 
             _renderer.PresentFrame();
         }
@@ -181,21 +193,15 @@ namespace TheAdventure
             }
 
             _player.Render(_renderer);
+            _torch.Render(_renderer); // Render the torch
         }
 
         private void AddBomb(int x, int y)
         {
             var translated = _renderer.TranslateFromScreenToWorldCoordinates(x, y);
-            /*SpriteSheet spriteSheet = new(_renderer, "BombExploding.png", 1, 13, 32, 64, (16, 48));
-            spriteSheet.Animations["Explode"] = new SpriteSheet.Animation()
-            {
-                StartFrame = (0, 0),
-                EndFrame = (0, 12),
-                DurationMs = 2000,
-                Loop = false
-            };*/
             var spriteSheet = SpriteSheet.LoadSpriteSheet("bomb.json", "Assets", _renderer);
-            if(spriteSheet != null){
+            if (spriteSheet != null)
+            {
                 spriteSheet.ActivateAnimation("Explode");
                 TemporaryGameObject bomb = new(spriteSheet, 2.1, (translated.X, translated.Y));
                 _gameObjects.Add(bomb.Id, bomb);

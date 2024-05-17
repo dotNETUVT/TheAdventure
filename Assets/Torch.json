@@ -1,0 +1,17 @@
+{
+    "rowCount" : 1,
+    "columnCount" : 13,
+    "frameWidth" : 32,
+    "frameHeight" : 32,
+    "frameCenter" : {
+        "offsetX" : 0,
+        "offsetY" : 0
+    },
+    "fileName" : "Torch_32_Flamas_0.png",
+    "animations" : {
+        "Burn" : {
+
+            "loop" : false
+        }
+    }
+}
