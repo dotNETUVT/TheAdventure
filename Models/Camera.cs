@@ -11,7 +11,7 @@ public class Camera
 {
     private int _x;
     private int _y;
-
+    private float _zoom = 1.0f;
     private Rectangle<int> _gameWorld = new();
 
     /// <summary>
@@ -32,6 +32,12 @@ public class Camera
 
     public int Width { get; init; }
     public int Height { get; init; }
+
+     public float Zoom
+    {
+        get => _zoom;
+        set => _zoom = Math.Max(0.1f, Math.Min(5.0f, value)); 
+    }
 
     public Camera(int width, int height)
     {
@@ -80,14 +86,19 @@ public class Camera
     /// </summary>
     /// <param name="textureDestination"></param>
     /// <returns></returns>
-    public Rectangle<int> TranslateToScreenCoordinates(Rectangle<int> textureDestination)
+   public Rectangle<int> TranslateToScreenCoordinates(Rectangle<int> textureDestination)
     {
-        var newDestination = textureDestination.GetTranslated(new Vector2D<int>(Width / 2 - X, Height / 2 - Y));
-        return newDestination;
+        var scaledWidth = (int)(textureDestination.Size.X * _zoom);
+        var scaledHeight = (int)(textureDestination.Size.Y * _zoom);
+        var scaledX = (int)((textureDestination.Origin.X - _x) * _zoom + Width / 2);
+        var scaledY = (int)((textureDestination.Origin.Y - _y) * _zoom + Height / 2);
+        return new Rectangle<int>(new Vector2D<int>(scaledX, scaledY), new Vector2D<int>(scaledWidth, scaledHeight));
     }
 
     public Vector2D<int> FromScreenToWorld(int x, int y)
     {
-        return new Vector2D<int>(x - (Width / 2 - X), y - (Height / 2 - Y));
+        var worldX = (int)((x - Width / 2) / _zoom + _x);
+        var worldY = (int)((y - Height / 2) / _zoom + _y);
+        return new Vector2D<int>(worldX, worldY);
     }
 }

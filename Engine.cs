@@ -23,6 +23,7 @@ namespace TheAdventure
         {
             _renderer = renderer;
             _input = input;
+            _camera = new Camera(renderer.Width, renderer.Height);
 
             _input.OnMouseClick += (_, coords) => AddBomb(coords.x, coords.y);
         }
@@ -76,6 +77,7 @@ namespace TheAdventure
             var currentTime = DateTimeOffset.Now;
             var secsSinceLastFrame = (currentTime - _lastUpdate).TotalSeconds;
             _lastUpdate = currentTime;
+            UpdateZoom();
 
             bool up = _input.IsUpPressed();
             bool down = _input.IsDownPressed();
@@ -126,6 +128,19 @@ namespace TheAdventure
                 _gameObjects.Remove(gameObjectId);
             }
         }
+
+        public void UpdateZoom()
+        {
+            if (_input.IsZPressed())
+            {
+                float currentZoom = _camera.Zoom;
+                currentZoom += 0.1f; 
+                if (currentZoom > 2.0f)
+                    currentZoom = 1.0f;
+                _camera.Zoom = currentZoom;
+            }
+        }
+
 
         public void RenderFrame()
         {
