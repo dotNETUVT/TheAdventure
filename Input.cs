@@ -52,9 +52,17 @@ namespace TheAdventure
             ReadOnlySpan<byte> _keyboardState = new(_sdl.GetKeyboardState(null), (int)KeyCode.Count);
             return _keyboardState[(int)KeyCode.Down] == 1;
         }
+
+        public bool IsEscPressed()
+        {
+            ReadOnlySpan<byte> _keyboardState = new(_sdl.GetKeyboardState(null), (int)KeyCode.Count);
+            return _keyboardState[(int)KeyCode.Escape] == 1;
+        }
         
         public bool ProcessInput()
         {
+            if (IsEscPressed())
+                return true;
             var currentTime = DateTimeOffset.UtcNow;
             Event ev = new Event();
             var mouseX = 0;

@@ -19,6 +19,8 @@ namespace TheAdventure
         private DateTimeOffset _lastUpdate = DateTimeOffset.Now;
         private DateTimeOffset _lastPlayerUpdate = DateTimeOffset.Now;
 
+        TemporaryGameObject? bomb = null;
+
         public Engine(GameRenderer renderer, Input input)
         {
             _renderer = renderer;
@@ -216,13 +218,19 @@ namespace TheAdventure
 
         private void AddBomb(int x, int y, bool translateCoordinates = true)
         {
-
+            if (bomb != null)
+            {
+                if (bomb.IsExpired)
+                    bomb = null;
+                else
+                    return;
+            }
             var translated = translateCoordinates ? _renderer.TranslateFromScreenToWorldCoordinates(x, y) : new Vector2D<int>(x, y);
             
             var spriteSheet = SpriteSheet.LoadSpriteSheet("bomb.json", "Assets", _renderer);
             if(spriteSheet != null){
                 spriteSheet.ActivateAnimation("Explode");
-                TemporaryGameObject bomb = new(spriteSheet, 2.1, (translated.X, translated.Y));
+                bomb = new(spriteSheet, 2.1, (translated.X, translated.Y));
                 _gameObjects.Add(bomb.Id, bomb);
             }
         }
