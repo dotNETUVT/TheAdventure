@@ -64,7 +64,8 @@ namespace TheAdventure
             };
             */
             var spriteSheet = SpriteSheet.LoadSpriteSheet("player.json", "Assets", _renderer);
-            if(spriteSheet != null){
+            if (spriteSheet != null)
+            {
                 _player = new PlayerObject(spriteSheet, 100, 100);
             }
             _renderer.SetWorldBounds(new Rectangle<int>(0, 0, _currentLevel.Width * _currentLevel.TileWidth,
@@ -84,25 +85,36 @@ namespace TheAdventure
             bool isAttacking = _input.IsKeyAPressed();
             bool addBomb = _input.IsKeyBPressed();
 
-            if(isAttacking)
+            bool isMoving = up || down || left || right;
+
+            if (isAttacking)
             {
-                var dir = up ? 1: 0;
-                dir += down? 1 : 0;
-                dir += left? 1: 0;
+                var dir = up ? 1 : 0;
+                dir += down ? 1 : 0;
+                dir += left ? 1 : 0;
                 dir += right ? 1 : 0;
-                if(dir <= 1){
+                if (dir <= 1)
+                {
                     _player.Attack(up, down, left, right);
                 }
-                else{
+                else
+                {
                     isAttacking = false;
                 }
             }
-            if(!isAttacking)
+
+            if (isMoving && _player.HasEnergy)
             {
+                _player.DepleteEnergy(secsSinceLastFrame);
                 _player.UpdatePlayerPosition(up ? 1.0 : 0.0, down ? 1.0 : 0.0, left ? 1.0 : 0.0, right ? 1.0 : 0.0,
                     _currentLevel.Width * _currentLevel.TileWidth, _currentLevel.Height * _currentLevel.TileHeight,
                     secsSinceLastFrame);
             }
+            else if (!isMoving)
+            {
+                _player.RechargeEnergy(secsSinceLastFrame);
+            }
+
             var itemsToRemove = new List<int>();
             itemsToRemove.AddRange(GetAllTemporaryGameObjects().Where(gameObject => gameObject.IsExpired)
                 .Select(gameObject => gameObject.Id).ToList());
@@ -115,29 +127,64 @@ namespace TheAdventure
             foreach (var gameObjectId in itemsToRemove)
             {
                 var gameObject = _gameObjects[gameObjectId];
-                if(gameObject is TemporaryGameObject){
-                    var tempObject = (TemporaryGameObject)gameObject;
+                if (gameObject is TemporaryGameObject tempObject)
+                {
                     var deltaX = Math.Abs(_player.Position.X - tempObject.Position.X);
                     var deltaY = Math.Abs(_player.Position.Y - tempObject.Position.Y);
-                    if(deltaX < 32 && deltaY < 32){
-                        _player.GameOver();
+                    if (deltaX < 32 && deltaY < 32)
+                    {
+                        _player.TakeDamage();
                     }
                 }
                 _gameObjects.Remove(gameObjectId);
             }
         }
 
+
         public void RenderFrame()
         {
             _renderer.SetDrawColor(0, 0, 0, 255);
             _renderer.ClearScreen();
-            
+
             _renderer.CameraLookAt(_player.Position.X, _player.Position.Y);
 
             RenderTerrain();
             RenderAllObjects();
 
+            RenderHPBar();
+            RenderEnergyBar();
+
             _renderer.PresentFrame();
+        }
+
+        private void RenderHPBar()
+        {
+            var hpBarWidth = 50;
+            var hpBarHeight = 10;
+            var hpBarX = 10;
+            var hpBarY = 10;
+
+            _renderer.SetDrawColor(128, 128, 128, 255);
+            _renderer.RenderFillRectangle(hpBarX, hpBarY, hpBarWidth, hpBarHeight);
+
+            var currentHpWidth = (int)((_player.HP / 2.0) * hpBarWidth);
+            _renderer.SetDrawColor(0, 255, 0, 255);
+            _renderer.RenderFillRectangle(hpBarX, hpBarY, currentHpWidth, hpBarHeight);
+        }
+
+        private void RenderEnergyBar()
+        {
+            var energyBarWidth = 50;
+            var energyBarHeight = 10;
+            var energyBarX = 10;
+            var energyBarY = 25;
+
+            _renderer.SetDrawColor(128, 128, 128, 255);
+            _renderer.RenderFillRectangle(energyBarX, energyBarY, energyBarWidth, energyBarHeight);
+
+            var currentEnergyWidth = (int)((_player.Energy / 4.0) * energyBarWidth);
+            _renderer.SetDrawColor(0, 0, 255, 255);
+            _renderer.RenderFillRectangle(energyBarX, energyBarY, currentEnergyWidth, energyBarHeight);
         }
 
         private Tile? GetTile(int id)
@@ -218,9 +265,10 @@ namespace TheAdventure
         {
 
             var translated = translateCoordinates ? _renderer.TranslateFromScreenToWorldCoordinates(x, y) : new Vector2D<int>(x, y);
-            
+
             var spriteSheet = SpriteSheet.LoadSpriteSheet("bomb.json", "Assets", _renderer);
-            if(spriteSheet != null){
+            if (spriteSheet != null)
+            {
                 spriteSheet.ActivateAnimation("Explode");
                 TemporaryGameObject bomb = new(spriteSheet, 2.1, (translated.X, translated.Y));
                 _gameObjects.Add(bomb.Id, bomb);

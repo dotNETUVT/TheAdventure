@@ -40,6 +40,12 @@ public unsafe class GameRenderer
         _camera.LookAt(x, y);
     }
 
+    public void RenderFillRectangle(int x, int y, int width, int height)
+    {
+        var rect = new Rectangle<int>(x, y, width, height);
+        _sdl.RenderFillRect(_renderer, rect);
+    }
+
     public int LoadTexture(string fileName, out TextureInfo textureInfo)
     {
         using (var fStream = new FileStream(fileName, FileMode.Open))
