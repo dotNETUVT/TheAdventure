@@ -215,7 +215,7 @@ namespace TheAdventure
 
         private void RenderUI()
         {
-            if (_player.State.State == PlayerObject.PlayerState.GameOver)
+            if (IsGameOver())
             {
                 var gameOverMessage = "GAME OVER";
                 var fontSize = 64;
@@ -238,6 +238,9 @@ namespace TheAdventure
 
         private void AddBomb(int x, int y, bool translateCoordinates = true)
         {
+            // Don't allow bombs to be placed if the game is over
+            if (IsGameOver()) return;
+
             // Limit the number of bombs that can be placed per second
             if (DateTime.Now - _lastBombUpdate < TimeSpan.FromSeconds(1))
             {
@@ -253,6 +256,11 @@ namespace TheAdventure
                 TemporaryGameObject bomb = new(spriteSheet, 2.1, (translated.X, translated.Y));
                 _gameObjects.Add(bomb.Id, bomb);
             }
+        }
+
+        private bool IsGameOver()
+        {
+            return _player.State.State == PlayerObject.PlayerState.GameOver;
         }
 
         private bool IsUpPressed()
