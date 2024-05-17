@@ -1,6 +1,7 @@
 using System.Formats.Asn1;
 using Silk.NET.Maths;
 using TheAdventure;
+using System.Media;
 
 namespace TheAdventure.Models;
 
@@ -26,6 +27,7 @@ public class PlayerObject : RenderableGameObject
     private const int SprintSpeed = 300;
     private int _pixelsPerSecond = 192;
     private Input _input;
+    private SoundPlayer soundPlayer;
 
 
 
@@ -33,8 +35,10 @@ public class PlayerObject : RenderableGameObject
 
     public PlayerObject(SpriteSheet spriteSheet, int x, int y, Input input) : base(spriteSheet, (x, y))
     {
-
-        _input = input; // Ini?ializeaz? input-ul
+        string filePath = @"Assets\sword_slash.wav";
+        soundPlayer = new SoundPlayer(filePath);
+        soundPlayer.LoadAsync();
+        _input = input; 
         SetState(PlayerState.Idle, PlayerStateDirection.Down);
 
     }
@@ -70,6 +74,9 @@ public class PlayerObject : RenderableGameObject
     public void Attack(bool up, bool down, bool left, bool right)
     {
         if(State.State == PlayerState.GameOver) return;
+
+        soundPlayer.Play();
+
         var direction = State.Direction;
         if(up){
             direction = PlayerStateDirection.Up;
