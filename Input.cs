@@ -24,6 +24,12 @@ namespace TheAdventure
             return _keyboardState[(int)KeyCode.A] == 1;
         }
 
+        public bool IsKeyCPressed()
+        {
+            ReadOnlySpan<byte> _keyboardState = new(_sdl.GetKeyboardState(null), (int)KeyCode.Count);
+            return _keyboardState[(int)KeyCode.C] == 1;
+        }
+        
         public bool IsKeyBPressed(){
             ReadOnlySpan<byte> _keyboardState = new(_sdl.GetKeyboardState(null), (int)KeyCode.Count);
             return _keyboardState[(int)KeyCode.B] == 1;
