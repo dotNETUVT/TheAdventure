@@ -1,51 +1,139 @@
+using System.Formats.Asn1;
 using Silk.NET.Maths;
 using TheAdventure;
 
-public class PlayerObject : GameObject
+namespace TheAdventure.Models;
+
+public class PlayerObject : RenderableGameObject
 {
-    /// <summary>
-    /// Player X position in world coordinates.
-    /// </summary>
-    public int X { get; set; }
+    public enum PlayerStateDirection{
+        None = 0,
+        Down,
+        Up,
+        Left,
+        Right,
+    }
+    public enum PlayerState{
+        None = 0,
+        Idle,
+        Move,
+        Attack,
+        GameOver
+    }
 
-    /// <summary>
-    /// Player Y position in world coordinates.
-    /// </summary>
-    public int Y { get; set; }
+    private int _pixelsPerSecond = 192;
 
-    // Offset player sprite to have world position at x=24px y=42px
 
-    private Rectangle<int> _source = new Rectangle<int>(0, 0, 48, 48);
-    private Rectangle<int> _target = new Rectangle<int>(0,0,48,48);
-    private int _textureId;
-    private int _pixelsPerSecond = 128;
+    public (PlayerState State, PlayerStateDirection Direction) State{ get; private set; }
 
-    public PlayerObject(int id) : base(id)
+    public PlayerObject(SpriteSheet spriteSheet, int x, int y) : base(spriteSheet, (x, y))
     {
-        _textureId = GameRenderer.LoadTexture(Path.Combine("Assets", "player.png"), out var textureData);
-        UpdateScreenTarget();
+        SetState(PlayerState.Idle, PlayerStateDirection.Down);
     }
 
-    private void UpdateScreenTarget(){
-        var targetX = X + 24;
-        var targetY = Y - 42;
-
-        _target = new Rectangle<int>(targetX, targetY, 48, 48);
-    }
-
-    public void UpdatePlayerPosition(double up, double down, double left, double right, int time)
+    public void SetState(PlayerState state, PlayerStateDirection direction)
     {
-        var pixelsToMove = (time / 1000.0) * _pixelsPerSecond;
-
-        X += (int)(right * pixelsToMove);
-        X -= (int)(left * pixelsToMove);
-        Y -= (int)(up * pixelsToMove);
-        Y += (int)(down * pixelsToMove);
-
-        UpdateScreenTarget();
+        if(State.State == PlayerState.GameOver) return;
+        if(State.State == state && State.Direction == direction){
+            return;
+        }
+        else if(state == PlayerState.None && direction == PlayerStateDirection.None){
+            SpriteSheet.ActivateAnimation(null);
+        }
+        else if(state == PlayerState.GameOver){
+            SpriteSheet.ActivateAnimation(Enum.GetName(state));
+        }
+        else{
+            var animationName = Enum.GetName<PlayerState>(state) + Enum.GetName<PlayerStateDirection>(direction);
+            SpriteSheet.ActivateAnimation(animationName);
+        }
+        State = (state, direction);
     }
 
-    public void Render(GameRenderer renderer){
-        renderer.RenderTexture(_textureId, _source, _target);
+    public void GameOver(){
+        SetState(PlayerState.GameOver, PlayerStateDirection.None);
+    }
+
+    public void Attack(bool up, bool down, bool left, bool right)
+    {
+        if(State.State == PlayerState.GameOver) return;
+        var direction = State.Direction;
+        if(up){
+            direction = PlayerStateDirection.Up;
+        }
+        else if (down)
+        {
+            direction = PlayerStateDirection.Down;
+        }
+        else if (right)
+        {
+            direction = PlayerStateDirection.Right;
+        }
+        else if (left){
+            direction = PlayerStateDirection.Left;
+        }
+        SetState(PlayerState.Attack, direction);
+    }
+
+    public void UpdatePlayerPosition(double up, double down, double left, double right, int width, int height,
+        double time)
+    {
+        if(State.State == PlayerState.GameOver) return;
+        if (up <= double.Epsilon &&
+            down <= double.Epsilon &&
+            left <= double.Epsilon &&
+            right <= double.Epsilon &&
+            State.State == PlayerState.Idle){
+            return;
+        }
+
+        var pixelsToMove = time * _pixelsPerSecond;
+
+        var x = Position.X + (int)(right * pixelsToMove);
+        x -= (int)(left * pixelsToMove);
+
+        var y = Position.Y - (int)(up * pixelsToMove);
+        y += (int)(down * pixelsToMove);
+
+        if (x < 10)
+        {
+            x = 10;
+        }
+
+        if (y < 24)
+        {
+            y = 24;
+        }
+
+        if (x > width - 10)
+        {
+            x = width - 10;
+        }
+
+        if (y > height - 6)
+        {
+            y = height - 6;
+        }
+
+
+
+        if (y < Position.Y){
+            SetState(PlayerState.Move, PlayerStateDirection.Up);
+        }
+        if (y > Position.Y ){
+            SetState(PlayerState.Move, PlayerStateDirection.Down);
+        }
+        if (x > Position.X ){
+            SetState(PlayerState.Move, PlayerStateDirection.Right);
+        }
+        if (x < Position.X){
+            SetState(PlayerState.Move, PlayerStateDirection.Left);
+        }
+        if (x == Position.X &&
+            y == Position.Y){
+            SetState(PlayerState.Idle, State.Direction);
+        }
+
+        Position = (x, y);
     }
 }
