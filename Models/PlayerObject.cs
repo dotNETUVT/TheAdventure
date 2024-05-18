@@ -21,7 +21,7 @@ public class PlayerObject : RenderableGameObject
         GameOver
     }
 
-    private int _pixelsPerSecond = 192;
+    private int _pixelsPerSecond = 100;
     public int NormalBombs { get; private set; }
     public int RemoteBombs { get; private set; }
 
@@ -160,5 +160,11 @@ public class PlayerObject : RenderableGameObject
         {
             RemoteBombs -= 1;
         }
+    }
+    public void EnableSprinting(){
+        _pixelsPerSecond = 192;
+    }
+    public void DisableSprinting(){
+        _pixelsPerSecond = 100;
     }
 }
