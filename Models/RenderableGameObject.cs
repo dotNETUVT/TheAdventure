@@ -19,8 +19,16 @@ public class RenderableGameObject : GameObject
         RotationCenter = rotationCenter;
     }
 
-    public virtual void Render(GameRenderer renderer)
+    public virtual void Render(GameRenderer renderer, float scale = 1.0f)
     {
-        SpriteSheet.Render(renderer, Position, Angle, RotationCenter);
+        var scaledWidth = (int)(SpriteSheet.FrameWidth * scale);
+        var scaledHeight = (int)(SpriteSheet.FrameHeight * scale);
+        var destRect = new Rectangle<int>(
+            Position.X - (int)(SpriteSheet.FrameCenter.OffsetX * scale),
+            Position.Y - (int)(SpriteSheet.FrameCenter.OffsetY * scale),
+            scaledWidth,
+            scaledHeight
+        );
+        SpriteSheet.Render(renderer, destRect, Angle, RotationCenter);
     }
 }

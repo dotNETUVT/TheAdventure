@@ -4,6 +4,7 @@ using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.PixelFormats;
 using TheAdventure.Models;
 using Point = Silk.NET.SDL.Point;
+using System.Runtime.InteropServices;
 
 namespace TheAdventure;
 
@@ -17,6 +18,37 @@ public unsafe class GameRenderer
     private Dictionary<int, IntPtr> _textures = new();
     private Dictionary<int, TextureInfo> _textureData = new();
     private int _textureId;
+    private int _starTextureId;
+    private TextureInfo _starTextureInfo;
+    private int _numberTextureId;
+    private TextureInfo _numberTextureInfo;
+    private int _numberHeight = 16;
+    private Dictionary<char, int> _numberWidths = new()
+    {
+        { '0', 14 },
+        { '1', 8 },
+        { '2', 14 },
+        { '3', 14 },
+        { '4', 14 },
+        { '5', 14 },
+        { '6', 14 },
+        { '7', 14 },
+        { '8', 14 },
+        { '9', 14 }
+    };
+    private Dictionary<char, int> _numberOffsets = new()
+    {
+        { '0', 0 },
+        { '1', 16 },
+        { '2', 27 },
+        { '3', 47 },
+        { '4', 63 },
+        { '5', 79 },
+        { '6', 95 },
+        { '7', 111 },
+        { '8', 128 },
+        { '9', 144 }
+    };
 
     public GameRenderer(Sdl sdl, GameWindow window)
     {
@@ -96,5 +128,53 @@ public unsafe class GameRenderer
     public void PresentFrame()
     {
         _sdl.RenderPresent(_renderer);
+    }
+    
+    public void LoadStarTexture(string fileName)
+    {
+        _starTextureId = LoadTexture(fileName, out _starTextureInfo);
+    }
+
+    public void LoadNumberTexture(string fileName)
+    {
+        _numberTextureId = LoadTexture(fileName, out _numberTextureInfo);
+    }
+    
+    public void RenderStar(int x, int y, float scale = 1.0f)
+    {
+        if (_textures.TryGetValue(_starTextureId, out var texture))
+        {
+            int width = (int)(_starTextureInfo.Width * scale);
+            int height = (int)(_starTextureInfo.Height * scale);
+            Rectangle<int> srcRect = new Rectangle<int>(0, 0, _starTextureInfo.Width, _starTextureInfo.Height);
+            Rectangle<int> dstRect = new Rectangle<int>(x, y, width, height);
+            _sdl.RenderCopy(_renderer, (Texture*)texture, &srcRect, &dstRect);
+        }
+    }
+    
+    public void RenderNumber(char number, int x, int y, float scale = 1.0f)
+    {
+        if (_textures.TryGetValue(_numberTextureId, out var texture))
+        {
+            var width = (int)(_numberWidths[number] * scale);
+            var height = (int)(_numberHeight * scale);
+            var offsetX = _numberOffsets[number];
+            Rectangle<int> srcRect = new Rectangle<int>(offsetX, 0, _numberWidths[number], _numberHeight);
+            Rectangle<int> dstRect = new Rectangle<int>(x, y, width, height);
+            _sdl.RenderCopy(_renderer, (Texture*)texture, &srcRect, &dstRect);
+        }
+    }
+    
+    [StructLayout(LayoutKind.Sequential)]
+    public struct SDL_Rect
+    {
+        public int x;
+        public int y;
+        public int w;
+        public int h;
+    }
+    private SDL_Rect ToSDL_Rect(Rectangle<int> rect)
+    {
+        return new SDL_Rect { x = rect.Origin.X, y = rect.Origin.Y, w = rect.Size.X, h = rect.Size.Y };
     }
 }

@@ -8,4 +8,11 @@ public struct FramePosition{
 public struct FrameOffset{
     public int OffsetX { get; set; }
     public int OffsetY { get; set; }
+    private int v1;
+    private int v2;
+    public FrameOffset(int v1, int v2) : this()
+    {
+        this.v1 = v1;
+        this.v2 = v2;
+    }
 }

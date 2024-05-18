@@ -10,6 +10,7 @@ namespace TheAdventure
     {
         private readonly Dictionary<int, GameObject> _gameObjects = new();
         private readonly Dictionary<string, TileSet> _loadedTileSets = new();
+        private readonly Dictionary<string, SpriteSheet> _loadedStarSpriteSheet = new();
 
         private Level? _currentLevel;
         private PlayerObject _player;
@@ -18,13 +19,31 @@ namespace TheAdventure
 
         private DateTimeOffset _lastUpdate = DateTimeOffset.Now;
         private DateTimeOffset _lastPlayerUpdate = DateTimeOffset.Now;
-
+        private DateTimeOffset _lastStarTime = DateTimeOffset.Now;
+        private readonly TimeSpan _starInterval = TimeSpan.FromSeconds(6);
+        private Dictionary<char, int> _numberWidths = new() 
+        {
+            { '0', 14 },
+            { '1', 8 },
+            { '2', 14 },
+            { '3', 14 },
+            { '4', 14 },
+            { '5', 14 },
+            { '6', 14 },
+            { '7', 14 },
+            { '8', 14 },
+            { '9', 14 }
+        };
+        
         public Engine(GameRenderer renderer, Input input)
         {
             _renderer = renderer;
             _input = input;
 
             _input.OnMouseClick += (_, coords) => AddBomb(coords.x, coords.y);
+
+            _renderer.LoadStarTexture("Assets/star.png");
+            _renderer.LoadNumberTexture("Assets/numbers.png");
         }
 
         public void InitializeWorld()
@@ -54,6 +73,13 @@ namespace TheAdventure
             }
 
             _currentLevel = level;
+            
+            var starSpriteSheet = SpriteSheet.LoadSpriteSheet("star.json", "Assets", _renderer);
+            if (starSpriteSheet != null)
+                _loadedStarSpriteSheet["star"] = starSpriteSheet;
+            else
+                Console.WriteLine("Failed to load star sprite sheet.");
+            
             /*SpriteSheet spriteSheet = new(_renderer, Path.Combine("Assets", "player.png"), 10, 6, 48, 48, new FrameOffset() { OffsetX = 24, OffsetY = 42 });
             spriteSheet.Animations["IdleDown"] = new SpriteSheet.Animation()
             {
@@ -125,6 +151,30 @@ namespace TheAdventure
                 }
                 _gameObjects.Remove(gameObjectId);
             }
+            
+            var stars = _gameObjects.Values.OfType<StarObject>().ToList();
+            foreach (var star in stars)
+            {
+                if (IsIntersection(_player.Position, star.Position, 15))  
+                {
+                    _player.GetStar();
+                    _gameObjects.Remove(star.Id);
+                }
+            }
+            
+            string starsTotal = _player?.StarsTotal.ToString() ?? "0";
+            for (int i = 0; i < starsTotal.Length; i++)
+                _renderer.RenderNumber(starsTotal[i], 50 + i * 20, 10);
+            
+            if ((currentTime - _lastStarTime) > _starInterval)
+            {
+                SpawnStar();
+                _lastStarTime = currentTime;
+            }
+            
+            var unavailableStars = _gameObjects.Values.OfType<StarObject>().Where(m => m.IsUnavailable).ToList();
+            foreach (var star in unavailableStars)
+                _gameObjects.Remove(star.Id);
         }
 
         public void RenderFrame()
@@ -136,6 +186,17 @@ namespace TheAdventure
 
             RenderTerrain();
             RenderAllObjects();
+            
+            _renderer.RenderStar(10, 10, scale: 0.5f);  
+            
+            string starsTotal = _player?.StarsTotal.ToString() ?? "0";
+            int xPos = 40;
+            for (int i = 0; i < starsTotal.Length; i++)
+            {
+                char number = starsTotal[i];
+                _renderer.RenderNumber(number, xPos, 13, scale: 1.2f);
+                xPos += (int)(_numberWidths[number] * 0.5f) + 2;
+            }
 
             _renderer.PresentFrame();
         }
@@ -208,7 +269,10 @@ namespace TheAdventure
         {
             foreach (var gameObject in GetAllRenderableObjects())
             {
-                gameObject.Render(_renderer);
+                if (gameObject is StarObject star)
+                    star.Render(_renderer, scale: 0.5f);
+                else
+                    gameObject.Render(_renderer);
             }
 
             _player.Render(_renderer);
@@ -225,6 +289,31 @@ namespace TheAdventure
                 TemporaryGameObject bomb = new(spriteSheet, 2.1, (translated.X, translated.Y));
                 _gameObjects.Add(bomb.Id, bomb);
             }
+        }
+        
+        private void AddStar(int x, int y, double ttl = 10.0)  
+        {
+            if (_loadedStarSpriteSheet.TryGetValue("star", out var spriteSheet))
+            {
+                StarObject star = new(spriteSheet, (x, y), ttl);
+                _gameObjects.Add(star.Id, star);
+            }
+            else
+                Console.WriteLine("Failed to find star sprite sheet.");
+        }
+
+
+        private void SpawnStar()
+        {
+            var random = new Random();
+            int x = random.Next(10, _currentLevel.Width * _currentLevel.TileWidth - 10);
+            int y = random.Next(24, _currentLevel.Height * _currentLevel.TileHeight - 24);
+            AddStar(x, y);
+        }
+        
+        private bool IsIntersection((int X, int Y) pos1, (int X, int Y) pos2, int size)
+        {
+            return Math.Abs(pos1.X - pos2.X) < size && Math.Abs(pos1.Y - pos2.Y) < size;
         }
     }
 }
