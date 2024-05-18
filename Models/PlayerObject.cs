@@ -89,7 +89,6 @@ public class PlayerObject : RenderableGameObject
                 octopus.GameOver();
             }
         }
-        SetState(PlayerState.Idle, direction);
     }
 
     private List<Octopus> GetOctopusesInRange()
