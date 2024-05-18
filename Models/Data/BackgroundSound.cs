@@ -1,36 +1,26 @@
 using CSCore;
 using CSCore.SoundOut;
 using CSCore.Codecs;
+using CSCore.Streams;
 using System;
-using System.Collections.Generic;
 
 public class BackgroundSong : IDisposable
 {
     private ISoundOut _soundOut;
     private IWaveSource _waveSource;
-    private LoopStream _loopStream;
-    private List<string> _filePaths;
-    private int _currentTrackIndex;
+    private readonly LoopStream _loopStream;
+    private readonly string _filePath;
     private float _volume;
-    private bool _loop;
 
-    public BackgroundSong(List<string> filePaths, bool loop = false, float initialVolume = 1.0f)
+    public BackgroundSong(string filePath, bool loop = false, float initialVolume = 1.0f)
     {
-        _filePaths = filePaths;
-        _currentTrackIndex = 0;
-        _volume = initialVolume;
-        _loop = loop;
-        LoadTrack(_currentTrackIndex);
-    }
-
-    private void LoadTrack(int trackIndex)
-    {
-        DisposeWaveSource();
-        _waveSource = CodecFactory.Instance.GetCodec(_filePaths[trackIndex])
+        _filePath = filePath;
+        _waveSource = CodecFactory.Instance.GetCodec(filePath)
             .ToSampleSource()
             .ToWaveSource();
 
-        _loopStream = new LoopStream(_waveSource) { EnableLoop = _loop };
+        _loopStream = new LoopStream(_waveSource) { EnableLoop = loop };
+        _volume = initialVolume;
         _soundOut = new WasapiOut();
         _soundOut.Initialize(_loopStream);
         SetVolume(_volume);
@@ -60,7 +50,6 @@ public class BackgroundSong : IDisposable
     public void ToggleLoop(bool enable)
     {
         _loopStream.EnableLoop = enable;
-        _loop = enable;
     }
 
     public void SetVolume(float volume)
@@ -69,21 +58,14 @@ public class BackgroundSong : IDisposable
         _soundOut.Volume = _volume;
     }
 
-    public void ChangeTrack()
+    public void Restart()
     {
-        _currentTrackIndex = (_currentTrackIndex + 1) % _filePaths.Count;
-        LoadTrack(_currentTrackIndex);
-        Play();
-    }
-
-    public void LoadTrackByPath(string path)
-    {
-        DisposeWaveSource();
-        _waveSource = CodecFactory.Instance.GetCodec(path)
+        Stop();
+        _waveSource.Dispose();
+        _waveSource = CodecFactory.Instance.GetCodec(_filePath)
             .ToSampleSource()
             .ToWaveSource();
-
-        _loopStream = new LoopStream(_waveSource) { EnableLoop = _loop };
+        _loopStream.WaveSource = _waveSource;
         _soundOut.Initialize(_loopStream);
         SetVolume(_volume);
         Play();
@@ -91,13 +73,8 @@ public class BackgroundSong : IDisposable
 
     public void Dispose()
     {
-        DisposeWaveSource();
-        _soundOut?.Dispose();
-    }
-
-    private void DisposeWaveSource()
-    {
-        _waveSource?.Dispose();
+        _soundOut.Dispose();
+        _waveSource.Dispose();
     }
 
     private class LoopStream : WaveAggregatorBase

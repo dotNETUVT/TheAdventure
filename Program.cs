@@ -1,60 +1,41 @@
 ﻿using System.Diagnostics;
 using Silk.NET.SDL;
-using System.IO;
-using System.Collections.Generic;
-
-namespace TheAdventure
+namespace TheAdventure;
+public static class Program
 {
-    public static class Program
+    public static void Main()
     {
-        public static void Main()
+        var sdl = new Sdl(new SdlContext());
+        var sdlInitResult = sdl.Init(Sdl.InitVideo | Sdl.InitEvents | Sdl.InitTimer | Sdl.InitGamecontroller |
+                                     Sdl.InitJoystick);
+        if (sdlInitResult < 0)
         {
-            var sdl = new Sdl(new SdlContext());
-
-            var sdlInitResult = sdl.Init(Sdl.InitVideo | Sdl.InitEvents | Sdl.InitTimer | Sdl.InitGamecontroller | Sdl.InitJoystick);
-            if (sdlInitResult < 0)
-            {
-                throw new InvalidOperationException("Failed to initialize SDL.");
-            }
-
-            using (var window = new GameWindow(sdl, 800, 480))
-            {
-                var renderer = new GameRenderer(sdl, window);
-                var input = new Input(sdl, window, renderer);
-                var engine = new Engine(renderer, input);
-
-                var baseDirectory = AppDomain.CurrentDomain.BaseDirectory;
-                var soundPath = Path.Combine(baseDirectory, "Assets\\backgroundSound.mp3");
-                var backgroundSound2Path = Path.Combine(baseDirectory, "Assets\\backgroundSound2.mp3");
-
-                var tracks = new List<string> { soundPath, backgroundSound2Path };
-                var backgroundSong = new BackgroundSong(tracks, loop: true);
-                backgroundSong.Play();
-
-                engine.InitializeWorld();
-
-                bool quit = false;
-                while (!quit)
-                {
-                    quit = input.ProcessInput();
-                    if (quit) break;
-
-                    if (sdl.PollEvent(out var e) == 1 && e.Type == Sdl.EventType.KeyDown)
-                    {
-                        if (e.Key.Keysym.Sym == Sdl.Keycode.C)
-                        {
-                            backgroundSong.ChangeTrack();
-                        }
-                    }
-
-                    engine.ProcessFrame();
-                    engine.RenderFrame();
-                }
-
-                backgroundSong.Dispose();
-            }
-
-            sdl.Quit();
+            throw new InvalidOperationException("Failed to initialize SDL.");
         }
+        using (var window = new GameWindow(sdl, 800, 480))
+        {
+            var renderer = new GameRenderer(sdl, window);
+            var input = new Input(sdl, window, renderer);
+            var engine = new Engine(renderer, input);
+            var base = AppDomain.CurrentDomain.BaseDirectory;
+            var sound = "Assets\\backgroundSound.mp3";
+            var path = Path.Combine(base, sound);
+
+            var sound = new BackgroundSound(path);
+            sound.Play();
+
+            engine.InitializeWorld();
+
+            bool quit = false;
+            while (!quit)
+            {
+                quit = input.ProcessInput();
+                if (quit) break;
+                
+                engine.ProcessFrame();
+                engine.RenderFrame();
+            }
+        }
+        sdl.Quit();
     }
 }
