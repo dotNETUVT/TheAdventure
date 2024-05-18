@@ -16,6 +16,9 @@ namespace TheAdventure
         private GameRenderer _renderer;
         private Input _input;
 
+
+   private BGM _bgm = new BGM(Path.Combine("Assets","bgm.mp3"));
+
         private DateTimeOffset _lastUpdate = DateTimeOffset.Now;
         private DateTimeOffset _lastPlayerUpdate = DateTimeOffset.Now;
 
@@ -69,9 +72,11 @@ namespace TheAdventure
             }
             _renderer.SetWorldBounds(new Rectangle<int>(0, 0, _currentLevel.Width * _currentLevel.TileWidth,
                 _currentLevel.Height * _currentLevel.TileHeight));
+
+            _bgm.PlayMusic();
         }
 
-        public void ProcessFrame()
+        public bool ProcessFrame()
         {
             var currentTime = DateTimeOffset.Now;
             var secsSinceLastFrame = (currentTime - _lastUpdate).TotalSeconds;
@@ -84,6 +89,11 @@ namespace TheAdventure
             bool isAttacking = _input.IsKeyAPressed();
             bool addBomb = _input.IsKeyBPressed();
 
+
+            if (_input.IsPPressed())
+            {
+                _bgm.ToggleMusic();
+            }
             if(isAttacking)
             {
                 var dir = up ? 1: 0;
@@ -107,7 +117,7 @@ namespace TheAdventure
             itemsToRemove.AddRange(GetAllTemporaryGameObjects().Where(gameObject => gameObject.IsExpired)
                 .Select(gameObject => gameObject.Id).ToList());
 
-            if (addBomb)
+            if (addBomb && _player.State.State!=PlayerObject.PlayerState.GameOver)
             {
                 AddBomb(_player.Position.X, _player.Position.Y, false);
             }
@@ -125,6 +135,7 @@ namespace TheAdventure
                 }
                 _gameObjects.Remove(gameObjectId);
             }
+              return _player.isGameOver();
         }
 
         public void RenderFrame()

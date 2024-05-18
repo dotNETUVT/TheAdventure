@@ -18,7 +18,11 @@ namespace TheAdventure
             _gameWindow = window;
             _renderer = renderer;
         }
-
+        public bool IsEscPressed()
+        {
+            ReadOnlySpan<byte> _keyboardState = new(_sdl.GetKeyboardState(null), (int)KeyCode.Count);
+            return _keyboardState[(int)KeyCode.Escape] == 1;
+        }
         public bool IsKeyAPressed(){
             ReadOnlySpan<byte> _keyboardState = new(_sdl.GetKeyboardState(null), (int)KeyCode.Count);
             return _keyboardState[(int)KeyCode.A] == 1;
@@ -53,12 +57,19 @@ namespace TheAdventure
             return _keyboardState[(int)KeyCode.Down] == 1;
         }
         
+        public bool IsPPressed()
+        {
+            ReadOnlySpan<byte> _keyboardState = new(_sdl.GetKeyboardState(null), (int)KeyCode.Count);
+            return _keyboardState[(int)KeyCode.P] == 1;
+        }
         public bool ProcessInput()
         {
             var currentTime = DateTimeOffset.UtcNow;
             Event ev = new Event();
             var mouseX = 0;
             var mouseY = 0;
+            if (IsEscPressed())
+                return true;
             while (_sdl.PollEvent(ref ev) != 0)
             {
                 if (ev.Type == (uint)EventType.Quit)

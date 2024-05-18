@@ -22,7 +22,7 @@ public class PlayerObject : RenderableGameObject
     }
 
     private int _pixelsPerSecond = 192;
-
+    private DateTimeOffset _gameOverStart;
 
     public (PlayerState State, PlayerStateDirection Direction) State{ get; private set; }
 
@@ -52,6 +52,14 @@ public class PlayerObject : RenderableGameObject
 
     public void GameOver(){
         SetState(PlayerState.GameOver, PlayerStateDirection.None);
+        _gameOverStart = DateTimeOffset.Now;
+        
+    }
+    public bool isGameOver(){
+        // close game on death
+        if (State.State == PlayerState.GameOver && (DateTimeOffset.Now - _gameOverStart).TotalMilliseconds >= 1000)
+            return true;
+        return false;
     }
 
     public void Attack(bool up, bool down, bool left, bool right)
