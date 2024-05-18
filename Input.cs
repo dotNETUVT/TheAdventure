@@ -53,6 +53,12 @@ namespace TheAdventure
             return _keyboardState[(int)KeyCode.Down] == 1;
         }
         
+        // check if X is pressed to stop or play the music
+        public bool IsXKeyPressed()
+        {
+            ReadOnlySpan<byte> _keyboardState = new(_sdl.GetKeyboardState(null), (int)KeyCode.Count);
+            return _keyboardState[(int)KeyCode.X] == 1;
+        }
         public bool ProcessInput()
         {
             var currentTime = DateTimeOffset.UtcNow;

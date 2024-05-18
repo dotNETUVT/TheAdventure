@@ -18,13 +18,15 @@ namespace TheAdventure
 
         private DateTimeOffset _lastUpdate = DateTimeOffset.Now;
         private DateTimeOffset _lastPlayerUpdate = DateTimeOffset.Now;
-
+        private AudioPlayer _backgroundMusic;
         public Engine(GameRenderer renderer, Input input)
         {
             _renderer = renderer;
             _input = input;
 
             _input.OnMouseClick += (_, coords) => AddBomb(coords.x, coords.y);
+            _backgroundMusic = new AudioPlayer(Path.Combine("Assets/background_audio.mp3"));
+            _backgroundMusic.StartPlayback();
         }
 
         public void InitializeWorld()
@@ -84,6 +86,12 @@ namespace TheAdventure
             bool isAttacking = _input.IsKeyAPressed();
             bool addBomb = _input.IsKeyBPressed();
 
+            // Press 'X' to stop/start music
+            if (_input.IsXKeyPressed())
+            {
+                _backgroundMusic.SwitchPlayback();
+            }
+            
             if(isAttacking)
             {
                 var dir = up ? 1: 0;
