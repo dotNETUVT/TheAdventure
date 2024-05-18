@@ -1,9 +1,11 @@
+using System.Runtime.InteropServices;
 using Silk.NET.Maths;
 using Silk.NET.SDL;
 using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.PixelFormats;
 using TheAdventure.Models;
 using Point = Silk.NET.SDL.Point;
+using NAudio.Wave;
 
 namespace TheAdventure;
 
@@ -13,21 +15,26 @@ public unsafe class GameRenderer
     private Renderer* _renderer;
     private GameWindow _window;
     private Camera _camera;
+    private WaveOutEvent _outputDevice;
+    private MediaFoundationReader? _audioFile;
 
     private Dictionary<int, IntPtr> _textures = new();
     private Dictionary<int, TextureInfo> _textureData = new();
     private int _textureId;
+    
 
     public GameRenderer(Sdl sdl, GameWindow window)
     {
         _window = window;
         _sdl = sdl;
+        _outputDevice = new WaveOutEvent();
 
         _renderer = (Renderer*)window.CreateRenderer();
         _sdl.SetRenderDrawBlendMode(_renderer, BlendMode.Blend);
 
         var windowSize = window.Size;
         _camera = new Camera(windowSize.Width, windowSize.Height);
+        
     }
 
     public void SetWorldBounds(Rectangle<int> bounds)
@@ -97,4 +104,25 @@ public unsafe class GameRenderer
     {
         _sdl.RenderPresent(_renderer);
     }
+    
+    public void LoadSoundEffect(string fileName, out IntPtr soundEffect)
+    {
+        soundEffect = (IntPtr)Marshal.StringToHGlobalAnsi(fileName);
+    }
+
+    public void PlaySoundEffect(string fileName)
+    {
+        if (_outputDevice.PlaybackState == PlaybackState.Playing)
+        {
+            _outputDevice.Stop();
+        }
+
+        _outputDevice.Dispose();
+
+        _outputDevice = new WaveOutEvent();
+        using var audioFile = new MediaFoundationReader(fileName);
+        _outputDevice.Init(audioFile);
+        _outputDevice.Play();
+    }
+
 }

@@ -113,4 +113,21 @@ public class SpriteSheet
                 ActiveAnimation.Flip, angle, rotationCenter);
         }
     }
+    
+    public int GetTextureId(int frameIndex)
+    {
+        return _textureId; // Return the texture ID for now, adjust as needed
+    }
+
+    public Rectangle<int> GetFrameSourceRect(int frameIndex)
+    {
+        // Calculate the source rectangle of the frame based on its position in the sprite sheet
+        int row = frameIndex / ColumnCount;
+        int col = frameIndex % ColumnCount;
+        int x = col * FrameWidth;
+        int y = row * FrameHeight;
+        return new Rectangle<int>(x, y, FrameWidth, FrameHeight);
+    }
+
+    
 }

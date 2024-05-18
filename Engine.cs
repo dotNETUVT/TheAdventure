@@ -10,19 +10,23 @@ namespace TheAdventure
     {
         private readonly Dictionary<int, GameObject> _gameObjects = new();
         private readonly Dictionary<string, TileSet> _loadedTileSets = new();
+        private Random _random = new Random();
 
         private Level? _currentLevel;
         private PlayerObject _player;
         private GameRenderer _renderer;
         private Input _input;
+        private IntPtr _diamondCaughtSound;
 
         private DateTimeOffset _lastUpdate = DateTimeOffset.Now;
         private DateTimeOffset _lastPlayerUpdate = DateTimeOffset.Now;
+        private int _diamondsCaught = 0; // Diamond counter
 
         public Engine(GameRenderer renderer, Input input)
         {
             _renderer = renderer;
             _input = input;
+            _renderer.LoadSoundEffect("Assets/collect_diamond.mp3", out _diamondCaughtSound);
 
             _input.OnMouseClick += (_, coords) => AddBomb(coords.x, coords.y);
         }
@@ -69,6 +73,20 @@ namespace TheAdventure
             }
             _renderer.SetWorldBounds(new Rectangle<int>(0, 0, _currentLevel.Width * _currentLevel.TileWidth,
                 _currentLevel.Height * _currentLevel.TileHeight));
+            
+            // Place 5 diamonds at random positions
+            for (int i = 0; i < 15; i++)
+            {
+                var (x, y) = GetRandomPosition(_currentLevel.Width * _currentLevel.TileWidth, _currentLevel.Height * _currentLevel.TileHeight);
+                AddDiamond(x, y);
+            }
+        }
+        
+        private (int X, int Y) GetRandomPosition(int maxX, int maxY)
+        {
+            int x = _random.Next(0, maxX);
+            int y = _random.Next(0, maxY);
+            return (x, y);
         }
 
         public void ProcessFrame()
@@ -106,6 +124,21 @@ namespace TheAdventure
             var itemsToRemove = new List<int>();
             itemsToRemove.AddRange(GetAllTemporaryGameObjects().Where(gameObject => gameObject.IsExpired)
                 .Select(gameObject => gameObject.Id).ToList());
+            
+            // Check for collision with diamonds
+            foreach (var gameObject in _gameObjects.Values)
+            {
+                if (gameObject is RenderableGameObject renderableGameObject &&
+                    renderableGameObject.SpriteSheet.FileName == "diamond.png")
+                {
+                    if (IsColliding(_player, renderableGameObject))
+                    {
+                        itemsToRemove.Add(renderableGameObject.Id);
+                        _diamondsCaught++;
+                        _renderer.PlaySoundEffect("Assets/collect_diamond.mp3");
+                    }
+                }
+            }
 
             if (addBomb)
             {
@@ -136,6 +169,9 @@ namespace TheAdventure
 
             RenderTerrain();
             RenderAllObjects();
+            
+            // Render the diamond counter
+            RenderDiamondCounter();
 
             _renderer.PresentFrame();
         }
@@ -226,5 +262,78 @@ namespace TheAdventure
                 _gameObjects.Add(bomb.Id, bomb);
             }
         }
+        
+        public void AddDiamond(int x, int y)
+        {
+            var spriteSheet = SpriteSheet.LoadSpriteSheet("diamond.json", "Assets", _renderer);
+            if (spriteSheet != null)
+            {
+                spriteSheet.ActivateAnimation("Shine");
+                var diamond = new RenderableGameObject(spriteSheet, (x, y));
+                _gameObjects.Add(diamond.Id, diamond);
+            }
+        }
+        
+        private bool IsColliding(PlayerObject player, RenderableGameObject diamond)
+        {
+            var playerRect = new Rectangle<int>(
+                player.Position.X - player.SpriteSheet.FrameCenter.OffsetX,
+                player.Position.Y - player.SpriteSheet.FrameCenter.OffsetY,
+                player.SpriteSheet.FrameWidth,
+                player.SpriteSheet.FrameHeight
+            );
+
+            var diamondRect = new Rectangle<int>(
+                diamond.Position.X - diamond.SpriteSheet.FrameCenter.OffsetX,
+                diamond.Position.Y - diamond.SpriteSheet.FrameCenter.OffsetY,
+                diamond.SpriteSheet.FrameWidth,
+                diamond.SpriteSheet.FrameHeight
+            );
+
+            return playerRect.Overlaps(diamondRect);
+        }
+        
+        private void RenderDiamondCounter()
+{
+    // Load the digits' textures
+    var digitsTextureIds = new List<int>();
+    foreach (var digitChar in _diamondsCaught.ToString())
+    {
+        var digitFilePath = $"Assets/Numbers/Number{digitChar}.png";
+        var digitTextureId = _renderer.LoadTexture(digitFilePath, out _);
+        digitsTextureIds.Add(digitTextureId);
+    }
+
+    // Load the first frame of the diamond sprite sheet
+    var diamondSheetFilePath = "diamond.json"; 
+    var diamondSpriteSheet = SpriteSheet.LoadSpriteSheet(diamondSheetFilePath, "Assets", _renderer);
+    var diamondTextureId = diamondSpriteSheet?.GetTextureId(0); // Get the texture ID of the first frame
+    
+    // Determine the position to render the diamond and the counter (relative to the camera)
+    var counterPosition = new Vector2D<int>(10, 10); 
+    counterPosition += _renderer.TranslateFromScreenToWorldCoordinates(0, 0); 
+
+    var diamondPosition = new Vector2D<int>(counterPosition.X + 30, counterPosition.Y - 10); 
+
+    // Render each digit
+    var digitWidth = 10; 
+    foreach (var textureId in digitsTextureIds)
+    {
+        var srcRect = new Rectangle<int>(0, 0, digitWidth, 14); 
+        var dstRect = new Rectangle<int>(counterPosition.X, counterPosition.Y, digitWidth, 14);
+        _renderer.RenderTexture(textureId, srcRect, dstRect);
+
+        counterPosition.X += digitWidth; 
+    }
+
+    // Render the diamond
+    if (diamondTextureId.HasValue)
+    {
+        var srcRect = diamondSpriteSheet.GetFrameSourceRect(0); // Get the source rectangle of the first frame
+        var dstRect = new Rectangle<int>(diamondPosition.X, diamondPosition.Y, srcRect.Size.X, srcRect.Size.Y);
+        _renderer.RenderTexture(diamondTextureId.Value, srcRect, dstRect);
+    }
+}
+
     }
 }
