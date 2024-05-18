@@ -63,10 +63,11 @@ namespace TheAdventure
                 Loop = true
             };
             */
-            var spriteSheet = SpriteSheet.LoadSpriteSheet("player.json", "Assets", _renderer);
+            var spriteSheet = SpriteSheet.LoadSpriteSheet("goku.json", "Assets", _renderer);
             if(spriteSheet != null){
                 _player = new PlayerObject(spriteSheet, 100, 100);
             }
+            
             _renderer.SetWorldBounds(new Rectangle<int>(0, 0, _currentLevel.Width * _currentLevel.TileWidth,
                 _currentLevel.Height * _currentLevel.TileHeight));
         }
@@ -83,6 +84,10 @@ namespace TheAdventure
             bool right = _input.IsRightPressed();
             bool isAttacking = _input.IsKeyAPressed();
             bool addBomb = _input.IsKeyBPressed();
+            bool transformKaioken = _input.IsKeyCPressed();
+            bool transformSuperSaiyan = _input.IsKeySPressed();
+            bool kamehameha = _input.IsKeyKPressed();
+
 
             if(isAttacking)
             {
@@ -111,6 +116,23 @@ namespace TheAdventure
             {
                 AddBomb(_player.Position.X, _player.Position.Y, false);
             }
+           
+            if (transformKaioken)
+            {
+                _player.Transform(PlayerObject.PlayerStateDirection.Down);
+            }
+
+            if (transformSuperSaiyan)
+            {
+                _player.Transform(PlayerObject.PlayerStateDirection.Up);
+            }
+            
+            if(kamehameha)
+            {
+                _player.Kamehameha();
+            }
+           
+
 
             foreach (var gameObjectId in itemsToRemove)
             {

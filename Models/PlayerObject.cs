@@ -18,7 +18,9 @@ public class PlayerObject : RenderableGameObject
         Idle,
         Move,
         Attack,
-        GameOver
+        GameOver,
+        Transform,
+        Kamehameha
     }
 
     private int _pixelsPerSecond = 192;
@@ -43,6 +45,40 @@ public class PlayerObject : RenderableGameObject
         else if(state == PlayerState.GameOver){
             SpriteSheet.ActivateAnimation(Enum.GetName(state));
         }
+        else if(state == PlayerState.Attack)
+        {
+            var random = new Random().Next(1, 4);
+            var animationName = Enum.GetName<PlayerState>(state) + random;
+            SpriteSheet.ActivateAnimation(animationName);
+        }
+        else if(state == PlayerState.Transform)
+        {
+            if (direction == PlayerStateDirection.Up)
+            {
+                var animationName = Enum.GetName<PlayerState>(state) + "SuperSaiyan";
+                SpriteSheet.ActivateAnimation(animationName);
+            }
+            else
+            {
+                var animationName = Enum.GetName<PlayerState>(state) + "Kaioken";
+                SpriteSheet.ActivateAnimation(animationName);
+            }
+        }
+        else if(state == PlayerState.Kamehameha)
+        {
+            var animationName = Enum.GetName<PlayerState>(state);
+            SpriteSheet.ActivateAnimation(animationName);
+        }
+        else if(state == PlayerState.Move)
+        {
+            var animationName = Enum.GetName<PlayerState>(state) + Enum.GetName<PlayerStateDirection>(direction);
+            SpriteSheet.ActivateAnimation(animationName);
+        }
+        else if(state == PlayerState.Idle)
+        {
+            var animationName = Enum.GetName<PlayerState>(state) + Enum.GetName<PlayerStateDirection>(direction);
+            SpriteSheet.ActivateAnimation(animationName);
+        }
         else{
             var animationName = Enum.GetName<PlayerState>(state) + Enum.GetName<PlayerStateDirection>(direction);
             SpriteSheet.ActivateAnimation(animationName);
@@ -52,6 +88,18 @@ public class PlayerObject : RenderableGameObject
 
     public void GameOver(){
         SetState(PlayerState.GameOver, PlayerStateDirection.None);
+    }
+
+    // Transform the player depending on the direction
+    public void Transform(PlayerStateDirection direction)
+    {
+        SetState(PlayerState.Transform, direction);
+    }
+
+
+    public void Kamehameha()
+    {
+        SetState(PlayerState.Kamehameha,PlayerStateDirection.Up);
     }
 
     public void Attack(bool up, bool down, bool left, bool right)

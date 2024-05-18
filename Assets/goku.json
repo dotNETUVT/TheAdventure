@@ -1,0 +1,166 @@
+{
+	"rowCount": 12,
+	"columnCount": 11,
+	"frameWidth": 136,
+	"frameHeight": 110,
+	"frameCenter": {
+		"offsetX": 68,
+		"offsetY": 97
+	},
+	"fileName": "Goku.png",
+	"animations": {
+		"IdleDown": {
+			"startFrame": {
+				"row": 10,
+				"col": 0
+			},
+			"endFrame": {
+				"row": 10,
+				"col": 3
+			},
+			"durationMs": 1000,
+			"loop": true
+		},
+		"MoveLeft": {
+			"startFrame": {
+				"row": 2,
+				"col": 0
+			},
+			"endFrame": {
+				"row": 2,
+				"col": 1
+			},
+			"durationMs": 1000,
+			"loop": false,
+			"flip": 1
+		},
+		"MoveRight": {
+			"startFrame": {
+				"row": 2,
+				"col": 0
+			},
+			"endFrame": {
+				"row": 2,
+				"col": 1
+			},
+			"durationMs": 1000,
+			"loop": false
+		},
+		"MoveUp": {
+			"startFrame": {
+				"row": 3,
+				"col": 0
+			},
+			"endFrame": {
+				"row": 3,
+				"col": 1
+			},
+			"durationMs": 1000,
+			"loop": false
+		},
+		"MoveDown": {
+			"startFrame": {
+				"row": 3,
+				"col": 0
+			},
+			"endFrame": {
+				"row": 3,
+				"col": 1
+			},
+			"durationMs": 1000,
+			"loop": false
+		},
+		"Attack1": {
+			"startFrame": {
+				"row": 4,
+				"col": 0
+			},
+			"endFrame": {
+				"row": 4,
+				"col": 5
+			},
+			"durationMs": 500,
+			"loop": true,
+			"flip": 1
+		},
+		"Attack2": {
+			"startFrame": {
+				"row": 5,
+				"col": 0
+			},
+			"endFrame": {
+				"row": 5,
+				"col": 4
+			},
+			"durationMs": 500,
+			"loop": true,
+			"flip": 0
+		},
+		"Attack3": {
+			"startFrame": {
+				"row": 6,
+				"col": 0
+			},
+			"endFrame": {
+				"row": 6,
+				"col": 6
+			},
+			"durationMs": 500,
+			"loop": true,
+			"flip": 0
+		},
+		"GameOver": {
+			"startFrame": {
+				"row": 7,
+				"col": 0
+			},
+			"endFrame": {
+				"row": 7,
+				"col": 3
+			},
+			"durationMs": 2000,
+			"loop": false,
+			"flip": 0
+		},
+		"TransformKaioken": {
+			"startFrame": {
+				"row": 9,
+				"col": 0
+			},
+			"endFrame": {
+				"row": 9,
+				"col": 6
+			},
+			"durationMs": 800,
+			"loop": false,
+			"flip": 0
+		},
+		"TransformSuperSaiyan": {
+			"startFrame": {
+				"row": 11,
+				"col": 0
+			},
+			"endFrame": {
+				"row": 11,
+				"col": 10
+			},
+			"durationMs": 800,
+			"loop": false,
+			"flip": 0
+		},
+		"Kamehameha": {
+			"startFrame": {
+				"row": 8,
+				"col": 0
+			},
+			"endFrame": {
+				"row": 8,
+				"col": 7
+			},
+			"durationMs": 2000,
+			"loop": false,
+			"flip": 0
+		}
+	}
+
+}
