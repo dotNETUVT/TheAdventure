@@ -15,8 +15,8 @@ namespace TheAdventure
         private PlayerObject _player;
         private GameRenderer _renderer;
         private Input _input;
-        private int lives = 3;
-        private int heartTexture;
+        private int score = 0;
+        private int coinTexture;
 
         private DateTimeOffset _lastUpdate = DateTimeOffset.Now;
         private DateTimeOffset _lastPlayerUpdate = DateTimeOffset.Now;
@@ -33,7 +33,7 @@ namespace TheAdventure
         {
             var jsonSerializerOptions = new JsonSerializerOptions() { PropertyNameCaseInsensitive = true };
             var levelContent = File.ReadAllText(Path.Combine("Assets", "terrain.tmj"));
-            heartTexture = _renderer.LoadTexture(Path.Combine("Assets", "heart.png"), out _);
+            coinTexture = _renderer.LoadTexture(Path.Combine("Assets", "coin.png"), out _);
 
 
             var level = JsonSerializer.Deserialize<Level>(levelContent, jsonSerializerOptions);
@@ -88,6 +88,28 @@ namespace TheAdventure
             bool isAttacking = _input.IsKeyAPressed();
             bool addBomb = _input.IsKeyBPressed();
 
+            var coinsCollected = new List<int>();
+            foreach (var gameObject in _gameObjects.Values)
+            {
+                if (gameObject is Coin coin)
+                {
+                    var deltaX = Math.Abs(_player.Position.X - coin.Position.X);
+                    var deltaY = Math.Abs(_player.Position.Y - coin.Position.Y);
+
+                    if (deltaX < 32 && deltaY < 32)
+                    {
+                        coinsCollected.Add(coin.Id);
+                        score++;
+                        SpawnCoin();
+                    }
+                }
+            }
+
+            foreach (var coinId in coinsCollected)
+            {
+                _gameObjects.Remove(coinId);
+            }
+
             if(isAttacking)
             {
                 var dir = up ? 1: 0;
@@ -129,12 +151,7 @@ namespace TheAdventure
 
                     // Game is over
                     if (deltaX < 32 && deltaY < 32) {
-                        lives--;
-
-                        if (lives == 0)
-                        {
-                            _player.GameOver();
-                        }
+                        _player.GameOver();
                     }
                 }
                 _gameObjects.Remove(gameObjectId);
@@ -149,7 +166,6 @@ namespace TheAdventure
             _renderer.CameraLookAt(_player.Position.X, _player.Position.Y);
 
             RenderTerrain();
-            RenderLives();
             RenderAllObjects();
 
             _renderer.PresentFrame();
@@ -174,22 +190,19 @@ namespace TheAdventure
 
 
 
-        private void RenderLives()
+        private void SpawnCoin()
         {
-            if (_currentLevel == null) return;
-
-            int heartWidth = 59;
-            int heartHeight = 56;
-            int margin = 10;
-
-            for (int i = 0; i < lives; i++)
+            Random random = new Random();
+            int x = random.Next(0, _currentLevel.Width * _currentLevel.TileWidth);
+            int y = random.Next(0, _currentLevel.Height * _currentLevel.TileHeight);
+            var spriteSheet = SpriteSheet.LoadSpriteSheet("coin.json", "Assets", _renderer);
+            if (spriteSheet != null)
             {
-                var src = new Rectangle<int>(0, 0, heartWidth, heartHeight);
-                var dst = new Rectangle<int>(i * (heartWidth + margin) + 5, margin, heartWidth, heartHeight);
-
-                _renderer.RenderTexture(heartTexture, src, dst);
+                Coin coin = new Coin(spriteSheet, float.MaxValue, (x, y)); // lifespan is max to prevent expiry
+                _gameObjects.Add(coin.Id, coin);
             }
         }
+
 
 
         private void RenderTerrain()
