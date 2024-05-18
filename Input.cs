@@ -28,6 +28,17 @@ namespace TheAdventure
             ReadOnlySpan<byte> _keyboardState = new(_sdl.GetKeyboardState(null), (int)KeyCode.Count);
             return _keyboardState[(int)KeyCode.B] == 1;
         }
+        
+        public bool IsKeyEscPressed()
+        {
+            ReadOnlySpan<byte> _keyboardState = new(_sdl.GetKeyboardState(null), (int)KeyCode.Count);
+            return _keyboardState[(int)KeyCode.Escape] == 1;
+        }
+        public bool IsKeySpacePressed()
+        {
+            ReadOnlySpan<byte> _keyboardState = new(_sdl.GetKeyboardState(null), (int)KeyCode.Count);
+            return _keyboardState[(int)KeyCode.Space] == 1;
+        }
 
         public bool IsLeftPressed()
         {
@@ -59,6 +70,8 @@ namespace TheAdventure
             Event ev = new Event();
             var mouseX = 0;
             var mouseY = 0;
+            if (IsKeyEscPressed())
+                return true;
             while (_sdl.PollEvent(ref ev) != 0)
             {
                 if (ev.Type == (uint)EventType.Quit)

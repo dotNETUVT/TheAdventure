@@ -49,7 +49,11 @@ public class PlayerObject : RenderableGameObject
         }
         State = (state, direction);
     }
-
+    public bool isPlayerDead(){
+        if (State.State == PlayerState.GameOver)
+            return true;
+        return false;
+    }
     public void GameOver(){
         SetState(PlayerState.GameOver, PlayerStateDirection.None);
     }

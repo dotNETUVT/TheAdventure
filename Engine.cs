@@ -71,7 +71,7 @@ namespace TheAdventure
                 _currentLevel.Height * _currentLevel.TileHeight));
         }
 
-        public void ProcessFrame()
+        public bool ProcessFrame()
         {
             var currentTime = DateTimeOffset.Now;
             var secsSinceLastFrame = (currentTime - _lastUpdate).TotalSeconds;
@@ -83,6 +83,7 @@ namespace TheAdventure
             bool right = _input.IsRightPressed();
             bool isAttacking = _input.IsKeyAPressed();
             bool addBomb = _input.IsKeyBPressed();
+            bool spaceKeyPressed = _input.IsKeySpacePressed();
 
             if(isAttacking)
             {
@@ -107,10 +108,26 @@ namespace TheAdventure
             itemsToRemove.AddRange(GetAllTemporaryGameObjects().Where(gameObject => gameObject.IsExpired)
                 .Select(gameObject => gameObject.Id).ToList());
 
-            if (addBomb)
+            if (addBomb && _player.State.State!=PlayerObject.PlayerState.GameOver)
             {
                 AddBomb(_player.Position.X, _player.Position.Y, false);
             }
+            
+            if (spaceKeyPressed)
+            {
+                float speedIncreased = 4.0f;
+                _player.UpdatePlayerPosition(up ? speedIncreased : 0.0, down ? speedIncreased : 0.0, left ? speedIncreased : 0.0, right ? speedIncreased : 0.0,
+                    _currentLevel.Width * _currentLevel.TileWidth, _currentLevel.Height * _currentLevel.TileHeight,
+                    secsSinceLastFrame);
+            }
+            else
+            {
+                float speedMedium = 1.0f;
+                _player.UpdatePlayerPosition(up ? speedMedium : 0.0, down ? speedMedium : 0.0, left ? speedMedium : 0.0, right ? speedMedium : 0.0,
+                    _currentLevel.Width * _currentLevel.TileWidth, _currentLevel.Height * _currentLevel.TileHeight,
+                    secsSinceLastFrame);
+            }
+
 
             foreach (var gameObjectId in itemsToRemove)
             {
@@ -125,6 +142,7 @@ namespace TheAdventure
                 }
                 _gameObjects.Remove(gameObjectId);
             }
+            return _player.isPlayerDead();
         }
 
         public void RenderFrame()
