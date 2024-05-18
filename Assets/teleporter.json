@@ -1,0 +1,49 @@
+{
+  "rowCount": 3,
+  "columnCount": 4,
+  "frameWidth": 40,
+  "frameHeight": 32,
+  "frameCenter": {
+    "offsetX": 20,
+    "offsetY": 16
+  },
+  "fileName": "teleporter_sprite_sheet.png",
+  "animations": {
+    "Idle": {
+      "startFrame": {
+        "row": 0,
+        "col": 0
+      },
+      "endFrame": {
+        "row": 0,
+        "col": 3
+      },
+      "durationMs": 1000,
+      "loop": true
+    },
+    "Activate": {
+      "startFrame": {
+        "row": 1,
+        "col": 0
+      },
+      "endFrame": {
+        "row": 1,
+        "col": 3
+      },
+      "durationMs": 400,
+      "loop": false
+    },
+    "Cooldown": {
+      "startFrame": {
+        "row": 2,
+        "col": 0
+      },
+      "endFrame": {
+        "row": 2,
+        "col": 3
+      },
+      "durationMs": 1000,
+      "loop": true
+    }
+  }
+}

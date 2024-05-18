@@ -3,6 +3,10 @@ using Silk.NET.Maths;
 using Silk.NET.SDL;
 using TheAdventure.Models;
 using TheAdventure.Models.Data;
+using System.IO;
+using NAudio.Wave;
+using System.Collections.Generic;
+using System.Linq;
 
 namespace TheAdventure
 {
@@ -15,9 +19,13 @@ namespace TheAdventure
         private PlayerObject _player;
         private GameRenderer _renderer;
         private Input _input;
-
         private DateTimeOffset _lastUpdate = DateTimeOffset.Now;
-        private DateTimeOffset _lastPlayerUpdate = DateTimeOffset.Now;
+
+        private TeleporterObject _teleporter1;
+        private TeleporterObject _teleporter2;
+        private IWavePlayer _waveOutEvent;
+        private AudioFileReader _audioFileReader;
+        private string _teleportSoundFilePath = "Assets/teleport_sound.mp3"; // Ensure the file path is correct
 
         public Engine(GameRenderer renderer, Input input)
         {
@@ -25,6 +33,8 @@ namespace TheAdventure
             _input = input;
 
             _input.OnMouseClick += (_, coords) => AddBomb(coords.x, coords.y);
+
+            _waveOutEvent = new WaveOutEvent();
         }
 
         public void InitializeWorld()
@@ -54,21 +64,49 @@ namespace TheAdventure
             }
 
             _currentLevel = level;
-            /*SpriteSheet spriteSheet = new(_renderer, Path.Combine("Assets", "player.png"), 10, 6, 48, 48, new FrameOffset() { OffsetX = 24, OffsetY = 42 });
-            spriteSheet.Animations["IdleDown"] = new SpriteSheet.Animation()
+
+            var playerSpriteSheet = SpriteSheet.LoadSpriteSheet("player.json", "Assets", _renderer);
+            if (playerSpriteSheet != null)
             {
-                StartFrame = new FramePosition(),//(0, 0),
-                EndFrame = new FramePosition() { Row = 0, Col = 5 },
-                DurationMs = 1000,
-                Loop = true
-            };
-            */
-            var spriteSheet = SpriteSheet.LoadSpriteSheet("player.json", "Assets", _renderer);
-            if(spriteSheet != null){
-                _player = new PlayerObject(spriteSheet, 100, 100);
+                _player = new PlayerObject(playerSpriteSheet, 100, 100);
             }
+
+            var teleporterSpriteSheet = SpriteSheet.LoadSpriteSheet("teleporter.json", "Assets", _renderer);
+            if (teleporterSpriteSheet != null)
+            {
+                _teleporter1 = new TeleporterObject(teleporterSpriteSheet, 150, 150);
+                _teleporter2 = new TeleporterObject(teleporterSpriteSheet, 300, 300);
+            }
+
+            // Load the teleport sound
+            _audioFileReader = new AudioFileReader(_teleportSoundFilePath);
+
             _renderer.SetWorldBounds(new Rectangle<int>(0, 0, _currentLevel.Width * _currentLevel.TileWidth,
                 _currentLevel.Height * _currentLevel.TileHeight));
+        }
+
+        private void PlayTeleportSound()
+        {
+            if (_audioFileReader == null)
+            {
+                Console.WriteLine("Teleport sound not loaded");
+                return;
+            }
+
+            if (_waveOutEvent.PlaybackState != PlaybackState.Playing)
+            {
+                _audioFileReader.Position = 0;
+                _waveOutEvent.Init(_audioFileReader);
+                _waveOutEvent.Play();
+            }
+
+        }
+
+        public void CleanUp()
+        {
+            _waveOutEvent?.Stop();
+            _waveOutEvent?.Dispose();
+            _audioFileReader?.Dispose();
         }
 
         public void ProcessFrame()
@@ -84,25 +122,30 @@ namespace TheAdventure
             bool isAttacking = _input.IsKeyAPressed();
             bool addBomb = _input.IsKeyBPressed();
 
-            if(isAttacking)
+            if (isAttacking)
             {
-                var dir = up ? 1: 0;
-                dir += down? 1 : 0;
-                dir += left? 1: 0;
+                var dir = up ? 1 : 0;
+                dir += down ? 1 : 0;
+                dir += left ? 1 : 0;
                 dir += right ? 1 : 0;
-                if(dir <= 1){
+                if (dir <= 1)
+                {
                     _player.Attack(up, down, left, right);
                 }
-                else{
+                else
+                {
                     isAttacking = false;
                 }
             }
-            if(!isAttacking)
+            if (!isAttacking)
             {
                 _player.UpdatePlayerPosition(up ? 1.0 : 0.0, down ? 1.0 : 0.0, left ? 1.0 : 0.0, right ? 1.0 : 0.0,
                     _currentLevel.Width * _currentLevel.TileWidth, _currentLevel.Height * _currentLevel.TileHeight,
                     secsSinceLastFrame);
             }
+
+            CheckTeleporterInteraction();
+
             var itemsToRemove = new List<int>();
             itemsToRemove.AddRange(GetAllTemporaryGameObjects().Where(gameObject => gameObject.IsExpired)
                 .Select(gameObject => gameObject.Id).ToList());
@@ -115,11 +158,13 @@ namespace TheAdventure
             foreach (var gameObjectId in itemsToRemove)
             {
                 var gameObject = _gameObjects[gameObjectId];
-                if(gameObject is TemporaryGameObject){
+                if (gameObject is TemporaryGameObject)
+                {
                     var tempObject = (TemporaryGameObject)gameObject;
                     var deltaX = Math.Abs(_player.Position.X - tempObject.Position.X);
                     var deltaY = Math.Abs(_player.Position.Y - tempObject.Position.Y);
-                    if(deltaX < 32 && deltaY < 32){
+                    if (deltaX < 32 && deltaY < 32)
+                    {
                         _player.GameOver();
                     }
                 }
@@ -127,34 +172,55 @@ namespace TheAdventure
             }
         }
 
+        private void CheckTeleporterInteraction()
+        {
+            var playerPosition = _player.Position;
+
+            if (_teleporter1.IsAvailable() && IsNearTeleporter(playerPosition, _teleporter1.Position))
+            {
+                // Teleport to teleporter 2
+                _player.Position = (_teleporter2.Position.X, _teleporter2.Position.Y);
+                PlayTeleportSound();
+                _teleporter1.Activate();
+                _teleporter2.Activate();
+            }
+            else if (_teleporter2.IsAvailable() && IsNearTeleporter(playerPosition, _teleporter2.Position))
+            {
+                // Teleport to teleporter 1
+                _player.Position = (_teleporter1.Position.X, _teleporter1.Position.Y);
+                PlayTeleportSound();
+                _teleporter1.Activate();
+                _teleporter2.Activate();
+            }
+            else if ((!_teleporter1.IsAvailable() && !_teleporter2.IsAvailable()) && (!IsNearTeleporter(playerPosition, _teleporter1.Position) && !IsNearTeleporter(playerPosition, _teleporter2.Position)))
+            {
+                _teleporter1.Deactivate();
+                _teleporter2.Deactivate();
+            }
+        }
+
+        private bool IsNearTeleporter((int X, int Y) playerPosition, (int X, int Y) teleporterPosition)
+        {
+            var deltaX = Math.Abs(playerPosition.X - teleporterPosition.X);
+            var deltaY = Math.Abs(playerPosition.Y - teleporterPosition.Y);
+            return deltaX < 32 && deltaY < 32; // Adjust based on proximity threshold
+        }
+
         public void RenderFrame()
         {
             _renderer.SetDrawColor(0, 0, 0, 255);
             _renderer.ClearScreen();
-            
+
             _renderer.CameraLookAt(_player.Position.X, _player.Position.Y);
 
             RenderTerrain();
             RenderAllObjects();
 
+            // Render teleporters
+            _teleporter1.Render(_renderer);
+            _teleporter2.Render(_renderer);
+
             _renderer.PresentFrame();
-        }
-
-        private Tile? GetTile(int id)
-        {
-            if (_currentLevel == null) return null;
-            foreach (var tileSet in _currentLevel.TileSets)
-            {
-                foreach (var tile in tileSet.Set.Tiles)
-                {
-                    if (tile.Id == id)
-                    {
-                        return tile;
-                    }
-                }
-            }
-
-            return null;
         }
 
         private void RenderTerrain()
@@ -180,6 +246,23 @@ namespace TheAdventure
                     }
                 }
             }
+        }
+
+        private Tile? GetTile(int id)
+        {
+            if (_currentLevel == null) return null;
+            foreach (var tileSet in _currentLevel.TileSets)
+            {
+                foreach (var tile in tileSet.Set.Tiles)
+                {
+                    if (tile.Id == id)
+                    {
+                        return tile;
+                    }
+                }
+            }
+
+            return null;
         }
 
         private IEnumerable<RenderableGameObject> GetAllRenderableObjects()
@@ -216,11 +299,10 @@ namespace TheAdventure
 
         private void AddBomb(int x, int y, bool translateCoordinates = true)
         {
-
             var translated = translateCoordinates ? _renderer.TranslateFromScreenToWorldCoordinates(x, y) : new Vector2D<int>(x, y);
-            
             var spriteSheet = SpriteSheet.LoadSpriteSheet("bomb.json", "Assets", _renderer);
-            if(spriteSheet != null){
+            if (spriteSheet != null)
+            {
                 spriteSheet.ActivateAnimation("Explode");
                 TemporaryGameObject bomb = new(spriteSheet, 2.1, (translated.X, translated.Y));
                 _gameObjects.Add(bomb.Id, bomb);
