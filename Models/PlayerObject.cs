@@ -13,6 +13,8 @@ public class PlayerObject : GameObject
     /// </summary>
     public int Y { get; set; }
 
+    public bool active { get; set; }
+
     // Offset player sprite to have world position at x=24px y=42px
 
     private Rectangle<int> _source = new Rectangle<int>(0, 0, 48, 48);
@@ -20,9 +22,11 @@ public class PlayerObject : GameObject
     private int _textureId;
     private int _pixelsPerSecond = 128;
 
-    public PlayerObject(int id) : base(id)
+    public PlayerObject(int id, int x=0, int y=0) : base(id)
     {
         _textureId = GameRenderer.LoadTexture(Path.Combine("Assets", "player.png"), out var textureData);
+        X = x;
+        Y = y;
         UpdateScreenTarget();
     }
 
@@ -66,7 +70,20 @@ public class PlayerObject : GameObject
         UpdateScreenTarget();
     }
 
-    public void Render(GameRenderer renderer){
+    public void undoUpdate(double up, double down, double left, double right, int time)
+    {
+        var pixelsToMove = (time / 1000.0) * _pixelsPerSecond;
+
+        X -= (int)(right * pixelsToMove);
+        X += (int)(left * pixelsToMove);
+        Y += (int)(up * pixelsToMove);
+        Y -= (int)(down * pixelsToMove);
+
+        UpdateScreenTarget();
+    }
+
+    public void Render(GameRenderer renderer, int sourceX=0, int sourceY=0){
+        _source = new Rectangle<int> (sourceX, sourceY, 48, 48);
         renderer.RenderTexture(_textureId, _source, _target);
     }
 }

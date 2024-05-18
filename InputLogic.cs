@@ -166,6 +166,15 @@ namespace TheAdventure{
             }
             else if (_keyboardState[(int)Scancode.Scancode0] == 1) {
                 _gameLogic.setMode(0);
+            } else if (_keyboardState[(int)Scancode.Scancode2] == 1)
+            {
+                _gameLogic.getPlayer().active = true;
+                _gameLogic.getPlayer2().active = false;
+            }
+            else if (_keyboardState[(int)Scancode.Scancode3] == 1)
+            {
+                _gameLogic.getPlayer2().active = true;
+                _gameLogic.getPlayer().active = false;
             }
 
             _lastUpdate = currentTime;

@@ -12,6 +12,7 @@ namespace TheAdventure
 
         private Level? _currentLevel;
         private PlayerObject _player;
+        private PlayerObject _player2;
         private int _mode;
 
         public GameLogic()
@@ -22,6 +23,9 @@ namespace TheAdventure
         public void LoadGameState()
         {
             _player = new PlayerObject(1000);
+            _player2 = new PlayerObject(2000, 30, 0);
+            _player.active = true;
+            _player2.active = false;
             var jsonSerializerOptions =  new JsonSerializerOptions(){ PropertyNameCaseInsensitive = true };
             var levelContent = File.ReadAllText(Path.Combine("Assets", "terrain.tmj"));
 
@@ -82,7 +86,32 @@ namespace TheAdventure
         }
         public void UpdatePlayerPosition(double up, double down, double left, double right, int timeSinceLastUpdateInMS)
         {
-            _player.UpdatePlayerPosition(up, down, left, right, timeSinceLastUpdateInMS);
+            
+            if ( _player.active)
+            {
+                _player.UpdatePlayerPosition(up, down, left, right, timeSinceLastUpdateInMS);
+                if (((_player.X - 6 <= _player2.X && _player.X >= _player2.X) && (_player.Y + 15 >= _player2.Y && _player.Y <= _player2.Y)) ||
+                    ((_player.X - 6 <= _player2.X && _player.X >= _player2.X) && (_player.Y - 15 <= _player2.Y && _player.Y >= _player2.Y)) ||
+                    ((_player.X + 6 >= _player2.X && _player.X <= _player2.X) && (_player.Y + 15 >= _player2.Y && _player.Y <= _player2.Y)) ||
+                    ((_player.X + 6 >= _player2.X && _player.X <= _player2.X) && (_player.Y - 15 <= _player2.Y && _player.Y >= _player2.Y)))
+                {
+                    
+
+                    _player.undoUpdate(up, down, left, right, timeSinceLastUpdateInMS);
+                    
+                }
+            } else if ( _player2.active) 
+            {
+                _player2.UpdatePlayerPosition(up, down, left, right, timeSinceLastUpdateInMS);
+                if (((_player2.X - 6 <= _player.X && _player2.X > _player.X) && (_player2.Y + 12 >= _player.Y && _player2.Y < _player.Y)) ||
+                    ((_player2.X - 6 <= _player.X && _player2.X > _player.X) && (_player2.Y - 12 <= _player.Y && _player2.Y > _player.Y)) ||
+                    ((_player2.X + 6 >= _player.X && _player2.X < _player.X) && (_player2.Y + 12 >= _player.Y && _player2.Y < _player.Y)) ||
+                    ((_player2.X + 6 >= _player.X && _player2.X < _player.X) && (_player2.Y - 12 <= _player.Y && _player2.Y > _player.Y)))
+                {
+                    _player2.undoUpdate(up, down, left, right, timeSinceLastUpdateInMS);
+                }
+            }
+            
             
         }
 
@@ -145,6 +174,7 @@ namespace TheAdventure
             }
 
             _player.Render(renderer);
+            _player2.Render(renderer, 192, 48);
         }
 
         private int _bombIds = 100;
@@ -168,6 +198,16 @@ namespace TheAdventure
             AnimatedGameObject rose = new AnimatedGameObject("RoseBlooming.png", 3, _roseIds, 6, 6, 1, x, y);
             _gameObjects.Add(rose.Id, rose);
             ++_roseIds;
+        }
+
+        public PlayerObject getPlayer()
+        {
+            return _player;
+        }
+
+        public PlayerObject getPlayer2()
+        {
+            return _player2;
         }
     }
 }
