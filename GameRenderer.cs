@@ -1,10 +1,8 @@
-using System.Numerics;
 using Silk.NET.Maths;
 using Silk.NET.SDL;
 using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.PixelFormats;
 using TheAdventure.Models;
-using Color = System.Drawing.Color;
 using Point = Silk.NET.SDL.Point;
 
 namespace TheAdventure;
@@ -98,12 +96,5 @@ public unsafe class GameRenderer
     public void PresentFrame()
     {
         _sdl.RenderPresent(_renderer);
-    }
-    
-    public void RenderOverlay(byte r, byte g, byte b, byte a)
-    {
-        _sdl.SetRenderDrawColor(_renderer, r, g, b, a);
-        var rect = new Rectangle<int>(0, 0, _camera.Width, _camera.Height);
-        _sdl.RenderFillRect(_renderer, ref rect);
     }
 }

@@ -18,8 +18,7 @@ namespace TheAdventure
 
         private DateTimeOffset _lastUpdate = DateTimeOffset.Now;
         private DateTimeOffset _lastPlayerUpdate = DateTimeOffset.Now;
-        private DayNightCycle _dayNightCycle = new DayNightCycle();
-        
+
         public Engine(GameRenderer renderer, Input input)
         {
             _renderer = renderer;
@@ -78,8 +77,6 @@ namespace TheAdventure
             var secsSinceLastFrame = (currentTime - _lastUpdate).TotalSeconds;
             _lastUpdate = currentTime;
 
-            _dayNightCycle.Update(secsSinceLastFrame);
-
             bool up = _input.IsUpPressed();
             bool down = _input.IsDownPressed();
             bool left = _input.IsLeftPressed();
@@ -129,30 +126,17 @@ namespace TheAdventure
                 _gameObjects.Remove(gameObjectId);
             }
         }
-        
+
         public void RenderFrame()
         {
-            float lightLevel = _dayNightCycle.GetLightLevel();
-            // Use the light level to adjust the color of your game objects or the background color of your game
-            // This is a simple implementation where the color is white during the day and black during the night
-            // Adjust this calculation as needed to get the desired day-night cycle effect
-            System.Drawing.Color sysColor = _dayNightCycle.GetCurrentColor();
-            Silk.NET.SDL.Color sdlColor = new Silk.NET.SDL.Color
-            {
-                R = sysColor.R,
-                G = sysColor.G,
-                B = sysColor.B,
-                A = sysColor.A
-            };
-            byte transparency = _dayNightCycle.GetTransparencyLevel();
-
-            _renderer.SetDrawColor(sdlColor.R, sdlColor.G, sdlColor.B, 255);
+            _renderer.SetDrawColor(0, 0, 0, 255);
             _renderer.ClearScreen();
+            
             _renderer.CameraLookAt(_player.Position.X, _player.Position.Y);
 
             RenderTerrain();
             RenderAllObjects();
-            _renderer.RenderOverlay(sdlColor.R, sdlColor.G, sdlColor.B, transparency);
+
             _renderer.PresentFrame();
         }
 
