@@ -1,0 +1,25 @@
+{
+  "FileName": "smb_enemies_sheet.png",
+  "RowCount": 1,
+  "ColumnCount": 2,
+  "FrameWidth": 30,
+  "FrameHeight": 30,
+  "FrameCenter": {
+    "OffsetX": 15,
+    "OffsetY": 15
+  },
+  "Animations": {
+    "Move": {
+      "StartFrame": {
+        "Row": 0,
+        "Col": 0
+      },
+      "EndFrame": {
+        "Row": 0,
+        "Col": 1
+      },
+      "DurationMs": 250,
+      "Loop": true
+    }
+  }
+}
