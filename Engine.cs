@@ -205,6 +205,15 @@ namespace TheAdventure
                 }
                 _gameObjects.Remove(gameObjectId);
             }
+            if (PlayerHits(_player, _player2))
+            {
+                _player2.GameOver();
+            }
+
+            if (PlayerHits(_player2, _player))
+            {
+                _player.GameOver();
+            }
         }
 
         public void RenderFrame()
@@ -306,6 +315,16 @@ namespace TheAdventure
                 TemporaryGameObject bomb = new(spriteSheet, 2.1, (translated.X, translated.Y));
                 _gameObjects.Add(bomb.Id, bomb);
             }
+        }
+        private bool PlayerHits(PlayerObject attacker, PlayerObject defender)
+        {
+            if (!attacker.IsAttacking())
+            {
+                return false;
+            }
+            var deltaX = Math.Abs(attacker.Position.X - defender.Position.X);
+            var deltaY = Math.Abs(attacker.Position.Y - defender.Position.Y);
+            return deltaX < 32 && deltaY < 32;
         }
     }
 }

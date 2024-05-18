@@ -30,6 +30,15 @@ public class PlayerObject : RenderableGameObject
         return State.Direction;
     }
 
+    public bool IsAttacking()
+    {
+        if(State.State == PlayerState.Attack || State.State == PlayerState.Kamehameha)
+        {
+            return true;
+        } 
+        return false;
+    }
+
     public (PlayerState State, PlayerStateDirection Direction) State{ get; private set; }
 
     public PlayerObject(SpriteSheet spriteSheet, int x, int y) : base(spriteSheet, (x, y))
