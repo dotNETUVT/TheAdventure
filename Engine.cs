@@ -81,18 +81,49 @@ namespace TheAdventure
             bool down = _input.IsDownPressed();
             bool left = _input.IsLeftPressed();
             bool right = _input.IsRightPressed();
+            bool isAttacking = _input.IsKeyAPressed();
+            bool addBomb = _input.IsKeyBPressed();
 
-            _player.UpdatePlayerPosition(up ? 1.0 : 0.0, down ? 1.0 : 0.0, left ? 1.0 : 0.0, right ? 1.0 : 0.0,
-                _currentLevel.Width * _currentLevel.TileWidth, _currentLevel.Height * _currentLevel.TileHeight,
-                secsSinceLastFrame);
-
+            if(isAttacking)
+            {
+                var dir = up ? 1: 0;
+                dir += down? 1 : 0;
+                dir += left? 1: 0;
+                dir += right ? 1 : 0;
+                if(dir <= 1){
+                    _player.Attack(up, down, left, right);
+                }
+                else{
+                    isAttacking = false;
+                }
+            }
+            if(!isAttacking)
+            {
+                _player.UpdatePlayerPosition(up ? 1.0 : 0.0, down ? 1.0 : 0.0, left ? 1.0 : 0.0, right ? 1.0 : 0.0,
+                    _currentLevel.Width * _currentLevel.TileWidth, _currentLevel.Height * _currentLevel.TileHeight,
+                    secsSinceLastFrame);
+            }
             var itemsToRemove = new List<int>();
             itemsToRemove.AddRange(GetAllTemporaryGameObjects().Where(gameObject => gameObject.IsExpired)
                 .Select(gameObject => gameObject.Id).ToList());
 
-            foreach (var gameObject in itemsToRemove)
+            if (addBomb)
             {
-                _gameObjects.Remove(gameObject);
+                AddBomb(_player.Position.X, _player.Position.Y, false);
+            }
+
+            foreach (var gameObjectId in itemsToRemove)
+            {
+                var gameObject = _gameObjects[gameObjectId];
+                if(gameObject is TemporaryGameObject){
+                    var tempObject = (TemporaryGameObject)gameObject;
+                    var deltaX = Math.Abs(_player.Position.X - tempObject.Position.X);
+                    var deltaY = Math.Abs(_player.Position.Y - tempObject.Position.Y);
+                    if(deltaX < 32 && deltaY < 32){
+                        _player.GameOver();
+                    }
+                }
+                _gameObjects.Remove(gameObjectId);
             }
         }
 
@@ -183,17 +214,11 @@ namespace TheAdventure
             _player.Render(_renderer);
         }
 
-        private void AddBomb(int x, int y)
+        private void AddBomb(int x, int y, bool translateCoordinates = true)
         {
-            var translated = _renderer.TranslateFromScreenToWorldCoordinates(x, y);
-            /*SpriteSheet spriteSheet = new(_renderer, "BombExploding.png", 1, 13, 32, 64, (16, 48));
-            spriteSheet.Animations["Explode"] = new SpriteSheet.Animation()
-            {
-                StartFrame = (0, 0),
-                EndFrame = (0, 12),
-                DurationMs = 2000,
-                Loop = false
-            };*/
+
+            var translated = translateCoordinates ? _renderer.TranslateFromScreenToWorldCoordinates(x, y) : new Vector2D<int>(x, y);
+            
             var spriteSheet = SpriteSheet.LoadSpriteSheet("bomb.json", "Assets", _renderer);
             if(spriteSheet != null){
                 spriteSheet.ActivateAnimation("Explode");
