@@ -13,6 +13,8 @@ public class PlayerObject : RenderableGameObject
         Left,
         Right,
     }
+    private Input _input;
+    
     public enum PlayerState{
         None = 0,
         Idle,
@@ -21,13 +23,16 @@ public class PlayerObject : RenderableGameObject
         GameOver
     }
 
+   
+
     private int _pixelsPerSecond = 192;
 
 
     public (PlayerState State, PlayerStateDirection Direction) State{ get; private set; }
 
-    public PlayerObject(SpriteSheet spriteSheet, int x, int y) : base(spriteSheet, (x, y))
+    public PlayerObject(SpriteSheet spriteSheet, int x, int y, Input input) : base(spriteSheet, (x, y))
     {
+        _input = input;
         SetState(PlayerState.Idle, PlayerStateDirection.Down);
     }
 
@@ -39,9 +44,11 @@ public class PlayerObject : RenderableGameObject
         }
         else if(state == PlayerState.None && direction == PlayerStateDirection.None){
             SpriteSheet.ActivateAnimation(null);
+            
         }
         else if(state == PlayerState.GameOver){
             SpriteSheet.ActivateAnimation(Enum.GetName(state));
+        
         }
         else{
             var animationName = Enum.GetName<PlayerState>(state) + Enum.GetName<PlayerStateDirection>(direction);
@@ -50,9 +57,26 @@ public class PlayerObject : RenderableGameObject
         State = (state, direction);
     }
 
-    public void GameOver(){
+    public void GameOver()
+    {
         SetState(PlayerState.GameOver, PlayerStateDirection.None);
+        DateTime startTime = DateTime.UtcNow;
+
+        while (DateTime.UtcNow - startTime < TimeSpan.FromSeconds(3)) 
+        {
+           // wait 3 seconds before dying
+        }
+        EndGame();
     }
+
+
+    private void EndGame()
+    {
+        Environment.Exit(0);
+        
+    }
+    
+    
 
     public void Attack(bool up, bool down, bool left, bool right)
     {

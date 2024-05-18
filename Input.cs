@@ -23,6 +23,21 @@ namespace TheAdventure
             ReadOnlySpan<byte> _keyboardState = new(_sdl.GetKeyboardState(null), (int)KeyCode.Count);
             return _keyboardState[(int)KeyCode.A] == 1;
         }
+        
+        public bool IsKeyDPressed(){
+            ReadOnlySpan<byte> _keyboardState = new(_sdl.GetKeyboardState(null), (int)KeyCode.Count);
+            return _keyboardState[(int)KeyCode.D] == 1;
+        }
+        
+        public bool IsKeySPressed(){
+            ReadOnlySpan<byte> _keyboardState = new(_sdl.GetKeyboardState(null), (int)KeyCode.Count);
+            return _keyboardState[(int)KeyCode.S] == 1;
+        }
+        
+        public bool IsKeyWPressed(){
+            ReadOnlySpan<byte> _keyboardState = new(_sdl.GetKeyboardState(null), (int)KeyCode.Count);
+            return _keyboardState[(int)KeyCode.W] == 1;
+        }
 
         public bool IsKeyBPressed(){
             ReadOnlySpan<byte> _keyboardState = new(_sdl.GetKeyboardState(null), (int)KeyCode.Count);
@@ -33,6 +48,12 @@ namespace TheAdventure
         {
             ReadOnlySpan<byte> _keyboardState = new(_sdl.GetKeyboardState(null), (int)KeyCode.Count);
             return _keyboardState[(int)KeyCode.Left] == 1;
+        }
+        
+        public bool IsSpacePressed()
+        {
+            ReadOnlySpan<byte> _keyboardState = new(_sdl.GetKeyboardState(null), (int)KeyCode.Count);
+            return _keyboardState[(int)KeyCode.Space] == 1;
         }
         
         public bool IsRightPressed()
@@ -151,6 +172,7 @@ namespace TheAdventure
                         if (ev.Button.Button == (byte)MouseButton.Primary)
                         {
                             OnMouseClick?.Invoke(this, (mouseX, mouseY));
+                            
                         }
                         
                         break;

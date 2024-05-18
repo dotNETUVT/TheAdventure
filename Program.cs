@@ -1,5 +1,6 @@
 ﻿using System.Diagnostics;
 using Silk.NET.SDL;
+using TheAdventure.Models;
 
 namespace TheAdventure;
 
@@ -8,6 +9,8 @@ public static class Program
     public static void Main()
     {
         var sdl = new Sdl(new SdlContext());
+        
+        
 
         var sdlInitResult = sdl.Init(Sdl.InitVideo | Sdl.InitEvents | Sdl.InitTimer | Sdl.InitGamecontroller |
                                      Sdl.InitJoystick);
@@ -18,6 +21,7 @@ public static class Program
 
         using (var window = new GameWindow(sdl, 800, 480))
         {
+            
             var renderer = new GameRenderer(sdl, window);
             var input = new Input(sdl, window, renderer);
             var engine = new Engine(renderer, input);

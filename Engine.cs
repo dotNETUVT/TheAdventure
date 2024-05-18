@@ -18,6 +18,7 @@ namespace TheAdventure
 
         private DateTimeOffset _lastUpdate = DateTimeOffset.Now;
         private DateTimeOffset _lastPlayerUpdate = DateTimeOffset.Now;
+        private DateTimeOffset _lastBombUpdate = DateTimeOffset.Now;
 
         public Engine(GameRenderer renderer, Input input)
         {
@@ -65,10 +66,45 @@ namespace TheAdventure
             */
             var spriteSheet = SpriteSheet.LoadSpriteSheet("player.json", "Assets", _renderer);
             if(spriteSheet != null){
-                _player = new PlayerObject(spriteSheet, 100, 100);
+                _player = new PlayerObject(spriteSheet, 100, 100, _input);
             }
             _renderer.SetWorldBounds(new Rectangle<int>(0, 0, _currentLevel.Width * _currentLevel.TileWidth,
                 _currentLevel.Height * _currentLevel.TileHeight));
+        }
+        
+        private void ProcessBombThrowing()
+        {
+            if (_player.State.State == PlayerObject.PlayerState.GameOver) return;
+
+            if (_input.IsKeyWPressed())
+            {
+                ThrowBomb(0, -1); // Up
+            }
+            else if (_input.IsKeyAPressed())
+            {
+                ThrowBomb(-1, 0); // Left
+            }
+            else if (_input.IsKeySPressed())
+            {
+                ThrowBomb(0, 1); // Down
+            }
+            else if (_input.IsKeyDPressed())
+            {
+                ThrowBomb(1, 0); // Right
+            }
+        }
+
+        private void ThrowBomb(int directionX, int directionY)
+        {
+            if (_player.State.State == PlayerObject.PlayerState.GameOver) return;
+
+            
+            int bombX = _player.Position.X + directionX * 20; 
+            int bombY = _player.Position.Y + directionY * 20; 
+            
+        
+            
+            AddBomb(bombX, bombY, false);
         }
 
         public void ProcessFrame()
@@ -82,7 +118,14 @@ namespace TheAdventure
             bool left = _input.IsLeftPressed();
             bool right = _input.IsRightPressed();
             bool isAttacking = _input.IsKeyAPressed();
-            bool addBomb = _input.IsKeyBPressed();
+            bool addBomb = false;
+            bool throwing = false;
+            if (_input.IsKeyAPressed() || _input.IsKeyWPressed() || _input.IsKeyDPressed() || _input.IsKeySPressed() || _input.IsKeyBPressed())
+            {
+                 addBomb = true;
+                 throwing = true;
+            }
+            int bombtime = 300;
 
             if(isAttacking)
             {
@@ -109,7 +152,29 @@ namespace TheAdventure
 
             if (addBomb)
             {
-                AddBomb(_player.Position.X, _player.Position.Y, false);
+                if (DateTimeOffset.Now - _lastBombUpdate > TimeSpan.FromMilliseconds(bombtime) )
+                {
+                    _lastBombUpdate = DateTimeOffset.Now;
+                    if (_input.IsKeyBPressed())
+                    {
+                            ThrowBomb(-1, 0);
+                            ThrowBomb(1, 0);
+                            ThrowBomb(0, 1);
+                            ThrowBomb(0, -1);
+                        
+                    }
+                    if (throwing)
+                    {
+                        ProcessBombThrowing();
+
+                    }
+                    else
+                    {
+                        AddBomb(_player.Position.X, _player.Position.Y, false);
+                    }
+
+                }
+                
             }
 
             foreach (var gameObjectId in itemsToRemove)
@@ -216,6 +281,8 @@ namespace TheAdventure
 
         private void AddBomb(int x, int y, bool translateCoordinates = true)
         {
+            PlayerObject.PlayerState status = _player.State.State;
+            if(status == PlayerObject.PlayerState.GameOver) return;
 
             var translated = translateCoordinates ? _renderer.TranslateFromScreenToWorldCoordinates(x, y) : new Vector2D<int>(x, y);
             

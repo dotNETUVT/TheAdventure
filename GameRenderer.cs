@@ -34,6 +34,8 @@ public unsafe class GameRenderer
     {
         _camera.SetWorldBounds(bounds);
     }
+    
+    
 
     public void CameraLookAt(int x, int y)
     {
