@@ -22,13 +22,20 @@ public class PlayerObject : RenderableGameObject
     }
 
     private int _pixelsPerSecond = 192;
-
+    private readonly int _attackRange = 30;
+    private List<Octopus> _octopuses;
 
     public (PlayerState State, PlayerStateDirection Direction) State{ get; private set; }
 
     public PlayerObject(SpriteSheet spriteSheet, int x, int y) : base(spriteSheet, (x, y))
     {
+        _octopuses = new List<Octopus>();
         SetState(PlayerState.Idle, PlayerStateDirection.Down);
+    }
+
+    public void SetOctopuses(List<Octopus> octopuses)
+    {
+        _octopuses = new List<Octopus>(octopuses);
     }
 
     public void SetState(PlayerState state, PlayerStateDirection direction)
@@ -73,6 +80,23 @@ public class PlayerObject : RenderableGameObject
             direction = PlayerStateDirection.Left;
         }
         SetState(PlayerState.Attack, direction);
+
+        var octopusesInRange = GetOctopusesInRange();
+        foreach (var octopus in octopusesInRange)
+        {
+            if (!octopus._isGameOver)
+            {
+                octopus.GameOver();
+            }
+        }
+        SetState(PlayerState.Idle, direction);
+    }
+
+    private List<Octopus> GetOctopusesInRange()
+    {
+        return _octopuses.Where(octopus => 
+            Math.Abs(Position.X - octopus.Position.X) < _attackRange &&
+            Math.Abs(Position.Y - octopus.Position.Y) < _attackRange).ToList();
     }
 
     public void UpdatePlayerPosition(double up, double down, double left, double right, int width, int height,

@@ -1,0 +1,39 @@
+{
+  "rowCount" : 7,
+    "columnCount" : 7,
+    "frameWidth" : 32,
+    "frameHeight" : 32,
+    "frameCenter" : {
+        "offsetX" : 16,
+        "offsetY" : 16
+    },
+  "fileName": "octopus.png",
+  "animations": {
+    "Attack": {
+      "startFrame": {
+        "row": 2,
+        "col": 0
+      },
+      "endFrame": {
+        "row": 2,
+        "col": 3
+      },
+      "durationMs": 300,
+      "loop": true,
+      "flip": 1
+    },
+    "GameOver": {
+        "startFrame" : {
+            "row" : 3,
+            "col" : 0
+        },
+        "endFrame" : {
+            "row" : 3,
+            "col" : 5
+        },
+        "durationMs" : 700,
+        "loop" : false,
+        "flip" : 0
+    }
+  }
+}

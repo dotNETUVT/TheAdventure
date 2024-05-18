@@ -69,12 +69,39 @@ namespace TheAdventure
             }
             _renderer.SetWorldBounds(new Rectangle<int>(0, 0, _currentLevel.Width * _currentLevel.TileWidth,
                 _currentLevel.Height * _currentLevel.TileHeight));
+
+            var octopusSpriteSheet = SpriteSheet.LoadSpriteSheet("octopus.json", "Assets", _renderer);
+
+            if (octopusSpriteSheet != null)
+            {
+                SpawnOctopuses(octopusSpriteSheet, 5);
+            }
+
+            if (_player != null)
+            {
+                _player.SetOctopuses(_gameObjects.Values.OfType<Octopus>().ToList());
+            }
+        }
+
+        private void SpawnOctopuses(SpriteSheet octopusSpriteSheet, int count)
+        {
+            var random = new Random();
+            for (int i = 0; i < count; i++)
+            {
+                var x = random.Next(100, (_currentLevel.Width * _currentLevel.TileWidth) - 100);
+                var y = random.Next(100, (_currentLevel.Height * _currentLevel.TileHeight) - 100);
+
+                var octopusSprite = SpriteSheet.LoadSpriteSheet("octopus.json", "Assets", _renderer);
+                var octopus = new Octopus(octopusSprite, x, y, _player, this);
+                _gameObjects.Add(octopus.Id, octopus);
+            }
         }
 
         public void ProcessFrame()
         {
             var currentTime = DateTimeOffset.Now;
             var secsSinceLastFrame = (currentTime - _lastUpdate).TotalSeconds;
+            var deltaTime = (currentTime - _lastUpdate).TotalSeconds;
             _lastUpdate = currentTime;
 
             bool up = _input.IsUpPressed();
@@ -124,6 +151,14 @@ namespace TheAdventure
                     }
                 }
                 _gameObjects.Remove(gameObjectId);
+            }
+
+            foreach (var gameObject in _gameObjects.Values.ToList())
+            {
+                if (gameObject is Octopus octopus)
+                {
+                    octopus.Update(deltaTime);
+                }
             }
         }
 
@@ -214,7 +249,7 @@ namespace TheAdventure
             _player.Render(_renderer);
         }
 
-        private void AddBomb(int x, int y, bool translateCoordinates = true)
+        public void AddBomb(int x, int y, bool translateCoordinates = true)
         {
 
             var translated = translateCoordinates ? _renderer.TranslateFromScreenToWorldCoordinates(x, y) : new Vector2D<int>(x, y);

@@ -29,7 +29,7 @@ public class SpriteSheet
     public Dictionary<string, Animation> Animations { get; init; } = new();
 
     private int _textureId = -1;
-    private DateTimeOffset _animationStart = DateTimeOffset.MinValue;
+    public DateTimeOffset _animationStart = DateTimeOffset.MinValue;
 
     public SpriteSheet(){
 
@@ -75,6 +75,11 @@ public class SpriteSheet
         if (!Animations.TryGetValue(name, out var animation)) return;
         ActiveAnimation = animation;
         _animationStart = DateTimeOffset.Now;
+    }
+
+    public void StopAnimation()
+    {
+        ActiveAnimation = null;
     }
 
     public void Render(GameRenderer renderer, (int X, int Y) dest, double angle = 0.0, Point rotationCenter = new())
