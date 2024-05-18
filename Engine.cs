@@ -16,6 +16,9 @@ namespace TheAdventure
         private GameRenderer _renderer;
         private Input _input;
 
+
+   private BGM _bgm = new BGM(Path.Combine("Assets","bgm.mp3"));
+
         private DateTimeOffset _lastUpdate = DateTimeOffset.Now;
         private DateTimeOffset _lastPlayerUpdate = DateTimeOffset.Now;
 
@@ -69,6 +72,8 @@ namespace TheAdventure
             }
             _renderer.SetWorldBounds(new Rectangle<int>(0, 0, _currentLevel.Width * _currentLevel.TileWidth,
                 _currentLevel.Height * _currentLevel.TileHeight));
+
+            _bgm.PlayMusic();
         }
 
         public void ProcessFrame()
@@ -84,6 +89,11 @@ namespace TheAdventure
             bool isAttacking = _input.IsKeyAPressed();
             bool addBomb = _input.IsKeyBPressed();
 
+
+            if (_input.IsPPressed())
+            {
+                _bgm.ToggleMusic();
+            }
             if(isAttacking)
             {
                 var dir = up ? 1: 0;
