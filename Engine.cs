@@ -3,6 +3,7 @@ using Silk.NET.Maths;
 using Silk.NET.SDL;
 using TheAdventure.Models;
 using TheAdventure.Models.Data;
+using System;
 
 namespace TheAdventure
 {
@@ -18,6 +19,22 @@ namespace TheAdventure
 
         private DateTimeOffset _lastUpdate = DateTimeOffset.Now;
         private DateTimeOffset _lastPlayerUpdate = DateTimeOffset.Now;
+
+        // Speed boost variables
+        private bool isSpeedBoostActive = false;
+        private float speedBoostDuration = 2.0f; // Speed boost duration in seconds
+        private float speedBoostTimer = 0.0f;
+        private float normalSpeed = 2.0f;
+        private float boostedSpeed = 4.0f; // Significantly higher speed for visibility
+        private float playerSpeed;
+
+        // Timer for automatic speed boost
+        private float autoBoostInterval = 5.0f; // Interval for automatic speed boost in seconds
+        private float autoBoostTimer = 0.0f;
+
+        // Game over variables
+        private bool isGameOver = false;
+        private DateTimeOffset gameOverStartTime;
 
         public Engine(GameRenderer renderer, Input input)
         {
@@ -54,25 +71,31 @@ namespace TheAdventure
             }
 
             _currentLevel = level;
-            /*SpriteSheet spriteSheet = new(_renderer, Path.Combine("Assets", "player.png"), 10, 6, 48, 48, new FrameOffset() { OffsetX = 24, OffsetY = 42 });
-            spriteSheet.Animations["IdleDown"] = new SpriteSheet.Animation()
-            {
-                StartFrame = new FramePosition(),//(0, 0),
-                EndFrame = new FramePosition() { Row = 0, Col = 5 },
-                DurationMs = 1000,
-                Loop = true
-            };
-            */
+
             var spriteSheet = SpriteSheet.LoadSpriteSheet("player.json", "Assets", _renderer);
-            if(spriteSheet != null){
+            if (spriteSheet != null)
+            {
                 _player = new PlayerObject(spriteSheet, 100, 100);
             }
             _renderer.SetWorldBounds(new Rectangle<int>(0, 0, _currentLevel.Width * _currentLevel.TileWidth,
                 _currentLevel.Height * _currentLevel.TileHeight));
+
+            playerSpeed = normalSpeed; // Initialize player speed
+            autoBoostTimer = autoBoostInterval; // Initialize the auto boost timer
         }
 
         public void ProcessFrame()
         {
+            if (isGameOver)
+            {
+                // Check if 5 seconds have passed since the game over
+                if ((DateTimeOffset.Now - gameOverStartTime).TotalSeconds >= 5)
+                {
+                    Environment.Exit(0); // Close the game
+                }
+                return; // Skip the rest of the frame processing
+            }
+
             var currentTime = DateTimeOffset.Now;
             var secsSinceLastFrame = (currentTime - _lastUpdate).TotalSeconds;
             _lastUpdate = currentTime;
@@ -84,24 +107,45 @@ namespace TheAdventure
             bool isAttacking = _input.IsKeyAPressed();
             bool addBomb = _input.IsKeyBPressed();
 
-            if(isAttacking)
+            // Update speed boost timer
+            if (isSpeedBoostActive)
             {
-                var dir = up ? 1: 0;
-                dir += down? 1 : 0;
-                dir += left? 1: 0;
+                speedBoostTimer -= (float)secsSinceLastFrame;
+                if (speedBoostTimer <= 0)
+                {
+                    isSpeedBoostActive = false;
+                    playerSpeed = normalSpeed;
+                }
+            }
+
+            // Update automatic boost timer
+            autoBoostTimer -= (float)secsSinceLastFrame;
+            if (autoBoostTimer <= 0)
+            {
+                ActivateSpeedBoost();
+                autoBoostTimer = autoBoostInterval;
+            }
+
+            if (isAttacking)
+            {
+                var dir = up ? 1 : 0;
+                dir += down ? 1 : 0;
+                dir += left ? 1 : 0;
                 dir += right ? 1 : 0;
-                if(dir <= 1){
+                if (dir <= 1)
+                {
                     _player.Attack(up, down, left, right);
                 }
-                else{
+                else
+                {
                     isAttacking = false;
                 }
             }
-            if(!isAttacking)
+            if (!isAttacking)
             {
                 _player.UpdatePlayerPosition(up ? 1.0 : 0.0, down ? 1.0 : 0.0, left ? 1.0 : 0.0, right ? 1.0 : 0.0,
                     _currentLevel.Width * _currentLevel.TileWidth, _currentLevel.Height * _currentLevel.TileHeight,
-                    secsSinceLastFrame);
+                    secsSinceLastFrame * playerSpeed);
             }
             var itemsToRemove = new List<int>();
             itemsToRemove.AddRange(GetAllTemporaryGameObjects().Where(gameObject => gameObject.IsExpired)
@@ -115,12 +159,14 @@ namespace TheAdventure
             foreach (var gameObjectId in itemsToRemove)
             {
                 var gameObject = _gameObjects[gameObjectId];
-                if(gameObject is TemporaryGameObject){
+                if (gameObject is TemporaryGameObject)
+                {
                     var tempObject = (TemporaryGameObject)gameObject;
                     var deltaX = Math.Abs(_player.Position.X - tempObject.Position.X);
                     var deltaY = Math.Abs(_player.Position.Y - tempObject.Position.Y);
-                    if(deltaX < 32 && deltaY < 32){
-                        _player.GameOver();
+                    if (deltaX < 32 && deltaY < 32)
+                    {
+                        GameOver();
                     }
                 }
                 _gameObjects.Remove(gameObjectId);
@@ -131,11 +177,16 @@ namespace TheAdventure
         {
             _renderer.SetDrawColor(0, 0, 0, 255);
             _renderer.ClearScreen();
-            
+
             _renderer.CameraLookAt(_player.Position.X, _player.Position.Y);
 
             RenderTerrain();
             RenderAllObjects();
+
+            if (isGameOver)
+            {
+                _renderer.RenderGameOverMessage();
+            }
 
             _renderer.PresentFrame();
         }
@@ -216,15 +267,33 @@ namespace TheAdventure
 
         private void AddBomb(int x, int y, bool translateCoordinates = true)
         {
-
             var translated = translateCoordinates ? _renderer.TranslateFromScreenToWorldCoordinates(x, y) : new Vector2D<int>(x, y);
-            
+
             var spriteSheet = SpriteSheet.LoadSpriteSheet("bomb.json", "Assets", _renderer);
-            if(spriteSheet != null){
+            if (spriteSheet != null)
+            {
                 spriteSheet.ActivateAnimation("Explode");
                 TemporaryGameObject bomb = new(spriteSheet, 2.1, (translated.X, translated.Y));
                 _gameObjects.Add(bomb.Id, bomb);
             }
+        }
+
+        private void ActivateSpeedBoost()
+        {
+            Console.WriteLine("Speed boost activated"); // Debug statement
+            if (!isSpeedBoostActive)
+            {
+                isSpeedBoostActive = true;
+                speedBoostTimer = speedBoostDuration;
+                playerSpeed = boostedSpeed;
+            }
+        }
+
+        private void GameOver()
+        {
+            isGameOver = true;
+            gameOverStartTime = DateTimeOffset.Now;
+            Console.WriteLine("Game Over"); // Debug statement
         }
     }
 }
