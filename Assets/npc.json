@@ -1,0 +1,37 @@
+﻿{
+  "rowCount" : 1,
+  "columnCount" : 8,
+  "frameWidth" : 30,
+  "frameHeight" : 35,
+  "frameCenter" : {
+    "offsetX" : 24,
+    "offsetY" : 42
+  },
+  "fileName" : "npc.png",
+  "animations" : {
+    "idle" : {
+      "startFrame" : {
+        "row": 0,
+        "col": 0
+      },
+        "endFrame" : {
+            "row": 0,
+            "col": 0
+        },
+      "durationMs" : 1000,
+      "loop" : true
+    },
+    "death" : {
+     "startFrame" : {
+        "row": 0,
+        "col": 1
+      },
+        "endFrame" : {
+            "row": 0,
+            "col": 7
+        },
+      "durationMs" : 300,
+      "loop" : false
+    }
+  }
+}

@@ -54,6 +54,13 @@ namespace TheAdventure
             }
 
             _currentLevel = level;
+            
+            //Load the npc
+            var npcSpriteSheet = SpriteSheet.LoadSpriteSheet("npc.json", "Assets", _renderer);
+            if(npcSpriteSheet != null){
+                var npc = new RenderableGameObject(npcSpriteSheet, (100, 200));
+                _gameObjects.Add(npc.Id, npc);
+            }
             /*SpriteSheet spriteSheet = new(_renderer, Path.Combine("Assets", "player.png"), 10, 6, 48, 48, new FrameOffset() { OffsetX = 24, OffsetY = 42 });
             spriteSheet.Animations["IdleDown"] = new SpriteSheet.Animation()
             {
@@ -69,6 +76,8 @@ namespace TheAdventure
             }
             _renderer.SetWorldBounds(new Rectangle<int>(0, 0, _currentLevel.Width * _currentLevel.TileWidth,
                 _currentLevel.Height * _currentLevel.TileHeight));
+            
+            
         }
 
         public void ProcessFrame()
@@ -95,6 +104,24 @@ namespace TheAdventure
                 }
                 else{
                     isAttacking = false;
+                }
+                //Get the player current position
+                var playerPosition = _player.Position;
+                //Check if the player position is close to the npc
+                foreach(var gameobject in _gameObjects.Values){
+                    if(gameobject is RenderableGameObject){
+                        var npc = (RenderableGameObject)gameobject;
+                        var deltaX = Math.Abs(playerPosition.X - npc.Position.X);
+                        var deltaY = Math.Abs(playerPosition.Y - npc.Position.Y);
+                        if(deltaX < 32 && deltaY < 32){
+                            npc.SpriteSheet.ActivateAnimation("death");
+                            //Remove the npc from the game after 300 ms
+                            Timer timer = new Timer(Callback,null,300,Timeout.Infinite);
+                            void Callback(object? state){
+                                _gameObjects.Remove(npc.Id);
+                            }
+                        }
+                    }
                 }
             }
             if(!isAttacking)
