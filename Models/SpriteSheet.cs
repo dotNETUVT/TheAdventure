@@ -31,7 +31,7 @@ public class SpriteSheet
     private int _textureId = -1;
     private DateTimeOffset _animationStart = DateTimeOffset.MinValue;
 
-    public SpriteSheet(){
+    public SpriteSheet() {
 
     }
 

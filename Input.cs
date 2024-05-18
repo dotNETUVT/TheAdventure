@@ -57,8 +57,10 @@ namespace TheAdventure
         {
             var currentTime = DateTimeOffset.UtcNow;
             Event ev = new Event();
+
             var mouseX = 0;
             var mouseY = 0;
+
             while (_sdl.PollEvent(ref ev) != 0)
             {
                 if (ev.Type == (uint)EventType.Quit)

@@ -15,6 +15,8 @@ namespace TheAdventure
         private PlayerObject _player;
         private GameRenderer _renderer;
         private Input _input;
+        private int lives = 3;
+        private int heartTexture;
 
         private DateTimeOffset _lastUpdate = DateTimeOffset.Now;
         private DateTimeOffset _lastPlayerUpdate = DateTimeOffset.Now;
@@ -31,6 +33,8 @@ namespace TheAdventure
         {
             var jsonSerializerOptions = new JsonSerializerOptions() { PropertyNameCaseInsensitive = true };
             var levelContent = File.ReadAllText(Path.Combine("Assets", "terrain.tmj"));
+            heartTexture = _renderer.LoadTexture(Path.Combine("Assets", "heart.png"), out _);
+
 
             var level = JsonSerializer.Deserialize<Level>(levelContent, jsonSerializerOptions);
             if (level == null) return;
@@ -90,6 +94,7 @@ namespace TheAdventure
                 dir += down? 1 : 0;
                 dir += left? 1: 0;
                 dir += right ? 1 : 0;
+
                 if(dir <= 1){
                     _player.Attack(up, down, left, right);
                 }
@@ -115,12 +120,21 @@ namespace TheAdventure
             foreach (var gameObjectId in itemsToRemove)
             {
                 var gameObject = _gameObjects[gameObjectId];
-                if(gameObject is TemporaryGameObject){
+
+                if (gameObject is TemporaryGameObject) {
+
                     var tempObject = (TemporaryGameObject)gameObject;
                     var deltaX = Math.Abs(_player.Position.X - tempObject.Position.X);
                     var deltaY = Math.Abs(_player.Position.Y - tempObject.Position.Y);
-                    if(deltaX < 32 && deltaY < 32){
-                        _player.GameOver();
+
+                    // Game is over
+                    if (deltaX < 32 && deltaY < 32) {
+                        lives--;
+
+                        if (lives == 0)
+                        {
+                            _player.GameOver();
+                        }
                     }
                 }
                 _gameObjects.Remove(gameObjectId);
@@ -135,6 +149,7 @@ namespace TheAdventure
             _renderer.CameraLookAt(_player.Position.X, _player.Position.Y);
 
             RenderTerrain();
+            RenderLives();
             RenderAllObjects();
 
             _renderer.PresentFrame();
@@ -157,9 +172,30 @@ namespace TheAdventure
             return null;
         }
 
+
+
+        private void RenderLives()
+        {
+            if (_currentLevel == null) return;
+
+            int heartWidth = 59;
+            int heartHeight = 56;
+            int margin = 10;
+
+            for (int i = 0; i < lives; i++)
+            {
+                var src = new Rectangle<int>(0, 0, heartWidth, heartHeight);
+                var dst = new Rectangle<int>(i * (heartWidth + margin) + 5, margin, heartWidth, heartHeight);
+
+                _renderer.RenderTexture(heartTexture, src, dst);
+            }
+        }
+
+
         private void RenderTerrain()
         {
             if (_currentLevel == null) return;
+
             for (var layer = 0; layer < _currentLevel.Layers.Length; ++layer)
             {
                 var cLayer = _currentLevel.Layers[layer];
