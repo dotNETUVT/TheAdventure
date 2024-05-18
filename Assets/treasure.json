@@ -1,0 +1,25 @@
+{
+  "rowCount" : 1,
+  "columnCount" : 2,
+  "frameWidth" : 32,
+  "frameHeight" : 32,
+  "frameCenter" : {
+    "offsetX" : 16,
+    "offsetY" : 16
+  },
+  "fileName" : "treasure.png",
+  "animations" : {
+    "Open" : {
+      "startFrame" : {
+        "row" : 0,
+        "col" : 0
+      },
+      "endFrame" : {
+        "row" : 0,
+        "col" : 1
+      },
+      "durationMs" : 500,
+      "loop" : false
+    }
+  }
+}

@@ -9,6 +9,7 @@ namespace TheAdventure
     public class Engine
     {
         private readonly Dictionary<int, GameObject> _gameObjects = new();
+        private readonly List<GameObject> _pendingAdditions = new();  // List for pending additions
         private readonly Dictionary<string, TileSet> _loadedTileSets = new();
         private Random _random = new Random();
 
@@ -21,6 +22,10 @@ namespace TheAdventure
         private DateTimeOffset _lastUpdate = DateTimeOffset.Now;
         private DateTimeOffset _lastPlayerUpdate = DateTimeOffset.Now;
         private int _diamondsCaught = 0; // Diamond counter
+        private const int DiamondsRequiredForTreasure = 3;
+        private int _goldCaught = 0; // Gold coin counter
+        private int _silverCaught = 0; // Silver coin counter
+        private int _copperCaught = 0; // Copper coin counter
 
         public Engine(GameRenderer renderer, Input input)
         {
@@ -74,7 +79,7 @@ namespace TheAdventure
             _renderer.SetWorldBounds(new Rectangle<int>(0, 0, _currentLevel.Width * _currentLevel.TileWidth,
                 _currentLevel.Height * _currentLevel.TileHeight));
             
-            // Place 5 diamonds at random positions
+            // Place 15 diamonds at random positions
             for (int i = 0; i < 15; i++)
             {
                 var (x, y) = GetRandomPosition(_currentLevel.Width * _currentLevel.TileWidth, _currentLevel.Height * _currentLevel.TileHeight);
@@ -101,6 +106,10 @@ namespace TheAdventure
             bool right = _input.IsRightPressed();
             bool isAttacking = _input.IsKeyAPressed();
             bool addBomb = _input.IsKeyBPressed();
+            
+            var itemsToRemove = new List<int>();
+            itemsToRemove.AddRange(GetAllTemporaryGameObjects().Where(gameObject => gameObject.IsExpired)
+                .Select(gameObject => gameObject.Id).ToList());
 
             if(isAttacking)
             {
@@ -114,31 +123,68 @@ namespace TheAdventure
                 else{
                     isAttacking = false;
                 }
+                
+                foreach (var gameObject in _gameObjects.Values)
+                {
+                    if (gameObject is RenderableGameObject renderableGameObject &&
+                        renderableGameObject.SpriteSheet.FileName == "treasure.png" &&
+                        IsColliding(_player, renderableGameObject))
+                    {
+                        OpenTreasure(renderableGameObject.Id);
+                    }
+                }
+                
             }
             if(!isAttacking)
             {
                 _player.UpdatePlayerPosition(up ? 1.0 : 0.0, down ? 1.0 : 0.0, left ? 1.0 : 0.0, right ? 1.0 : 0.0,
                     _currentLevel.Width * _currentLevel.TileWidth, _currentLevel.Height * _currentLevel.TileHeight,
                     secsSinceLastFrame);
+                
             }
-            var itemsToRemove = new List<int>();
-            itemsToRemove.AddRange(GetAllTemporaryGameObjects().Where(gameObject => gameObject.IsExpired)
-                .Select(gameObject => gameObject.Id).ToList());
             
-            // Check for collision with diamonds
+            // Check for collision with diamonds and coins
             foreach (var gameObject in _gameObjects.Values)
             {
                 if (gameObject is RenderableGameObject renderableGameObject &&
-                    renderableGameObject.SpriteSheet.FileName == "diamond.png")
+                    (renderableGameObject.SpriteSheet.FileName == "diamond.png" ||
+                     renderableGameObject.SpriteSheet.FileName.Contains("coin_")))
                 {
                     if (IsColliding(_player, renderableGameObject))
                     {
                         itemsToRemove.Add(renderableGameObject.Id);
-                        _diamondsCaught++;
-                        _renderer.PlaySoundEffect("Assets/collect_diamond.mp3");
+
+                        if (renderableGameObject.SpriteSheet.FileName == "diamond.png")
+                        {
+                            _diamondsCaught++;
+                            _renderer.PlaySoundEffect("Assets/collect_diamond.mp3");
+                    
+                            // Check if enough diamonds have been collected to spawn a treasure
+                            if (_diamondsCaught % DiamondsRequiredForTreasure == 0)
+                            {
+                                var (x, y) = GetRandomPosition(_currentLevel.Width * _currentLevel.TileWidth, _currentLevel.Height * _currentLevel.TileHeight);
+                                AddTreasure(x, y);
+                            }
+                        }
+                        else if (renderableGameObject.SpriteSheet.FileName == "coin_gold.png")
+                        {
+                            _goldCaught++;
+                            _renderer.PlaySoundEffect("Assets/collect_diamond.mp3");
+                        }
+                        else if (renderableGameObject.SpriteSheet.FileName == "coin_silver.png")
+                        {
+                            _silverCaught++;
+                            _renderer.PlaySoundEffect("Assets/collect_diamond.mp3");
+                        }
+                        else if (renderableGameObject.SpriteSheet.FileName == "coin_copper.png")
+                        {
+                            _copperCaught++;
+                            _renderer.PlaySoundEffect("Assets/collect_diamond.mp3");
+                        }
                     }
                 }
             }
+
 
             if (addBomb)
             {
@@ -148,7 +194,8 @@ namespace TheAdventure
             foreach (var gameObjectId in itemsToRemove)
             {
                 var gameObject = _gameObjects[gameObjectId];
-                if(gameObject is TemporaryGameObject){
+                if(gameObject is TemporaryGameObject tempGameObject&&
+                   tempGameObject.SpriteSheet.FileName == "bomb.png"){
                     var tempObject = (TemporaryGameObject)gameObject;
                     var deltaX = Math.Abs(_player.Position.X - tempObject.Position.X);
                     var deltaY = Math.Abs(_player.Position.Y - tempObject.Position.Y);
@@ -158,7 +205,15 @@ namespace TheAdventure
                 }
                 _gameObjects.Remove(gameObjectId);
             }
+            
+            // Add pending game objects to the dictionary
+            foreach (var newGameObject in _pendingAdditions)
+            {
+                _gameObjects.Add(newGameObject.Id, newGameObject);
+            }
+            _pendingAdditions.Clear();
         }
+        
 
         public void RenderFrame()
         {
@@ -170,8 +225,8 @@ namespace TheAdventure
             RenderTerrain();
             RenderAllObjects();
             
-            // Render the diamond counter
             RenderDiamondCounter();
+            RenderCoinCounter();
 
             _renderer.PresentFrame();
         }
@@ -293,47 +348,139 @@ namespace TheAdventure
             return playerRect.Overlaps(diamondRect);
         }
         
-        private void RenderDiamondCounter()
-{
-    // Load the digits' textures
-    var digitsTextureIds = new List<int>();
-    foreach (var digitChar in _diamondsCaught.ToString())
-    {
-        var digitFilePath = $"Assets/Numbers/Number{digitChar}.png";
-        var digitTextureId = _renderer.LoadTexture(digitFilePath, out _);
-        digitsTextureIds.Add(digitTextureId);
-    }
+        private void RenderDiamondCounter() 
+        {
+            // Load the digits' textures
+            var digitsTextureIds = new List<int>();
+            foreach (var digitChar in _diamondsCaught.ToString())
+            {
+                var digitFilePath = $"Assets/Numbers/Number{digitChar}.png";
+                var digitTextureId = _renderer.LoadTexture(digitFilePath, out _);
+                digitsTextureIds.Add(digitTextureId);
+            }
 
-    // Load the first frame of the diamond sprite sheet
-    var diamondSheetFilePath = "diamond.json"; 
-    var diamondSpriteSheet = SpriteSheet.LoadSpriteSheet(diamondSheetFilePath, "Assets", _renderer);
-    var diamondTextureId = diamondSpriteSheet?.GetTextureId(0); // Get the texture ID of the first frame
-    
-    // Determine the position to render the diamond and the counter (relative to the camera)
-    var counterPosition = new Vector2D<int>(10, 10); 
-    counterPosition += _renderer.TranslateFromScreenToWorldCoordinates(0, 0); 
+            // Load the first frame of the diamond sprite sheet
+            var diamondSheetFilePath = "diamond.json"; 
+            var diamondSpriteSheet = SpriteSheet.LoadSpriteSheet(diamondSheetFilePath, "Assets", _renderer);
+            var diamondTextureId = diamondSpriteSheet?.GetTextureId(0); // Get the texture ID of the first frame
+            
+            // Determine the position to render the diamond and the counter (relative to the camera)
+            var counterPosition = new Vector2D<int>(10, 10); 
+            counterPosition += _renderer.TranslateFromScreenToWorldCoordinates(0, 0); 
 
-    var diamondPosition = new Vector2D<int>(counterPosition.X + 30, counterPosition.Y - 10); 
+            var diamondPosition = new Vector2D<int>(counterPosition.X + 30, counterPosition.Y - 10); 
 
-    // Render each digit
-    var digitWidth = 10; 
-    foreach (var textureId in digitsTextureIds)
-    {
-        var srcRect = new Rectangle<int>(0, 0, digitWidth, 14); 
-        var dstRect = new Rectangle<int>(counterPosition.X, counterPosition.Y, digitWidth, 14);
-        _renderer.RenderTexture(textureId, srcRect, dstRect);
+            // Render each digit
+            var digitWidth = 10; 
+            foreach (var textureId in digitsTextureIds)
+            {
+                var srcRect = new Rectangle<int>(0, 0, digitWidth, 14); 
+                var dstRect = new Rectangle<int>(counterPosition.X, counterPosition.Y, digitWidth, 14);
+                _renderer.RenderTexture(textureId, srcRect, dstRect);
 
-        counterPosition.X += digitWidth; 
-    }
+                counterPosition.X += digitWidth; 
+            }
 
-    // Render the diamond
-    if (diamondTextureId.HasValue)
-    {
-        var srcRect = diamondSpriteSheet.GetFrameSourceRect(0); // Get the source rectangle of the first frame
-        var dstRect = new Rectangle<int>(diamondPosition.X, diamondPosition.Y, srcRect.Size.X, srcRect.Size.Y);
-        _renderer.RenderTexture(diamondTextureId.Value, srcRect, dstRect);
-    }
-}
+            // Render the diamond
+            if (diamondTextureId.HasValue)
+            {
+                var srcRect = diamondSpriteSheet.GetFrameSourceRect(0); // Get the source rectangle of the first frame
+                var dstRect = new Rectangle<int>(diamondPosition.X, diamondPosition.Y, srcRect.Size.X, srcRect.Size.Y);
+                _renderer.RenderTexture(diamondTextureId.Value, srcRect, dstRect);
+            }
+        }
+        
+        private void RenderCoinCounter()
+        {
+            // Dictionary to store coin counts and their corresponding file paths
+            var coinCounts = new Dictionary<string, int>
+            {
+                { "gold", _goldCaught },
+                { "silver", _silverCaught },
+                { "copper", _copperCaught }
+            };
+            
+
+            // Determine the position to render the counter (relative to the camera)
+            var counterPosition = new Vector2D<int>(100, 10);
+            counterPosition += _renderer.TranslateFromScreenToWorldCoordinates(0, 0);
+
+            var coinPosition = new Vector2D<int>(counterPosition.X + 30, counterPosition.Y - 3);
+
+            // Render each coin count along with its image
+            foreach (var coinType in coinCounts.Keys)
+            {
+                var count = coinCounts[coinType];
+
+                // Render the count
+                var digitWidth = 10;
+                foreach (var digitChar in count.ToString())
+                {
+                    var digitFilePath = $"Assets/Numbers/Number{digitChar}.png";
+                    var digitTextureId = _renderer.LoadTexture(digitFilePath, out _);
+
+                    var srcRect = new Rectangle<int>(0, 0, digitWidth, 14);
+                    var dstRect = new Rectangle<int>(counterPosition.X, counterPosition.Y, digitWidth, 14);
+                    _renderer.RenderTexture(digitTextureId, srcRect, dstRect);
+
+                    counterPosition.X += digitWidth;
+                }
+                var coinFilePath = $"coin_{coinType}.json";
+                var coinSpriteSheet = SpriteSheet.LoadSpriteSheet(coinFilePath, "Assets/Coins/", _renderer);
+                var coinTextureId = coinSpriteSheet?.GetTextureId(3); // Get the texture ID of the third frame
+                if (coinTextureId.HasValue)
+                {
+                    // Render the coin image
+                    var srcRectCoin = coinSpriteSheet.GetFrameSourceRect(3); 
+                    var dstRectCoin = new Rectangle<int>(coinPosition.X, coinPosition.Y, 32, 32); 
+                    _renderer.RenderTexture(coinTextureId.Value, srcRectCoin, dstRectCoin);
+                }
+                
+
+                // Update position for next coin count
+                counterPosition.X += 70; 
+                coinPosition.X += 80; 
+            }
+        }
+        
+        public void AddTreasure(int x, int y)
+        {
+            var spriteSheet = SpriteSheet.LoadSpriteSheet("treasure.json", "Assets", _renderer);
+            if (spriteSheet != null)
+            {
+                var treasure = new Treasure(spriteSheet, (x, y));
+                _pendingAdditions.Add(treasure);
+            }
+        }
+
+        public void OpenTreasure(int treasureId)
+        {
+            if (_gameObjects.TryGetValue(treasureId, out var gameObject) && gameObject is Treasure treasure
+                && !treasure.Open)
+            {
+                treasure.SpriteSheet.ActivateAnimation("Open");
+                treasure.Open = true;
+        
+                var (x, y) = treasure.Position;
+                for (int i = 0; i < 5; i++)
+                {
+                    var coinType = i % 3 == 0 ? "gold" : (i % 3 == 1 ? "silver" : "copper");
+                    AddCoin(x, y, coinType);
+                }
+            }
+        }
+
+        public void AddCoin(int x, int y, string coinType)
+        {
+            var spriteSheet = SpriteSheet.LoadSpriteSheet($"coin_{coinType}.json", "Assets/Coins/", _renderer);
+            if (spriteSheet != null)
+            {
+                spriteSheet.ActivateAnimation("Rotate");
+                var coin = new TemporaryGameObject(spriteSheet, 5.0, (x + _random.Next(-50, 50), y + _random.Next(-50, 50)));
+                _pendingAdditions.Add(coin);
+            }
+        }
+
 
     }
 }

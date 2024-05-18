@@ -1,0 +1,25 @@
+{
+  "rowCount" : 1,
+  "columnCount" : 8,
+  "frameWidth" : 32,
+  "frameHeight" : 32,
+  "frameCenter" : {
+    "offsetX" : 16,
+    "offsetY" : 20
+  },
+  "fileName" : "coin_silver.png",
+  "animations" : {
+    "Rotate" : {
+      "startFrame" : {
+        "row" : 0,
+        "col" : 0
+      },
+      "endFrame" : {
+        "row" : 0,
+        "col" : 7
+      },
+      "durationMs" : 1000,
+      "loop" : true
+    }
+  }
+}
