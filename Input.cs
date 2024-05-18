@@ -19,9 +19,9 @@ namespace TheAdventure
             _renderer = renderer;
         }
 
-        public bool IsKeyAPressed(){
+        public bool IsKeyXPressed(){
             ReadOnlySpan<byte> _keyboardState = new(_sdl.GetKeyboardState(null), (int)KeyCode.Count);
-            return _keyboardState[(int)KeyCode.A] == 1;
+            return _keyboardState[(int)KeyCode.X] == 1;
         }
 
         public bool IsKeyBPressed(){
@@ -52,6 +52,31 @@ namespace TheAdventure
             ReadOnlySpan<byte> _keyboardState = new(_sdl.GetKeyboardState(null), (int)KeyCode.Count);
             return _keyboardState[(int)KeyCode.Down] == 1;
         }
+        
+        public bool IsAPressed()
+        {
+            ReadOnlySpan<byte> keyboardState = new(_sdl.GetKeyboardState(null), (int)KeyCode.Count);
+            return keyboardState[(int)KeyCode.A] == 1;
+        }
+
+        public bool IsDPressed()
+        {
+            ReadOnlySpan<byte> keyboardState = new(_sdl.GetKeyboardState(null), (int)KeyCode.Count);
+            return keyboardState[(int)KeyCode.D] == 1;
+        }
+
+        public bool IsWPressed()
+        {
+            ReadOnlySpan<byte> keyboardState = new(_sdl.GetKeyboardState(null), (int)KeyCode.Count);
+            return keyboardState[(int)KeyCode.W] == 1;
+        }
+
+        public bool IsSPressed()
+        {
+            ReadOnlySpan<byte> keyboardState = new(_sdl.GetKeyboardState(null), (int)KeyCode.Count);
+            return keyboardState[(int)KeyCode.S] == 1;
+        }
+
         
         public bool ProcessInput()
         {

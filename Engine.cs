@@ -25,6 +25,7 @@ namespace TheAdventure
             _input = input;
 
             _input.OnMouseClick += (_, coords) => AddBomb(coords.x, coords.y);
+            
         }
 
         public void InitializeWorld()
@@ -77,13 +78,13 @@ namespace TheAdventure
             var secsSinceLastFrame = (currentTime - _lastUpdate).TotalSeconds;
             _lastUpdate = currentTime;
 
-            bool up = _input.IsUpPressed();
-            bool down = _input.IsDownPressed();
-            bool left = _input.IsLeftPressed();
-            bool right = _input.IsRightPressed();
-            bool isAttacking = _input.IsKeyAPressed();
+            bool up = _input.IsUpPressed() || _input.IsWPressed() ;
+            bool down = _input.IsDownPressed() ||_input.IsSPressed();
+            bool left = _input.IsLeftPressed() || _input.IsAPressed();
+            bool right = _input.IsRightPressed() || _input.IsDPressed();
+            bool isAttacking = _input.IsKeyXPressed();
             bool addBomb = _input.IsKeyBPressed();
-
+            
             if(isAttacking)
             {
                 var dir = up ? 1: 0;
