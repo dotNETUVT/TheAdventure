@@ -18,6 +18,7 @@ namespace TheAdventure
 
         private DateTimeOffset _lastUpdate = DateTimeOffset.Now;
         private DateTimeOffset _lastPlayerUpdate = DateTimeOffset.Now;
+        private DateTimeOffset _lastBombUpdate = DateTimeOffset.Now;
 
         public Engine(GameRenderer renderer, Input input)
         {
@@ -83,6 +84,7 @@ namespace TheAdventure
             bool right = _input.IsRightPressed();
             bool isAttacking = _input.IsKeyAPressed();
             bool addBomb = _input.IsKeyBPressed();
+            int bombDelay = 500;
 
             if(isAttacking)
             {
@@ -109,7 +111,11 @@ namespace TheAdventure
 
             if (addBomb)
             {
-                AddBomb(_player.Position.X, _player.Position.Y, false);
+                if (DateTimeOffset.Now - _lastBombUpdate > TimeSpan.FromMilliseconds(bombDelay))
+                {
+                    _lastBombUpdate = DateTimeOffset.Now;
+                    AddBomb(_player.Position.X, _player.Position.Y, false);
+                }
             }
 
             foreach (var gameObjectId in itemsToRemove)
@@ -216,7 +222,8 @@ namespace TheAdventure
 
         private void AddBomb(int x, int y, bool translateCoordinates = true)
         {
-
+            PlayerObject.PlayerState state = _player.State.State;
+            if(state == PlayerObject.PlayerState.GameOver) return;
             var translated = translateCoordinates ? _renderer.TranslateFromScreenToWorldCoordinates(x, y) : new Vector2D<int>(x, y);
             
             var spriteSheet = SpriteSheet.LoadSpriteSheet("bomb.json", "Assets", _renderer);
