@@ -34,7 +34,17 @@ public unsafe class GameRenderer
     {
         _camera.SetWorldBounds(bounds);
     }
-
+    public void RenderTextureToScreen(int textureId, Rectangle<int> src, Rectangle<int> dst)
+    {
+        if (_textures.TryGetValue(textureId, out var imageTexture))
+        {
+            _sdl.RenderCopyEx(_renderer, (Texture*)imageTexture, src, dst, 0.0, new Point(), RendererFlip.None);
+        }
+        else
+        {
+            throw new InvalidOperationException("Texture ID not found.");
+        }
+    }
     public void CameraLookAt(int x, int y)
     {
         _camera.LookAt(x, y);

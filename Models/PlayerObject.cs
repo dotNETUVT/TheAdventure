@@ -22,14 +22,26 @@ public class PlayerObject : RenderableGameObject
     }
 
     private int _pixelsPerSecond = 192;
-
+    private int _hearth_texture_id;
+    private string _current_animation = "IdleDown";
+    public int _health = 3;
 
     public (PlayerState State, PlayerStateDirection Direction) State{ get; private set; }
 
-    public PlayerObject(SpriteSheet spriteSheet, int x, int y) : base(spriteSheet, (x, y))
+    private GameRenderer _renderer;
+    public PlayerObject(GameRenderer renderer, SpriteSheet spriteSheet, int x, int y) : base(spriteSheet, (x, y))
     {
-        SetState(PlayerState.Idle, PlayerStateDirection.Down);
+        SpriteSheet.ActivateAnimation(_current_animation);
+
+        _renderer = renderer;
+        TextureInfo textureInfo;
+
+        _hearth_texture_id = _renderer.LoadTexture("Assets/life.png", out textureInfo);  
+
+
+
     }
+        
 
     public void SetState(PlayerState state, PlayerStateDirection direction)
     {
@@ -135,5 +147,30 @@ public class PlayerObject : RenderableGameObject
         }
 
         Position = (x, y);
+    }
+    public void RenderHearths(GameRenderer render)
+    {
+        int heartWidth = 32;
+        int heartHeight = 32;
+        int margin = 10;
+
+        for (int i = 0; i < _health; i++)
+        {   
+            int screenX = margin + i * (heartWidth + 5);
+            int screenY = margin;
+
+            render.RenderTextureToScreen(_hearth_texture_id, new Rectangle<int>(0, 0, 32, 32), new Rectangle<int>(screenX, screenY, heartWidth, heartHeight));
+
+        }
+    }
+
+    public int getHealth()
+    {
+        return _health;
+    }
+
+    public void setHealth(int health)
+    {
+        _health = health;
     }
 }
