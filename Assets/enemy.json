@@ -1,0 +1,104 @@
+{
+  "FileName": "enemy.png",
+  "RowCount": 9,
+  "ColumnCount": 5,
+  "FrameWidth": 64,
+  "FrameHeight": 80,
+  "FrameCenter": {
+    "OffsetX": 35,
+    "OffsetY": 40
+  },
+  "Animations": {
+    "IdleDown": {
+      "StartFrame": {
+        "Row": 0,
+        "Col": 0
+      },
+      "EndFrame": {
+        "Row": 0,
+        "Col": 4
+      },
+      "DurationMs": 1000,
+      "Loop": true,
+      "Flip": 0
+    },
+    "WalkDown": {
+      "StartFrame": {
+        "Row": 0,
+        "Col": 0
+      },
+      "EndFrame": {
+        "Row": 0,
+        "Col": 4
+      },
+      "DurationMs": 1000,
+      "Loop": true,
+      "Flip": 0
+    },
+    "WalkLeft": {
+      "StartFrame": {
+        "Row": 2,
+        "Col": 0
+      },
+      "EndFrame": {
+        "Row": 2,
+        "Col": 4
+      },
+      "DurationMs": 1000,
+      "Loop": true,
+      "Flip": 0
+    },
+    "WalkUp": {
+      "StartFrame": {
+        "Row": 4,
+        "Col": 0
+      },
+      "EndFrame": {
+        "Row": 4,
+        "Col": 4
+      },
+      "DurationMs": 1000,
+      "Loop": true,
+      "Flip": 0
+    },
+    "WalkRight": {
+      "StartFrame": {
+        "Row": 2,
+        "Col": 0
+      },
+      "EndFrame": {
+        "Row": 2,
+        "Col": 4
+      },
+      "DurationMs": 1000,
+      "Loop": true,
+      "Flip": 1
+    },
+    "AttackDown": {
+      "StartFrame": {
+        "Row": 2,
+        "Col": 0
+      },
+      "EndFrame": {
+        "Row": 2,
+        "Col": 5
+      },
+      "DurationMs": 1000,
+      "Loop": false,
+      "Flip": 0
+    },
+    "Die": {
+      "StartFrame": {
+        "Row": 9,
+        "Col": 0
+      },
+      "EndFrame": {
+        "Row": 9,
+        "Col": 5
+      },
+      "DurationMs": 1000,
+      "Loop": false,
+      "Flip": 0
+    }
+  }
+}
