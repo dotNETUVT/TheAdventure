@@ -18,6 +18,8 @@ public unsafe class GameRenderer
     private Dictionary<int, TextureInfo> _textureData = new();
     private int _textureId;
 
+    private int _gameOverTextureId;
+
     public GameRenderer(Sdl sdl, GameWindow window)
     {
         _window = window;
@@ -28,6 +30,8 @@ public unsafe class GameRenderer
 
         var windowSize = window.Size;
         _camera = new Camera(windowSize.Width, windowSize.Height);
+
+        LoadGameOverTexture("Assets/gameover.png");
     }
 
     public void SetWorldBounds(Rectangle<int> bounds)
@@ -66,6 +70,11 @@ public unsafe class GameRenderer
         return _textureId++;
     }
 
+    private void LoadGameOverTexture(string fileName)
+    {
+        _gameOverTextureId = LoadTexture(fileName, out _);
+    }
+
     public void RenderTexture(int textureId, Rectangle<int> src, Rectangle<int> dst,
         RendererFlip flip = RendererFlip.None, double angle = 0.0, Point center = default)
     {
@@ -96,5 +105,14 @@ public unsafe class GameRenderer
     public void PresentFrame()
     {
         _sdl.RenderPresent(_renderer);
+    }
+
+    public void RenderGameOver()
+    {
+        var windowSize = _window.Size;
+        var src = new Rectangle<int>(0, 0, windowSize.Width, windowSize.Height);
+        var dst = new Rectangle<int>(0, 0, windowSize.Width, windowSize.Height);
+
+        RenderTexture(_gameOverTextureId, src, dst);
     }
 }
