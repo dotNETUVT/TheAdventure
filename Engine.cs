@@ -83,6 +83,9 @@ namespace TheAdventure
             bool right = _input.IsRightPressed();
             bool isAttacking = _input.IsKeyAPressed();
             bool addBomb = _input.IsKeyBPressed();
+            bool slash = _input.IsSlashPressed();
+            bool space = _input.IsSpacePressed();
+            bool teleport = _input.IsKeyRPressed();
 
             if(isAttacking)
             {
@@ -110,6 +113,34 @@ namespace TheAdventure
             if (addBomb)
             {
                 AddBomb(_player.Position.X, _player.Position.Y, false);
+            }
+            
+            if (slash)
+            {
+                float increaseSpeed = 3.0f;
+                _player.UpdatePlayerPosition(up ? increaseSpeed : 0.0, down ? increaseSpeed : 0.0, left ? increaseSpeed : 0.0, right ? increaseSpeed : 0.0,
+                    _currentLevel.Width * _currentLevel.TileWidth, _currentLevel.Height * _currentLevel.TileHeight,
+                    secsSinceLastFrame);
+            }
+            else
+            {
+                float normalSpeed = 1.0f;
+                _player.UpdatePlayerPosition(up ? normalSpeed : 0.0, down ? normalSpeed : 0.0, left ? normalSpeed : 0.0, right ? normalSpeed : 0.0,
+                    _currentLevel.Width * _currentLevel.TileWidth, _currentLevel.Height * _currentLevel.TileHeight,
+                    secsSinceLastFrame);
+            }
+            
+            if (space)
+            {
+                float jumpDistance = 5.0f;
+                _player.UpdatePlayerPosition(up ? jumpDistance : 0.0, down ? jumpDistance : 0.0, left ? jumpDistance : 0.0, right ? jumpDistance : 0.0,
+                    _currentLevel.Width * _currentLevel.TileWidth, _currentLevel.Height * _currentLevel.TileHeight,
+                    secsSinceLastFrame);
+            }
+            
+            if (teleport)
+            {
+                _player.Position = (10, 23);
             }
 
             foreach (var gameObjectId in itemsToRemove)

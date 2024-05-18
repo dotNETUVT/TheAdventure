@@ -52,6 +52,24 @@ namespace TheAdventure
             ReadOnlySpan<byte> _keyboardState = new(_sdl.GetKeyboardState(null), (int)KeyCode.Count);
             return _keyboardState[(int)KeyCode.Down] == 1;
         }
+
+        public bool IsSlashPressed()
+        {
+            ReadOnlySpan<byte> _keyboardState = new(_sdl.GetKeyboardState(null), (int)KeyCode.Count);
+            return _keyboardState[(int)KeyCode.Slash] == 1;
+        }
+        
+        public bool IsSpacePressed()
+        {
+            ReadOnlySpan<byte> _keyboardState = new(_sdl.GetKeyboardState(null), (int)KeyCode.Count);
+            return _keyboardState[(int)KeyCode.Space] == 1;
+        }
+        
+        public bool IsKeyRPressed()
+        {
+            ReadOnlySpan<byte> _keyboardState = new(_sdl.GetKeyboardState(null), (int)KeyCode.Count);
+            return _keyboardState[(int)KeyCode.R] == 1;
+        }
         
         public bool ProcessInput()
         {
