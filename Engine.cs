@@ -15,6 +15,8 @@ namespace TheAdventure
         private PlayerObject _player;
         private GameRenderer _renderer;
         private Input _input;
+        private SoundManager _soundManager;
+        private List<Prop> _props;
 
         private DateTimeOffset _lastUpdate = DateTimeOffset.Now;
         private DateTimeOffset _lastPlayerUpdate = DateTimeOffset.Now;
@@ -23,8 +25,10 @@ namespace TheAdventure
         {
             _renderer = renderer;
             _input = input;
+            _props = new List<Prop>();
 
             _input.OnMouseClick += (_, coords) => AddBomb(coords.x, coords.y);
+            _soundManager = new SoundManager();
         }
 
         public void InitializeWorld()
@@ -52,6 +56,7 @@ namespace TheAdventure
 
                 refTileSet.Set = tileSet;
             }
+            
 
             _currentLevel = level;
             /*SpriteSheet spriteSheet = new(_renderer, Path.Combine("Assets", "player.png"), 10, 6, 48, 48, new FrameOffset() { OffsetX = 24, OffsetY = 42 });
@@ -69,6 +74,16 @@ namespace TheAdventure
             }
             _renderer.SetWorldBounds(new Rectangle<int>(0, 0, _currentLevel.Width * _currentLevel.TileWidth,
                 _currentLevel.Height * _currentLevel.TileHeight));
+            
+            // Add some props
+            AddProp("C:\\Users\\User\\Downloads\\house.png", 200, 200);
+            AddProp("C:\\Users\\User\\Downloads\\house2.png", 300, 200);
+        }
+        
+        private void AddProp(string filePath, int x, int y)
+        {
+            var prop = new Prop(_renderer, filePath, x, y);
+            _props.Add(prop);
         }
 
         public void ProcessFrame()
@@ -84,6 +99,12 @@ namespace TheAdventure
             bool isAttacking = _input.IsKeyAPressed();
             bool addBomb = _input.IsKeyBPressed();
 
+
+            if (up || down || left || right)
+            {
+                _soundManager.PlaySound("C:\\Users\\User\\Desktop\\Anul 3\\Semestrul 2\\.NET\\TheAdventure\\Assets\\walking.mp3");
+            }
+
             if(isAttacking)
             {
                 var dir = up ? 1: 0;
@@ -92,6 +113,7 @@ namespace TheAdventure
                 dir += right ? 1 : 0;
                 if(dir <= 1){
                     _player.Attack(up, down, left, right);
+                    _soundManager.PlaySound("C:\\Users\\User\\Desktop\\Anul 3\\Semestrul 2\\.NET\\TheAdventure\\Assets\\attack.mp3");
                 }
                 else{
                     isAttacking = false;
@@ -99,9 +121,22 @@ namespace TheAdventure
             }
             if(!isAttacking)
             {
+                var oldPosition = _player.Position;
                 _player.UpdatePlayerPosition(up ? 1.0 : 0.0, down ? 1.0 : 0.0, left ? 1.0 : 0.0, right ? 1.0 : 0.0,
                     _currentLevel.Width * _currentLevel.TileWidth, _currentLevel.Height * _currentLevel.TileHeight,
                     secsSinceLastFrame);
+                
+                // Check for collisions with props
+                var playerBounds = new Rectangle<int>(_player.Position.X, _player.Position.Y, _player.SpriteSheet.FrameWidth, _player.SpriteSheet.FrameHeight);
+                foreach (var prop in _props)
+                {
+                    if (prop.CheckCollision(playerBounds))
+                    {
+                        // Handle collision(just return to the old position)
+                        _player.Position = oldPosition;
+                        break;
+                    }
+                }
             }
             var itemsToRemove = new List<int>();
             itemsToRemove.AddRange(GetAllTemporaryGameObjects().Where(gameObject => gameObject.IsExpired)
@@ -136,6 +171,12 @@ namespace TheAdventure
 
             RenderTerrain();
             RenderAllObjects();
+            
+            //Render props.
+            foreach (var prop in _props)
+            {
+                prop.Render(_renderer);
+            }
 
             _renderer.PresentFrame();
         }
@@ -224,6 +265,8 @@ namespace TheAdventure
                 spriteSheet.ActivateAnimation("Explode");
                 TemporaryGameObject bomb = new(spriteSheet, 2.1, (translated.X, translated.Y));
                 _gameObjects.Add(bomb.Id, bomb);
+                _soundManager.PlaySound("C:\\Users\\User\\Desktop\\Anul 3\\Semestrul 2\\.NET\\TheAdventure\\Assets\\bomb_explosion.mp3");
+
             }
         }
     }

@@ -29,6 +29,22 @@ public unsafe class GameRenderer
         var windowSize = window.Size;
         _camera = new Camera(windowSize.Width, windowSize.Height);
     }
+    //This is getting textures for the props
+    public double GetTextureWidth(string filePath)
+    {
+        using (var image = Image.Load<Rgba32>(filePath))
+        {
+            return image.Width;
+        }
+    }
+
+    public double GetTextureHeight(string filePath)
+    {
+        using (var image = Image.Load<Rgba32>(filePath))
+        {
+            return image.Height;
+        }
+    }
 
     public void SetWorldBounds(Rectangle<int> bounds)
     {
