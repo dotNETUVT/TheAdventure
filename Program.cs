@@ -21,6 +21,12 @@ public static class Program
             var renderer = new GameRenderer(sdl, window);
             var input = new Input(sdl, window, renderer);
             var engine = new Engine(renderer, input);
+            var base = AppDomain.CurrentDomain.BaseDirectory;
+            var sound = "Assets\\backgroundSound.mp3";
+            var path = Path.Combine(base, sound);
+
+            var sound = new BackgroundSound(path);
+            sound.Play();
 
             engine.InitializeWorld();
 
