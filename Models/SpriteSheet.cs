@@ -31,25 +31,30 @@ public class SpriteSheet
     private int _textureId = -1;
     private DateTimeOffset _animationStart = DateTimeOffset.MinValue;
 
-    public SpriteSheet(){
-
+    public SpriteSheet()
+    {
     }
 
-    public static SpriteSheet? LoadSpriteSheet(string fileName, string folder, GameRenderer renderer){
+    public static SpriteSheet? LoadSpriteSheet(string fileName, string folder, GameRenderer renderer)
+    {
         var json = File.ReadAllText(Path.Combine(folder, fileName));
         var spriteSheet = JsonSerializer.Deserialize<SpriteSheet>(json, new JsonSerializerOptions() { PropertyNameCaseInsensitive = true });
-        if(spriteSheet != null){
+        if (spriteSheet != null)
+        {
             spriteSheet.LoadTexture(renderer, folder);
         }
         return spriteSheet;
     }
 
-    public void LoadTexture(GameRenderer renderer, string? parentFolder = null){
+    public void LoadTexture(GameRenderer renderer, string? parentFolder = null)
+    {
         var filePath = FileName;
-        if(!string.IsNullOrWhiteSpace(parentFolder) && !string.IsNullOrWhiteSpace(FileName)){
+        if (!string.IsNullOrWhiteSpace(parentFolder) && !string.IsNullOrWhiteSpace(FileName))
+        {
             filePath = Path.Combine(parentFolder, FileName);
         }
-        if(_textureId == -1 && !string.IsNullOrWhiteSpace(filePath)){
+        if (_textureId == -1 && !string.IsNullOrWhiteSpace(filePath))
+        {
             _textureId = renderer.LoadTexture(filePath, out _);
         }
     }
@@ -69,10 +74,18 @@ public class SpriteSheet
 
     public void ActivateAnimation(string name)
     {
-        if(name == null){
+        if (string.IsNullOrWhiteSpace(name))
+        {
             ActiveAnimation = null;
+            return;
         }
-        if (!Animations.TryGetValue(name, out var animation)) return;
+
+        if (!Animations.TryGetValue(name, out var animation))
+        {
+            ActiveAnimation = null;
+            return;
+        }
+
         ActiveAnimation = animation;
         _animationStart = DateTimeOffset.Now;
     }

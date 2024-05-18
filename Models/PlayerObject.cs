@@ -1,12 +1,12 @@
 // Explanation of Changes:
-        /*
-         * 1. Animation Map: Introduced a dictionary _animationMap to store animation names based on player states and directions, simplifying animation handling.
-         * 2. Code Organization: Moved animation map initialization to a separate method InitializeAnimationMap() for clarity and maintainability.
-         * 3. Attack Direction Handling: Introduced a method GetDirection to determine the attack direction based on boolean parameters, improving readability and reducing redundancy.
-         * 4. Position Update Optimization: Simplified position update logic in the UpdatePlayerPosition method, enhancing code readability and maintainability.
-         * 5. Idle State Check: Introduced a method IsIdle to check if the player is in an idle state, improving code readability.
-         * 6. Boundary Clamping: Used Math.Clamp to ensure the player stays within the game boundaries, improving robustness and preventing potential bugs.
-         */
+/*
+ * 1. Animation Map: Introduced a dictionary _animationMap to store animation names based on player states and directions, simplifying animation handling.
+ * 2. Code Organization: Moved animation map initialization to a separate method InitializeAnimationMap() for clarity and maintainability.
+ * 3. Attack Direction Handling: Introduced a method GetDirection to determine the attack direction based on boolean parameters, improving readability and reducing redundancy.
+ * 4. Position Update Optimization: Simplified position update logic in the UpdatePlayerPosition method, enhancing code readability and maintainability.
+ * 5. Idle State Check: Introduced a method IsIdle to check if the player is in an idle state, improving code readability.
+ * 6. Boundary Clamping: Used Math.Clamp to ensure the player stays within the game boundaries, improving robustness and preventing potential bugs.
+ */
 using System;
 using System.Collections.Generic;
 using Silk.NET.Maths;
@@ -143,7 +143,7 @@ namespace TheAdventure.Models
             double pixelsToMove = time * _pixelsPerSecond;
 
             int x = GetUpdatedPosition(Position.X, left, right, width, pixelsToMove);
-            int y = GetUpdatedPosition(Position.Y, down, up, height, pixelsToMove);
+            int y = GetUpdatedPosition(Position.Y, up, down, height, pixelsToMove); // Corrected order of up and down
 
             // Set the new position of the player.
             Position = (x, y);
