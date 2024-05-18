@@ -19,6 +19,9 @@ namespace TheAdventure
 
         private DateTimeOffset _lastUpdate = DateTimeOffset.Now;
         private DateTimeOffset _lastPlayerUpdate = DateTimeOffset.Now;
+        private DateTimeOffset _player1Kamehameha = DateTimeOffset.Now.AddSeconds(-8);
+        private DateTimeOffset _player2Kamehameha = DateTimeOffset.Now.AddSeconds(-8);
+
 
         public Engine(GameRenderer renderer, Input input)
         {
@@ -87,6 +90,10 @@ namespace TheAdventure
             var secsSinceLastFrame = (currentTime - _lastUpdate).TotalSeconds;
             _lastUpdate = currentTime;
 
+            int kamehamehaCD = 10;
+            bool p1KamehamehaAvailiable = (currentTime - _player1Kamehameha).TotalSeconds > kamehamehaCD;
+            bool p2KamehamehaAvailiable = (currentTime - _player2Kamehameha).TotalSeconds > kamehamehaCD;
+
             //bool addBomb = _input.IsKeyBPressed();
             // Player  1 Controls
             bool up = _input.IsUpPressed();
@@ -130,7 +137,7 @@ namespace TheAdventure
             }
             if (transformKaioken)
             {
-                _player.Transform(PlayerObject.PlayerStateDirection.Down);
+                _player.Transform(PlayerObject.PlayerStateDirection.Right);
             }
 
             if (transformSuperSaiyan)
@@ -138,9 +145,10 @@ namespace TheAdventure
                 _player.Transform(PlayerObject.PlayerStateDirection.Up);
             }
 
-            if (kamehameha)
+            if (kamehameha && p1KamehamehaAvailiable)
             {
                 _player.Kamehameha(_player.GetCurrentDirection());
+                _player1Kamehameha = currentTime;
             }
 
 
@@ -170,7 +178,7 @@ namespace TheAdventure
 
             if(p2_transformKaioken)
             {
-                _player2.Transform(PlayerObject.PlayerStateDirection.Down);
+                _player2.Transform(PlayerObject.PlayerStateDirection.Right);
             }
 
             if(p2_transformSuperSaiyan)
@@ -178,9 +186,10 @@ namespace TheAdventure
                 _player2.Transform(PlayerObject.PlayerStateDirection.Up);
             }
 
-            if(p2_kamehameha)
+            if(p2_kamehameha && p2KamehamehaAvailiable)
             {
                 _player2.Kamehameha(_player2.GetCurrentDirection());
+                _player2Kamehameha = currentTime;
             }
 
             var itemsToRemove = new List<int>();
@@ -208,11 +217,22 @@ namespace TheAdventure
             if (PlayerHits(_player, _player2))
             {
                 _player2.GameOver();
+                _player.SetState(PlayerObject.PlayerState.Idle, PlayerObject.PlayerStateDirection.Down);
             }
 
             if (PlayerHits(_player2, _player))
             {
                 _player.GameOver();
+                _player2.SetState(PlayerObject.PlayerState.Idle, PlayerObject.PlayerStateDirection.Down);
+            }
+
+            if (_player.isKamehameha())
+            {
+                _player.kamehamehaCharge();
+            }
+            if(_player2.isKamehameha())
+            {
+                _player2.kamehamehaCharge();
             }
         }
 
@@ -318,13 +338,33 @@ namespace TheAdventure
         }
         private bool PlayerHits(PlayerObject attacker, PlayerObject defender)
         {
-            if (!attacker.IsAttacking())
+            if (attacker.IsAttacking())
             {
-                return false;
+                var deltaX = Math.Abs(attacker.Position.X - defender.Position.X);
+                var deltaY = Math.Abs(attacker.Position.Y - defender.Position.Y);
+                return deltaX < 60 && deltaY < 60;
             }
-            var deltaX = Math.Abs(attacker.Position.X - defender.Position.X);
-            var deltaY = Math.Abs(attacker.Position.Y - defender.Position.Y);
-            return deltaX < 32 && deltaY < 32;
+            else if (attacker.isKamehamehaReady())
+            {       
+                var direction = attacker.GetCurrentDirection();
+
+                var deltaX = Math.Abs(attacker.Position.X - defender.Position.X);
+                var deltaY = Math.Abs(attacker.Position.Y - defender.Position.Y);
+                switch (direction)
+                { 
+                    case PlayerObject.PlayerStateDirection.Left:
+                        deltaX -= 60; 
+                        break;
+                    case PlayerObject.PlayerStateDirection.Right:
+                        deltaX += 60; 
+                        break;
+                }
+                return deltaX < 150 && deltaY < 60;
+            }
+            else
+                return false;
         }
+
+
     }
 }

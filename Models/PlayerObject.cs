@@ -23,6 +23,7 @@ public class PlayerObject : RenderableGameObject
         Kamehameha
     }
 
+    public double KamehamehaChargeTime;
     private int _pixelsPerSecond = 192;
 
     public PlayerStateDirection GetCurrentDirection()
@@ -32,12 +33,26 @@ public class PlayerObject : RenderableGameObject
 
     public bool IsAttacking()
     {
-        if(State.State == PlayerState.Attack || State.State == PlayerState.Kamehameha)
-        {
-            return true;
-        } 
-        return false;
+        return State.State == PlayerState.Attack;
     }
+
+    public bool isKamehameha()
+    {
+        return State.State == PlayerState.Kamehameha;
+    }    
+
+  public bool isKamehamehaReady()
+    {
+        if (KamehamehaChargeTime >= 60)
+        {
+            KamehamehaChargeTime = 0;
+            SetState(PlayerState.Idle, State.Direction);
+            return true;
+        }
+        else
+            return false;
+    }
+
 
     public (PlayerState State, PlayerStateDirection Direction) State{ get; private set; }
 
@@ -47,9 +62,9 @@ public class PlayerObject : RenderableGameObject
     }
 
     public void SetState(PlayerState state, PlayerStateDirection direction)
-    {
+    {      
         if(State.State == PlayerState.GameOver) return;
-        if(State.State == state && State.Direction == direction){
+        if (State.State == state && State.Direction == direction){
             return;
         }
         else if(state == PlayerState.None && direction == PlayerStateDirection.None){
@@ -80,7 +95,6 @@ public class PlayerObject : RenderableGameObject
         else if(state == PlayerState.Kamehameha)
         {
             var animationName = Enum.GetName<PlayerState>(state) + Enum.GetName<PlayerStateDirection>(direction);
-            Console.WriteLine(animationName);
             SpriteSheet.ActivateAnimation(animationName);
         }
         else if(state == PlayerState.Move)
@@ -113,8 +127,16 @@ public class PlayerObject : RenderableGameObject
 
     public void Kamehameha(PlayerStateDirection direction)
     {
+        KamehamehaChargeTime = 0;
         SetState(PlayerState.Kamehameha,direction);
     }
+
+    public void kamehamehaCharge()
+    {
+        Console.WriteLine(KamehamehaChargeTime);
+        KamehamehaChargeTime += 1;
+    }
+
 
     public void Attack(bool up, bool down, bool left, bool right)
     {
@@ -192,10 +214,13 @@ public class PlayerObject : RenderableGameObject
             SetState(PlayerState.Move, PlayerStateDirection.Left);
         }
         if (x == Position.X &&
-            y == Position.Y){
+            y == Position.Y && !isKamehameha()){
             SetState(PlayerState.Idle, State.Direction);
         }
-
+        if (isKamehameha())
+        {
+            SetState(PlayerState.Kamehameha, State.Direction);
+        }
         Position = (x, y);
     }
 }
