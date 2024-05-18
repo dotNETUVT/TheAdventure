@@ -54,4 +54,13 @@
       </Content>
     </ItemGroup>
 
+    <ItemGroup>
+      <None Update="Assets\bomb.json">
+        <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+      </None>
+      <None Update="Assets\player.json">
+        <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+      </None>
+    </ItemGroup>
+
 </Project>
