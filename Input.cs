@@ -28,6 +28,32 @@ namespace TheAdventure
             ReadOnlySpan<byte> _keyboardState = new(_sdl.GetKeyboardState(null), (int)KeyCode.Count);
             return _keyboardState[(int)KeyCode.S] == 1;
         }
+        public bool IsKeyDPressed()
+        {
+            ReadOnlySpan<byte> _keyboardState = new(_sdl.GetKeyboardState(null), (int)KeyCode.Count);
+            return _keyboardState[(int)KeyCode.D] == 1;
+        }
+        public bool IsKeyWPressed()
+        {
+            ReadOnlySpan<byte> _keyboardState = new(_sdl.GetKeyboardState(null), (int)KeyCode.Count);
+            return _keyboardState[(int)KeyCode.W] == 1;
+        }
+        public bool IsKeyZPressed()
+        {
+            ReadOnlySpan<byte> _keyboardState = new(_sdl.GetKeyboardState(null), (int)KeyCode.Count);
+            return _keyboardState[(int)KeyCode.Z] == 1;
+        }
+        public bool IsKeyXPressed()
+        {
+            ReadOnlySpan<byte> _keyboardState = new(_sdl.GetKeyboardState(null), (int)KeyCode.Count);
+            return _keyboardState[(int)KeyCode.X] == 1;
+        }
+        public bool IsKeyVPressed()
+        {
+            ReadOnlySpan<byte> _keyboardState = new(_sdl.GetKeyboardState(null), (int)KeyCode.Count);
+            return _keyboardState[(int)KeyCode.V] == 1;
+        }
+
         public bool IsKeyCPressed()
         {
             ReadOnlySpan<byte> _keyboardState = new(_sdl.GetKeyboardState(null), (int)KeyCode.Count);
@@ -42,7 +68,21 @@ namespace TheAdventure
             ReadOnlySpan<byte> _keyboardState = new(_sdl.GetKeyboardState(null), (int)KeyCode.Count);
             return _keyboardState[(int)KeyCode.K] == 1;
         }
-
+        public bool IsKeyJPressed()
+        {
+            ReadOnlySpan<byte> _keyboardState = new(_sdl.GetKeyboardState(null), (int)KeyCode.Count);
+            return _keyboardState[(int)KeyCode.J] == 1;
+        }
+        public bool IsKeyLPressed()
+        {
+            ReadOnlySpan<byte> _keyboardState = new(_sdl.GetKeyboardState(null), (int)KeyCode.Count);
+            return _keyboardState[(int)KeyCode.L] == 1;
+        }
+        public bool IsKeyMPressed()
+        {
+            ReadOnlySpan<byte> _keyboardState = new(_sdl.GetKeyboardState(null), (int)KeyCode.Count);
+            return _keyboardState[(int)KeyCode.M] == 1;
+        }
         public bool IsLeftPressed()
         {
             ReadOnlySpan<byte> _keyboardState = new(_sdl.GetKeyboardState(null), (int)KeyCode.Count);

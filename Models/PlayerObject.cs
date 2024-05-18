@@ -25,6 +25,10 @@ public class PlayerObject : RenderableGameObject
 
     private int _pixelsPerSecond = 192;
 
+    public PlayerStateDirection GetCurrentDirection()
+    {
+        return State.Direction;
+    }
 
     public (PlayerState State, PlayerStateDirection Direction) State{ get; private set; }
 
@@ -48,7 +52,7 @@ public class PlayerObject : RenderableGameObject
         else if(state == PlayerState.Attack)
         {
             var random = new Random().Next(1, 4);
-            var animationName = Enum.GetName<PlayerState>(state) + random;
+            var animationName = Enum.GetName<PlayerState>(state) + random + Enum.GetName<PlayerStateDirection>(direction);
             SpriteSheet.ActivateAnimation(animationName);
         }
         else if(state == PlayerState.Transform)
@@ -66,7 +70,8 @@ public class PlayerObject : RenderableGameObject
         }
         else if(state == PlayerState.Kamehameha)
         {
-            var animationName = Enum.GetName<PlayerState>(state);
+            var animationName = Enum.GetName<PlayerState>(state) + Enum.GetName<PlayerStateDirection>(direction);
+            Console.WriteLine(animationName);
             SpriteSheet.ActivateAnimation(animationName);
         }
         else if(state == PlayerState.Move)
@@ -97,9 +102,9 @@ public class PlayerObject : RenderableGameObject
     }
 
 
-    public void Kamehameha()
+    public void Kamehameha(PlayerStateDirection direction)
     {
-        SetState(PlayerState.Kamehameha,PlayerStateDirection.Up);
+        SetState(PlayerState.Kamehameha,direction);
     }
 
     public void Attack(bool up, bool down, bool left, bool right)

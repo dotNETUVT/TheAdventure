@@ -13,6 +13,7 @@ namespace TheAdventure
 
         private Level? _currentLevel;
         private PlayerObject _player;
+        private PlayerObject _player2;
         private GameRenderer _renderer;
         private Input _input;
 
@@ -67,7 +68,15 @@ namespace TheAdventure
             if(spriteSheet != null){
                 _player = new PlayerObject(spriteSheet, 100, 100);
             }
-            
+
+            var spriteSheet2 = SpriteSheet.LoadSpriteSheet("goku.json", "Assets", _renderer);
+            if (spriteSheet2 != null)
+            {
+                _player2 = new PlayerObject(spriteSheet2, 600, 300);
+            }
+
+
+
             _renderer.SetWorldBounds(new Rectangle<int>(0, 0, _currentLevel.Width * _currentLevel.TileWidth,
                 _currentLevel.Height * _currentLevel.TileHeight));
         }
@@ -78,18 +87,29 @@ namespace TheAdventure
             var secsSinceLastFrame = (currentTime - _lastUpdate).TotalSeconds;
             _lastUpdate = currentTime;
 
+            //bool addBomb = _input.IsKeyBPressed();
+            // Player  1 Controls
             bool up = _input.IsUpPressed();
             bool down = _input.IsDownPressed();
             bool left = _input.IsLeftPressed();
             bool right = _input.IsRightPressed();
-            bool isAttacking = _input.IsKeyAPressed();
-            bool addBomb = _input.IsKeyBPressed();
-            bool transformKaioken = _input.IsKeyCPressed();
-            bool transformSuperSaiyan = _input.IsKeySPressed();
+            bool isAttacking = _input.IsKeyJPressed();
             bool kamehameha = _input.IsKeyKPressed();
+            bool transformKaioken = _input.IsKeyLPressed();
+            bool transformSuperSaiyan = _input.IsKeyMPressed();
 
+            // Player 2 Controls
+            bool p2_Up = _input.IsKeyWPressed();
+            bool p2_Down = _input.IsKeySPressed();
+            bool p2_Left = _input.IsKeyAPressed();  
+            bool p2_Right = _input.IsKeyDPressed();
+            bool p2_IsAttacking = _input.IsKeyZPressed();
+            bool p2_kamehameha = _input.IsKeyXPressed();
+            bool p2_transformKaioken = _input.IsKeyCPressed();
+            bool p2_transformSuperSaiyan = _input.IsKeyVPressed();
 
-            if(isAttacking)
+            // Player 1 Actions
+            if (isAttacking)
             {
                 var dir = up ? 1: 0;
                 dir += down? 1 : 0;
@@ -108,15 +128,6 @@ namespace TheAdventure
                     _currentLevel.Width * _currentLevel.TileWidth, _currentLevel.Height * _currentLevel.TileHeight,
                     secsSinceLastFrame);
             }
-            var itemsToRemove = new List<int>();
-            itemsToRemove.AddRange(GetAllTemporaryGameObjects().Where(gameObject => gameObject.IsExpired)
-                .Select(gameObject => gameObject.Id).ToList());
-
-            if (addBomb)
-            {
-                AddBomb(_player.Position.X, _player.Position.Y, false);
-            }
-           
             if (transformKaioken)
             {
                 _player.Transform(PlayerObject.PlayerStateDirection.Down);
@@ -126,14 +137,61 @@ namespace TheAdventure
             {
                 _player.Transform(PlayerObject.PlayerStateDirection.Up);
             }
-            
-            if(kamehameha)
+
+            if (kamehameha)
             {
-                _player.Kamehameha();
+                _player.Kamehameha(_player.GetCurrentDirection());
             }
-           
 
 
+            // Player 2 Actions
+            if (p2_IsAttacking)
+            {
+                var dir = p2_Up ? 1 : 0;
+                dir += p2_Down ? 1 : 0;
+                dir += p2_Left ? 1 : 0;
+                dir += p2_Right ? 1 : 0;
+                if (dir <= 1)
+                {
+                    _player2.Attack(p2_Up, p2_Down, p2_Left, p2_Right);
+                }
+                else
+                {
+                    p2_IsAttacking = false;
+                }
+            }   
+
+            if(!p2_IsAttacking)
+            {
+                _player2.UpdatePlayerPosition(p2_Up ? 1.0 : 0.0, p2_Down ? 1.0 : 0.0, p2_Left ? 1.0 : 0.0, p2_Right ? 1.0 : 0.0,
+                                       _currentLevel.Width * _currentLevel.TileWidth, _currentLevel.Height * _currentLevel.TileHeight,
+                                                          secsSinceLastFrame);
+            }
+
+            if(p2_transformKaioken)
+            {
+                _player2.Transform(PlayerObject.PlayerStateDirection.Down);
+            }
+
+            if(p2_transformSuperSaiyan)
+            {
+                _player2.Transform(PlayerObject.PlayerStateDirection.Up);
+            }
+
+            if(p2_kamehameha)
+            {
+                _player2.Kamehameha(_player2.GetCurrentDirection());
+            }
+
+            var itemsToRemove = new List<int>();
+            itemsToRemove.AddRange(GetAllTemporaryGameObjects().Where(gameObject => gameObject.IsExpired)
+                .Select(gameObject => gameObject.Id).ToList());
+
+            /*if (addBomb)
+            {
+                AddBomb(_player.Position.X, _player.Position.Y, false);
+            }
+           */
             foreach (var gameObjectId in itemsToRemove)
             {
                 var gameObject = _gameObjects[gameObjectId];
@@ -234,6 +292,7 @@ namespace TheAdventure
             }
 
             _player.Render(_renderer);
+            _player2.Render(_renderer);
         }
 
         private void AddBomb(int x, int y, bool translateCoordinates = true)

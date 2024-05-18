@@ -70,7 +70,7 @@
 			"durationMs": 1000,
 			"loop": false
 		},
-		"Attack1": {
+		"Attack1Right": {
 			"startFrame": {
 				"row": 4,
 				"col": 0
@@ -83,7 +83,7 @@
 			"loop": true,
 			"flip": 1
 		},
-		"Attack2": {
+		"Attack2Right": {
 			"startFrame": {
 				"row": 5,
 				"col": 0
@@ -96,7 +96,7 @@
 			"loop": true,
 			"flip": 0
 		},
-		"Attack3": {
+		"Attack3Right": {
 			"startFrame": {
 				"row": 6,
 				"col": 0
@@ -108,6 +108,45 @@
 			"durationMs": 500,
 			"loop": true,
 			"flip": 0
+		},
+		"Attack1Left": {
+			"startFrame": {
+				"row": 4,
+				"col": 0
+			},
+			"endFrame": {
+				"row": 4,
+				"col": 5
+			},
+			"durationMs": 500,
+			"loop": true,
+			"flip": 1
+		},
+		"Attack2Left": {
+			"startFrame": {
+				"row": 5,
+				"col": 0
+			},
+			"endFrame": {
+				"row": 5,
+				"col": 4
+			},
+			"durationMs": 500,
+			"loop": true,
+			"flip": 1
+		},
+		"Attack3Left": {
+			"startFrame": {
+				"row": 6,
+				"col": 0
+			},
+			"endFrame": {
+				"row": 6,
+				"col": 6
+			},
+			"durationMs": 500,
+			"loop": true,
+			"flip": 1
 		},
 		"GameOver": {
 			"startFrame": {
@@ -148,7 +187,7 @@
 			"loop": false,
 			"flip": 0
 		},
-		"Kamehameha": {
+		"KamehamehaRight": {
 			"startFrame": {
 				"row": 8,
 				"col": 0
@@ -160,6 +199,19 @@
 			"durationMs": 2000,
 			"loop": false,
 			"flip": 0
+		},
+		"KamehamehaLeft": {
+			"startFrame": {
+				"row": 8,
+				"col": 0
+			},
+			"endFrame": {
+				"row": 8,
+				"col": 7
+			},
+			"durationMs": 2000,
+			"loop": false,
+			"flip": 1
 		}
 	}
 
