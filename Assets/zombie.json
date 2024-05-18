@@ -1,0 +1,39 @@
+{
+  "rowCount" : 10,
+    "columnCount" : 6,
+    "frameWidth" : 48,
+    "frameHeight" : 48,
+    "frameCenter" : {
+        "offsetX" : 24,
+        "offsetY" : 42
+    },
+  "fileName": "zombie.png",
+  "animations": {
+    "Attack": {
+      "startFrame": {
+        "row": 6,
+        "col": 0
+      },
+      "endFrame": {
+        "row": 6,
+        "col": 3
+      },
+      "durationMs": 300,
+      "loop": true,
+      "flip": 1
+    },
+    "GameOver": {
+        "startFrame" : {
+            "row" : 9,
+            "col" : 0
+        },
+        "endFrame" : {
+            "row" : 9,
+            "col" : 2
+        },
+        "durationMs" : 300,
+        "loop" : false,
+        "flip" : 0
+    }
+  }
+}

@@ -69,12 +69,27 @@ namespace TheAdventure
             }
             _renderer.SetWorldBounds(new Rectangle<int>(0, 0, _currentLevel.Width * _currentLevel.TileWidth,
                 _currentLevel.Height * _currentLevel.TileHeight));
+
+            var zombieSpriteSheet = SpriteSheet.LoadSpriteSheet("zombie.json", "Assets", _renderer);
+
+            Zombie zombie = null;
+            if (zombieSpriteSheet != null)
+            {
+                zombie = new Zombie(zombieSpriteSheet, 50, 50, _player);
+                _gameObjects.Add(zombie.Id, zombie);
+            }
+
+            if (_player != null && zombie != null)
+            {
+                _player.SetZombie(zombie);
+            }
         }
 
         public void ProcessFrame()
         {
             var currentTime = DateTimeOffset.Now;
             var secsSinceLastFrame = (currentTime - _lastUpdate).TotalSeconds;
+            var deltaTime = (currentTime - _lastUpdate).TotalSeconds;
             _lastUpdate = currentTime;
 
             bool up = _input.IsUpPressed();
@@ -124,6 +139,14 @@ namespace TheAdventure
                     }
                 }
                 _gameObjects.Remove(gameObjectId);
+            }
+
+            foreach (var gameObject in _gameObjects.Values)
+            {
+                if (gameObject is Zombie zombie)
+                {
+                    zombie.Update(deltaTime);
+                }
             }
         }
 

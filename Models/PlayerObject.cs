@@ -22,6 +22,8 @@ public class PlayerObject : RenderableGameObject
     }
 
     private int _pixelsPerSecond = 192;
+    private readonly int _attackRange = 30;
+    private Zombie _zombie;
 
 
     public (PlayerState State, PlayerStateDirection Direction) State{ get; private set; }
@@ -29,6 +31,11 @@ public class PlayerObject : RenderableGameObject
     public PlayerObject(SpriteSheet spriteSheet, int x, int y) : base(spriteSheet, (x, y))
     {
         SetState(PlayerState.Idle, PlayerStateDirection.Down);
+    }
+
+    public void SetZombie(Zombie zombie)
+    {
+        _zombie = zombie;
     }
 
     public void SetState(PlayerState state, PlayerStateDirection direction)
@@ -73,6 +80,19 @@ public class PlayerObject : RenderableGameObject
             direction = PlayerStateDirection.Left;
         }
         SetState(PlayerState.Attack, direction);
+
+        if (IsZombieInRange()){
+            if(!_zombie._isGameOver){
+                _zombie.GameOver();
+            }
+        }
+    }
+
+    private bool IsZombieInRange()
+    {
+        if (_zombie == null) return false;
+        return Math.Abs(Position.X - _zombie.Position.X) < _attackRange &&
+                Math.Abs(Position.Y - _zombie.Position.Y) < _attackRange;
     }
 
     public void UpdatePlayerPosition(double up, double down, double left, double right, int width, int height,
