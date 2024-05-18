@@ -20,15 +20,20 @@ public class PlayerObject : RenderableGameObject
         Attack,
         GameOver
     }
-
+    
+    private DynamicHealthBar dynamicHealthBar = new  DynamicHealthBar(100, 200, 20);
+    
     private int _pixelsPerSecond = 192;
-
-
+    public int MaxHealth { get; private set; }
+    public int CurrentHealth { get; private set; }
+    public event Action<int, int> HealthChanged;
     public (PlayerState State, PlayerStateDirection Direction) State{ get; private set; }
-
-    public PlayerObject(SpriteSheet spriteSheet, int x, int y) : base(spriteSheet, (x, y))
+    
+    public PlayerObject(SpriteSheet spriteSheet, int x, int y, int maxHealth) : base(spriteSheet, (x, y))
     {
         SetState(PlayerState.Idle, PlayerStateDirection.Down);
+        MaxHealth = maxHealth;
+        CurrentHealth = maxHealth;
     }
 
     public void SetState(PlayerState state, PlayerStateDirection direction)
@@ -135,5 +140,23 @@ public class PlayerObject : RenderableGameObject
         }
 
         Position = (x, y);
+    }
+    
+    public void TakeDamage(int damage)
+    {
+        CurrentHealth -= damage;
+        CurrentHealth = Math.Max(0, CurrentHealth); 
+        dynamicHealthBar.SetHealth(CurrentHealth); 
+        HealthChanged?.Invoke(CurrentHealth, MaxHealth); 
+        if (CurrentHealth <= 0)
+        {
+            GameOver(); 
+        }
+    }
+    
+    public override void Render(GameRenderer renderer)
+    {
+        base.Render(renderer);
+        dynamicHealthBar.Render(renderer, new Vector2D<int>(10, 10)); 
     }
 }

@@ -1,8 +1,6 @@
 using System.Text.Json;
 using Silk.NET.Maths;
-using Silk.NET.SDL;
 using TheAdventure.Models;
-using TheAdventure.Models.Data;
 
 namespace TheAdventure
 {
@@ -17,7 +15,6 @@ namespace TheAdventure
         private Input _input;
 
         private DateTimeOffset _lastUpdate = DateTimeOffset.Now;
-        private DateTimeOffset _lastPlayerUpdate = DateTimeOffset.Now;
 
         public Engine(GameRenderer renderer, Input input)
         {
@@ -65,7 +62,7 @@ namespace TheAdventure
             */
             var spriteSheet = SpriteSheet.LoadSpriteSheet("player.json", "Assets", _renderer);
             if(spriteSheet != null){
-                _player = new PlayerObject(spriteSheet, 100, 100);
+                _player = new PlayerObject(spriteSheet, 100, 100,100);
             }
             _renderer.SetWorldBounds(new Rectangle<int>(0, 0, _currentLevel.Width * _currentLevel.TileWidth,
                 _currentLevel.Height * _currentLevel.TileHeight));
@@ -115,12 +112,14 @@ namespace TheAdventure
             foreach (var gameObjectId in itemsToRemove)
             {
                 var gameObject = _gameObjects[gameObjectId];
-                if(gameObject is TemporaryGameObject){
+                if (gameObject is TemporaryGameObject)
+                {
                     var tempObject = (TemporaryGameObject)gameObject;
                     var deltaX = Math.Abs(_player.Position.X - tempObject.Position.X);
                     var deltaY = Math.Abs(_player.Position.Y - tempObject.Position.Y);
-                    if(deltaX < 32 && deltaY < 32){
-                        _player.GameOver();
+                    if (deltaX < 32 && deltaY < 32)
+                    {
+                        _player.TakeDamage(20); 
                     }
                 }
                 _gameObjects.Remove(gameObjectId);
@@ -136,7 +135,8 @@ namespace TheAdventure
 
             RenderTerrain();
             RenderAllObjects();
-
+            
+            
             _renderer.PresentFrame();
         }
 
@@ -210,15 +210,12 @@ namespace TheAdventure
             {
                 gameObject.Render(_renderer);
             }
-
             _player.Render(_renderer);
         }
 
         private void AddBomb(int x, int y, bool translateCoordinates = true)
         {
-
             var translated = translateCoordinates ? _renderer.TranslateFromScreenToWorldCoordinates(x, y) : new Vector2D<int>(x, y);
-            
             var spriteSheet = SpriteSheet.LoadSpriteSheet("bomb.json", "Assets", _renderer);
             if(spriteSheet != null){
                 spriteSheet.ActivateAnimation("Explode");
