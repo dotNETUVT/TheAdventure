@@ -3,7 +3,7 @@ using Silk.NET.Maths;
 using Silk.NET.SDL;
 using TheAdventure.Models;
 using TheAdventure.Models.Data;
-
+using System.Threading.Tasks;
 namespace TheAdventure
 {
     public class Engine
@@ -18,13 +18,26 @@ namespace TheAdventure
 
         private DateTimeOffset _lastUpdate = DateTimeOffset.Now;
         private DateTimeOffset _lastPlayerUpdate = DateTimeOffset.Now;
+        private int MAX_NORMAL_BOMBS = 5;
+        private int MAX_REMOTE_BOMBS = 1;
+
 
         public Engine(GameRenderer renderer, Input input)
         {
             _renderer = renderer;
             _input = input;
 
-            _input.OnMouseClick += (_, coords) => AddBomb(coords.x, coords.y);
+            _input.OnMouseClick += (_, coords) =>
+            {
+        
+                if (_player.RemoteBombs < MAX_REMOTE_BOMBS)
+                {
+                    AddBomb(coords.x, coords.y, "Remote");
+                }
+                else
+                {
+                }
+            };
         }
 
         public void InitializeWorld()
@@ -109,7 +122,10 @@ namespace TheAdventure
 
             if (addBomb)
             {
-                AddBomb(_player.Position.X, _player.Position.Y, false);
+                if(_player.NormalBombs <= MAX_NORMAL_BOMBS){
+                    AddBomb(_player.Position.X, _player.Position.Y, "Normal", false);
+                }
+                
             }
 
             foreach (var gameObjectId in itemsToRemove)
@@ -128,17 +144,18 @@ namespace TheAdventure
         }
 
         public void RenderFrame()
-        {
-            _renderer.SetDrawColor(0, 0, 0, 255);
-            _renderer.ClearScreen();
-            
-            _renderer.CameraLookAt(_player.Position.X, _player.Position.Y);
+{
+    _renderer.SetDrawColor(0, 0, 0, 255);
+    _renderer.ClearScreen();
+    
+    _renderer.CameraLookAt(_player.Position.X, _player.Position.Y);
 
-            RenderTerrain();
-            RenderAllObjects();
+    RenderTerrain();
+    RenderAllObjects();
 
-            _renderer.PresentFrame();
-        }
+    _renderer.PresentFrame();
+}
+
 
         private Tile? GetTile(int id)
         {
@@ -214,17 +231,26 @@ namespace TheAdventure
             _player.Render(_renderer);
         }
 
-        private void AddBomb(int x, int y, bool translateCoordinates = true)
+        private void AddBomb(int x, int y, String type, bool translateCoordinates = true)
         {
-
             var translated = translateCoordinates ? _renderer.TranslateFromScreenToWorldCoordinates(x, y) : new Vector2D<int>(x, y);
-            
+
             var spriteSheet = SpriteSheet.LoadSpriteSheet("bomb.json", "Assets", _renderer);
-            if(spriteSheet != null){
+            if (spriteSheet != null)
+            {
                 spriteSheet.ActivateAnimation("Explode");
                 TemporaryGameObject bomb = new(spriteSheet, 2.1, (translated.X, translated.Y));
                 _gameObjects.Add(bomb.Id, bomb);
+                _player.IncrementBombCount(type);
+                DecrementBombCountAfterDelay(2, type);
             }
         }
+
+        public async void DecrementBombCountAfterDelay(int delayInSeconds, String type)
+        {
+            await Task.Delay(TimeSpan.FromSeconds(delayInSeconds));
+            _player.DecrementBombCount(type);
+        }
+
     }
 }
