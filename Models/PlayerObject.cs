@@ -22,13 +22,16 @@ public class PlayerObject : RenderableGameObject
     }
 
     private int _pixelsPerSecond = 192;
-
+    public int NormalBombs { get; private set; }
+    public int RemoteBombs { get; private set; }
 
     public (PlayerState State, PlayerStateDirection Direction) State{ get; private set; }
 
     public PlayerObject(SpriteSheet spriteSheet, int x, int y) : base(spriteSheet, (x, y))
     {
         SetState(PlayerState.Idle, PlayerStateDirection.Down);
+        NormalBombs = 0;
+        RemoteBombs = 0;
     }
 
     public void SetState(PlayerState state, PlayerStateDirection direction)
@@ -135,5 +138,27 @@ public class PlayerObject : RenderableGameObject
         }
 
         Position = (x, y);
+    }
+    public void IncrementBombCount(String type)
+    {
+        if(type == "Normal"){
+            NormalBombs += 1;
+        }
+            
+        else if(type == "Remote")
+        {
+            RemoteBombs += 1;
+        }
+    }
+    public void DecrementBombCount(String type)
+    {
+        if(type == "Normal"){
+            NormalBombs -= 1;
+        }
+            
+        else if(type == "Remote")
+        {
+            RemoteBombs -= 1;
+        }
     }
 }
