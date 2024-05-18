@@ -20,6 +20,10 @@ namespace TheAdventure
         private DateTimeOffset _lastPlayerUpdate = DateTimeOffset.Now;
         private int MAX_NORMAL_BOMBS = 5;
         private int MAX_REMOTE_BOMBS = 1;
+        private int SPRINT_TIMEOUT = 5;
+        private int SPRINT_DURATION = 3;
+        private bool SPRINT_ALLOWED = true;
+        SoundManager soundManager = new SoundManager();
 
 
         public Engine(GameRenderer renderer, Input input)
@@ -96,6 +100,7 @@ namespace TheAdventure
             bool right = _input.IsRightPressed();
             bool isAttacking = _input.IsKeyAPressed();
             bool addBomb = _input.IsKeyBPressed();
+            bool sprint = _input.IsKeySPressed();
 
             if(isAttacking)
             {
@@ -126,6 +131,9 @@ namespace TheAdventure
                     AddBomb(_player.Position.X, _player.Position.Y, "Normal", false);
                 }
                 
+            }
+            if(sprint && SPRINT_ALLOWED){
+            SprintActive();
             }
 
             foreach (var gameObjectId in itemsToRemove)
@@ -251,6 +259,26 @@ namespace TheAdventure
             await Task.Delay(TimeSpan.FromSeconds(delayInSeconds));
             _player.DecrementBombCount(type);
         }
+
+        public void SprintActive()
+        {
+            SPRINT_ALLOWED = false;
+            _player.EnableSprinting();
+            soundManager.Play("SprintStart");
+
+            SprintTimeout();
+    
+        }
+
+        public async Task SprintTimeout()
+        {
+            await Task.Delay(TimeSpan.FromSeconds(SPRINT_DURATION));
+            _player.DisableSprinting();
+
+            await Task.Delay(TimeSpan.FromSeconds(SPRINT_TIMEOUT));
+            SPRINT_ALLOWED = true;
+        }
+
 
     }
 }
