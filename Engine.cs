@@ -46,18 +46,15 @@ namespace TheAdventure
 
         public void InitializeWorld()
         {
-            // Attach the FileSystemWatcher and load all scripts
             var executableLocation = new FileInfo(Assembly.GetExecutingAssembly().Location);
             _scriptEngine.LoadAll(Path.Combine(executableLocation.Directory.FullName, "Assets", "Scripts"));
 
-            // Deserialize the level configuration from JSON
             var jsonSerializerOptions = new JsonSerializerOptions() { PropertyNameCaseInsensitive = true };
             var levelContent = File.ReadAllText(Path.Combine("Assets", "terrain.tmj"));
 
             var level = JsonSerializer.Deserialize<Level>(levelContent, jsonSerializerOptions);
             if (level == null) return;
 
-            // Load all tile sets referenced by the level
             foreach (var refTileSet in level.TileSets)
             {
                 var tileSetContent = File.ReadAllText(Path.Combine("Assets", refTileSet.Source));
@@ -79,14 +76,12 @@ namespace TheAdventure
 
             _currentLevel = level;
 
-            // Initialize the player's sprite sheet and set the player object
             var spriteSheet = SpriteSheet.LoadSpriteSheet("player.json", "Assets", _renderer);
             if (spriteSheet != null)
             {
                 _player = new PlayerObject(spriteSheet, 100, 100);
             }
 
-            // Set the world bounds for the renderer
             _renderer.SetWorldBounds(new Rectangle<int>(0, 0, _currentLevel.Width * _currentLevel.TileWidth,
                 _currentLevel.Height * _currentLevel.TileHeight));
         }
