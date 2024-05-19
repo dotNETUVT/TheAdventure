@@ -23,12 +23,38 @@ public class PlayerObject : RenderableGameObject
 
     private int _pixelsPerSecond = 192;
 
+    private StaminaBar stamina = new  StaminaBar(100, 200, 20);
+
+    public int MaxStamina { get; private set; }
+    public int CurrentStamina { get; private set; }
+    public event Action<int, int> Decrease;
+
 
     public (PlayerState State, PlayerStateDirection Direction) State{ get; private set; }
 
-    public PlayerObject(SpriteSheet spriteSheet, int x, int y) : base(spriteSheet, (x, y))
+    public PlayerObject(SpriteSheet spriteSheet, int x, int y, int maximumStamina) : base(spriteSheet, (x, y))
     {
         SetState(PlayerState.Idle, PlayerStateDirection.Down);
+        MaxStamina = maximumStamina;
+        CurrentStamina = maximumStamina;
+    }
+
+    public void Hit(int damage)
+    {
+        CurrentStamina -= damage;
+        CurrentStamina = Math.Max(0, CurrentStamina); 
+        stamina.SetStamina(CurrentStamina); 
+        Decrease?.Invoke(CurrentStamina, MaxStamina); 
+        if (CurrentStamina <= 0)
+        {
+            GameOver(); 
+        }
+    }
+
+    public override void Render(GameRenderer renderer)
+    {
+        base.Render(renderer);
+        stamina.Render(renderer, new Vector2D<int>(10, 10)); 
     }
 
     public void SetState(PlayerState state, PlayerStateDirection direction)

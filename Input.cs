@@ -7,6 +7,8 @@ namespace TheAdventure
         private Sdl _sdl;
         private GameWindow _gameWindow;
         private GameRenderer _renderer;
+
+        public event Action OnRestartRequested;
         
         byte[] _mouseButtonStates = new byte[(int)MouseButton.Count];
         
@@ -39,6 +41,12 @@ namespace TheAdventure
         {
             ReadOnlySpan<byte> _keyboardState = new(_sdl.GetKeyboardState(null), (int)KeyCode.Count);
             return _keyboardState[(int)KeyCode.Right] == 1;
+        }
+        
+        public bool IsKeyRPressed()
+        {
+            ReadOnlySpan<byte> keyboardState = new(_sdl.GetKeyboardState(null), (int)KeyCode.Count);
+            return keyboardState[(int)KeyCode.R] == 1;
         }
         
         public bool IsUpPressed()
@@ -184,8 +192,13 @@ namespace TheAdventure
                     }
                 }
             }
-
+            if (IsKeyRPressed()) 
+            {
+                OnRestartRequested?.Invoke();
+                return false; 
+            }
             return false;
         }
+
     }
 }
