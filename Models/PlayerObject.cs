@@ -23,13 +23,49 @@ public class PlayerObject : RenderableGameObject
 
     private int _pixelsPerSecond = 192;
 
+    public int Lives {get; private set;}
+    public bool IsDead => Lives <= 0;
+    public event EventHandler<int> LifeLost;
+
 
     public (PlayerState State, PlayerStateDirection Direction) State{ get; private set; }
 
     public PlayerObject(SpriteSheet spriteSheet, int x, int y) : base(spriteSheet, (x, y))
     {
         SetState(PlayerState.Idle, PlayerStateDirection.Down);
+        Lives = 3;
     }
+
+    private void RenderEmojiOnLifeLoss(GameRenderer renderer)
+    {
+        
+        int x = 100;
+        int y = 100;
+        renderer.RenderEmoji(x, y);
+    }
+
+    public void LoseLife(GameRenderer renderer){
+        Lives--;
+        
+        if (Lives >= 0)
+        {
+            Console.WriteLine($"Player lost a life. Remaining lives: {Lives}");
+            RenderEmojiOnLifeLoss(renderer);
+        }
+        else
+        {
+            GameOver();
+        }
+    }
+
+    
+
+    public void Reset(){
+        Position = (100, 100);  
+        SetState(PlayerState.Idle, PlayerStateDirection.Down);  
+    }
+
+   
 
     public void SetState(PlayerState state, PlayerStateDirection direction)
     {
@@ -51,7 +87,7 @@ public class PlayerObject : RenderableGameObject
     }
 
     public void GameOver(){
-        SetState(PlayerState.GameOver, PlayerStateDirection.None);
+            SetState(PlayerState.GameOver, PlayerStateDirection.None);
     }
 
     public void Attack(bool up, bool down, bool left, bool right)

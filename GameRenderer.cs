@@ -18,6 +18,8 @@ public unsafe class GameRenderer
     private Dictionary<int, TextureInfo> _textureData = new();
     private int _textureId;
 
+    private int _emojiTextureId;
+
     public GameRenderer(Sdl sdl, GameWindow window)
     {
         _window = window;
@@ -29,6 +31,8 @@ public unsafe class GameRenderer
         var windowSize = window.Size;
         _camera = new Camera(windowSize.Width, windowSize.Height);
     }
+
+
 
     public void SetWorldBounds(Rectangle<int> bounds)
     {
@@ -66,6 +70,8 @@ public unsafe class GameRenderer
         return _textureId++;
     }
 
+
+
     public void RenderTexture(int textureId, Rectangle<int> src, Rectangle<int> dst,
         RendererFlip flip = RendererFlip.None, double angle = 0.0, Point center = default)
     {
@@ -97,4 +103,26 @@ public unsafe class GameRenderer
     {
         _sdl.RenderPresent(_renderer);
     }
+
+    public void LoadEmojiTexture()
+    {
+    _emojiTextureId = LoadTexture("path/to/your/emoji.png", out _);
+
+
+    }
+
+   public void RenderEmoji(int x, int y)
+    {
+        if (_textures.TryGetValue(_emojiTextureId, out var imageTexture))
+        {
+            var textureInfo = _textureData[_emojiTextureId];
+            var dst = new Rectangle<int>(x, y, textureInfo.Width, textureInfo.Height);
+
+            // Since RenderCopy requires source and destination rectangles, we need to specify them
+            Rectangle<int> src = new Rectangle<int>(0, 0, textureInfo.Width, textureInfo.Height);
+            
+            _sdl.RenderCopy(_renderer, (Texture*)imageTexture, src, _camera.TranslateToScreenCoordinates(dst));
+        }
+    }
+
 }

@@ -19,13 +19,27 @@ namespace TheAdventure
         private ScriptEngine _scriptEngine;
 
         private DateTimeOffset _lastUpdate = DateTimeOffset.Now;
+        private DateTimeOffset _lastBombSpawn = DateTimeOffset.Now;
+
+        private DateTimeOffset _lastDifficultyIncrease = DateTimeOffset.Now;
         private DateTimeOffset _lastPlayerUpdate = DateTimeOffset.Now;
+
+        private double _bombSpawnInterval = 5.0; // Initial interval in seconds
+        private double _bombSpeed = 100.0; // Initial speed
+        private double _difficultyIncreaseInterval = 30.0; // Time in seconds to increase difficulty
+
+        private int _playerDeaths = 0;
+
+        
+        
+
         public Engine(GameRenderer renderer, Input input)
         {
             _renderer = renderer;
             _input = input;
             _scriptEngine = new ScriptEngine();
             _input.OnMouseClick += (_, coords) => AddBomb(coords.x, coords.y);
+            
         }
 
         public void WriteToConsole(string message){
@@ -36,6 +50,9 @@ namespace TheAdventure
             var pos = _player.Position;
             return (pos.X, pos.Y);
         }
+        
+       
+    
 
         public void InitializeWorld()
         {
@@ -85,7 +102,7 @@ namespace TheAdventure
         }
 
         public void ProcessFrame()
-        {
+        {   
             var currentTime = DateTimeOffset.Now;
             var secsSinceLastFrame = (currentTime - _lastUpdate).TotalSeconds;
             _lastUpdate = currentTime;
@@ -98,6 +115,21 @@ namespace TheAdventure
             bool addBomb = _input.IsKeyBPressed();
 
             _scriptEngine.ExecuteAll(this);
+
+            if ((currentTime - _lastDifficultyIncrease).TotalSeconds >= _difficultyIncreaseInterval)
+            {
+                 _bombSpawnInterval = Math.Max(1.0, _bombSpawnInterval * 0.9); // Decrease spawn interval
+                _bombSpeed *= 1.1; // Increase bomb speed
+                _lastDifficultyIncrease = currentTime;
+             }   
+
+
+            if ((currentTime - _lastBombSpawn).TotalSeconds >= _bombSpawnInterval)
+            {
+                AddBomb(_player.Position.X, _player.Position.Y, false);
+                _lastBombSpawn = currentTime;
+            }
+
 
             if(isAttacking)
             {
@@ -134,8 +166,22 @@ namespace TheAdventure
                     var tempObject = (TemporaryGameObject)gameObject;
                     var deltaX = Math.Abs(_player.Position.X - tempObject.Position.X);
                     var deltaY = Math.Abs(_player.Position.Y - tempObject.Position.Y);
-                    if(deltaX < 32 && deltaY < 32){
-                        _player.GameOver();
+                    if (deltaX < 32 && deltaY < 32)
+                    {
+                        _player.LoseLife(_renderer);
+                        if (_player.IsDead)
+                        {
+                            _playerDeaths++; // player death counter
+                            if (_playerDeaths >= 3)
+                            {
+                                _player.GameOver(); 
+                                return; 
+                            }
+                            else
+                            {
+                                _player.GameOver();
+                            }
+                        }
                     }
                 }
                 _gameObjects.Remove(gameObjectId);
@@ -231,15 +277,16 @@ namespace TheAdventure
 
         public void AddBomb(int x, int y, bool translateCoordinates = true)
         {
-
             var translated = translateCoordinates ? _renderer.TranslateFromScreenToWorldCoordinates(x, y) : new Vector2D<int>(x, y);
-            
+
             var spriteSheet = SpriteSheet.LoadSpriteSheet("bomb.json", "Assets", _renderer);
-            if(spriteSheet != null){
+            if (spriteSheet != null)
+            {
                 spriteSheet.ActivateAnimation("Explode");
-                TemporaryGameObject bomb = new(spriteSheet, 2.1, (translated.X, translated.Y));
+                TemporaryGameObject bomb = new(spriteSheet, 2.1, (translated.X, translated.Y), _bombSpeed); // Pass speed
                 _gameObjects.Add(bomb.Id, bomb);
             }
         }
+
     }
 }

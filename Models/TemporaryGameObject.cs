@@ -8,11 +8,14 @@ public class TemporaryGameObject : RenderableGameObject
     public bool IsExpired => (DateTimeOffset.Now - _spawnTime).TotalSeconds >= Ttl;
     
     private DateTimeOffset _spawnTime;
-    
-    public TemporaryGameObject(SpriteSheet spriteSheet, double ttl, (int X, int Y) position, double angle = 0.0, Point rotationCenter = new())
+    private double _speed;
+
+    public TemporaryGameObject(SpriteSheet spriteSheet, double ttl, (int X, int Y) position, double speed, double angle = 0.0, Point rotationCenter = new())
         : base(spriteSheet, position, angle, rotationCenter)
     {
         Ttl = ttl;
         _spawnTime = DateTimeOffset.Now;
+        _speed = speed;
     }
+
 }
