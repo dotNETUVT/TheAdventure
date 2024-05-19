@@ -11,13 +11,22 @@ namespace TheAdventure
         byte[] _mouseButtonStates = new byte[(int)MouseButton.Count];
         
         public EventHandler<(int x, int y)> OnMouseClick;
-        public EventHandler<(int x, int y)> OnSpaceBar;
-
+        public event Action OnRestart;
         public Input(Sdl sdl, GameWindow window, GameRenderer renderer)
         {
             _sdl = sdl;
             _gameWindow = window;
             _renderer = renderer;
+        }
+
+        public bool IsKeyAPressed(){
+            ReadOnlySpan<byte> _keyboardState = new(_sdl.GetKeyboardState(null), (int)KeyCode.Count);
+            return _keyboardState[(int)KeyCode.A] == 1;
+        }
+
+        public bool IsKeyBPressed(){
+            ReadOnlySpan<byte> _keyboardState = new(_sdl.GetKeyboardState(null), (int)KeyCode.Count);
+            return _keyboardState[(int)KeyCode.B] == 1;
         }
 
         public bool IsLeftPressed()
@@ -43,14 +52,11 @@ namespace TheAdventure
             ReadOnlySpan<byte> _keyboardState = new(_sdl.GetKeyboardState(null), (int)KeyCode.Count);
             return _keyboardState[(int)KeyCode.Down] == 1;
         }
-
-
-        public bool IsSpaceBarPressed()
+        public bool IsKeyRPressed()
         {
-            ReadOnlySpan<byte> _keyboardState = new(_sdl.GetKeyboardState(null), (int)KeyCode.Count);
-            return _keyboardState[(int)KeyCode.Space] == 1;
+            ReadOnlySpan<byte> keyboardState = new(_sdl.GetKeyboardState(null), (int)KeyCode.Count);
+            return keyboardState[(int)KeyCode.R] == 1;
         }
-
         public bool ProcessInput()
         {
             var currentTime = DateTimeOffset.UtcNow;
@@ -178,14 +184,14 @@ namespace TheAdventure
 
                     case (uint)EventType.Keydown:
                     {
-                            if (ev.Key.Keysym.Sym == (uint)KeyCode.Space)
-                            {
-                                OnSpaceBar?.Invoke(this, (0, 0));
-                            }
-
-                            break;
+                        break;
                     }
                 }
+            }
+            if (IsKeyRPressed())
+            {
+                OnRestart?.Invoke();
+                return false;
             }
 
             return false;

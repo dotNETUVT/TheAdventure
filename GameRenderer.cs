@@ -13,7 +13,7 @@ public unsafe class GameRenderer
     private Renderer* _renderer;
     private GameWindow _window;
     private Camera _camera;
-
+    private int _restartId;
     private Dictionary<int, IntPtr> _textures = new();
     private Dictionary<int, TextureInfo> _textureData = new();
     private int _textureId;
@@ -28,6 +28,7 @@ public unsafe class GameRenderer
 
         var windowSize = window.Size;
         _camera = new Camera(windowSize.Width, windowSize.Height);
+       // LoadRestartTexture("Assets/Restart.png");
     }
 
     public void SetWorldBounds(Rectangle<int> bounds)
@@ -38,6 +39,10 @@ public unsafe class GameRenderer
     public void CameraLookAt(int x, int y)
     {
         _camera.LookAt(x, y);
+    }
+    public void LoadRestartTexture(string fileName)
+    {
+        _restartId = LoadTexture(fileName, out _);
     }
 
     public int LoadTexture(string fileName, out TextureInfo textureInfo)
@@ -97,4 +102,21 @@ public unsafe class GameRenderer
     {
         _sdl.RenderPresent(_renderer);
     }
+    public void RenderFilledRectangle(int x, int y, int width, int height, byte r, byte g, byte b, byte a)
+    {
+        _sdl.SetRenderDrawColor(_renderer, r, g, b, a);
+        var rect = new Rectangle<int>(x, y, width, height);
+        _sdl.RenderFillRect(_renderer, rect);
+    }
+    public void RenderRestart()
+    {
+        var windowSize = _window.Size;
+        int imageWidth = windowSize.Width / 8;
+        int imageHeight = imageWidth;
+        var src = new Rectangle<int>(0, 0, windowSize.Width, windowSize.Height);
+        var dst = new Rectangle<int>(windowSize.Width - imageWidth, 0, imageWidth, imageHeight);
+
+        RenderTexture(_restartId, src, dst);
+    }
+
 }
