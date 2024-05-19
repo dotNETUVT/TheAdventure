@@ -1,4 +1,7 @@
-using System.Reflection;
+using System;
+using System.Collections.Generic;
+using System.IO;
+using System.Linq;
 using System.Text.Json;
 using Silk.NET.Maths;
 using Silk.NET.SDL;
@@ -9,39 +12,38 @@ namespace TheAdventure
 {
     public class Engine
     {
-        private readonly Dictionary<int, GameObject> _gameObjects = new();
-        private readonly Dictionary<string, TileSet> _loadedTileSets = new();
+        private readonly Dictionary<int, GameObject> _gameObjects = new Dictionary<int, GameObject>();
+        private readonly Dictionary<string, TileSet> _loadedTileSets = new Dictionary<string, TileSet>();
 
         private Level? _currentLevel;
         private PlayerObject _player;
         private GameRenderer _renderer;
         private Input _input;
-        private ScriptEngine _scriptEngine;
 
         private DateTimeOffset _lastUpdate = DateTimeOffset.Now;
-        private DateTimeOffset _lastPlayerUpdate = DateTimeOffset.Now;
+        private Leaderboard _leaderboard = new Leaderboard();
+        private Vector2D<int> _initialPlayerPosition;
+
         public Engine(GameRenderer renderer, Input input)
         {
             _renderer = renderer;
             _input = input;
-            _scriptEngine = new ScriptEngine();
-            _input.OnMouseClick += (_, coords) => AddBomb(coords.x, coords.y);
-        }
 
-        public void WriteToConsole(string message){
-            Console.WriteLine(message);
-        }
-
-        public (int x, int y) GetPlayerPosition(){
-            var pos = _player.Position;
-            return (pos.X, pos.Y);
+            _input.OnMouseClick += (_, coords) =>
+            {
+                if (_player.IsGameOver)
+                {
+                    RestartGame(); // Restart the game on mouse click after game over
+                }
+                else
+                {
+                    AddBomb(coords.x, coords.y);
+                }
+            };
         }
 
         public void InitializeWorld()
         {
-            var executableLocation = new FileInfo(Assembly.GetExecutingAssembly().Location);
-            _scriptEngine.LoadAll(Path.Combine(executableLocation.Directory.FullName, "Assets", "Scripts"));
-
             var jsonSerializerOptions = new JsonSerializerOptions() { PropertyNameCaseInsensitive = true };
             var levelContent = File.ReadAllText(Path.Combine("Assets", "terrain.tmj"));
 
@@ -67,19 +69,14 @@ namespace TheAdventure
             }
 
             _currentLevel = level;
-            /*SpriteSheet spriteSheet = new(_renderer, Path.Combine("Assets", "player.png"), 10, 6, 48, 48, new FrameOffset() { OffsetX = 24, OffsetY = 42 });
-            spriteSheet.Animations["IdleDown"] = new SpriteSheet.Animation()
-            {
-                StartFrame = new FramePosition(),//(0, 0),
-                EndFrame = new FramePosition() { Row = 0, Col = 5 },
-                DurationMs = 1000,
-                Loop = true
-            };
-            */
+
             var spriteSheet = SpriteSheet.LoadSpriteSheet("player.json", "Assets", _renderer);
-            if(spriteSheet != null){
-                _player = new PlayerObject(spriteSheet, 100, 100);
+            if (spriteSheet != null)
+            {
+                _initialPlayerPosition = new Vector2D<int>(100, 100); // Set the initial player position
+                _player = new PlayerObject(spriteSheet, _initialPlayerPosition.X, _initialPlayerPosition.Y);
             }
+
             _renderer.SetWorldBounds(new Rectangle<int>(0, 0, _currentLevel.Width * _currentLevel.TileWidth,
                 _currentLevel.Height * _currentLevel.TileHeight));
         }
@@ -90,6 +87,12 @@ namespace TheAdventure
             var secsSinceLastFrame = (currentTime - _lastUpdate).TotalSeconds;
             _lastUpdate = currentTime;
 
+            if (_input.ProcessInput())
+            {
+                // Handle quit event
+                return;
+            }
+
             bool up = _input.IsUpPressed();
             bool down = _input.IsDownPressed();
             bool left = _input.IsLeftPressed();
@@ -97,48 +100,43 @@ namespace TheAdventure
             bool isAttacking = _input.IsKeyAPressed();
             bool addBomb = _input.IsKeyBPressed();
 
-            _scriptEngine.ExecuteAll(this);
-
-            if(isAttacking)
+            if (isAttacking)
             {
-                var dir = up ? 1: 0;
-                dir += down? 1 : 0;
-                dir += left? 1: 0;
-                dir += right ? 1 : 0;
-                if(dir <= 1){
+                var dir = (up ? 1 : 0) + (down ? 1 : 0) + (left ? 1 : 0) + (right ? 1 : 0);
+                if (dir <= 1)
+                {
                     _player.Attack(up, down, left, right);
                 }
-                else{
+                else
+                {
                     isAttacking = false;
                 }
             }
-            if(!isAttacking)
+            if (!isAttacking)
             {
                 _player.UpdatePlayerPosition(up ? 1.0 : 0.0, down ? 1.0 : 0.0, left ? 1.0 : 0.0, right ? 1.0 : 0.0,
                     _currentLevel.Width * _currentLevel.TileWidth, _currentLevel.Height * _currentLevel.TileHeight,
                     secsSinceLastFrame);
             }
-            var itemsToRemove = new List<int>();
-            itemsToRemove.AddRange(GetAllTemporaryGameObjects().Where(gameObject => gameObject.IsExpired)
-                .Select(gameObject => gameObject.Id).ToList());
+            var itemsToRemove = GetAllTemporaryGameObjects().Where(gameObject => gameObject.IsExpired).ToList();
 
             if (addBomb)
             {
                 AddBomb(_player.Position.X, _player.Position.Y, false);
             }
 
-            foreach (var gameObjectId in itemsToRemove)
+            foreach (var gameObject in itemsToRemove)
             {
-                var gameObject = _gameObjects[gameObjectId];
-                if(gameObject is TemporaryGameObject){
-                    var tempObject = (TemporaryGameObject)gameObject;
+                if (gameObject is TemporaryGameObject tempObject)
+                {
                     var deltaX = Math.Abs(_player.Position.X - tempObject.Position.X);
                     var deltaY = Math.Abs(_player.Position.Y - tempObject.Position.Y);
-                    if(deltaX < 32 && deltaY < 32){
+                    if (deltaX < 32 && deltaY < 32)
+                    {
                         _player.GameOver();
                     }
                 }
-                _gameObjects.Remove(gameObjectId);
+                _gameObjects.Remove(gameObject.Id);
             }
         }
 
@@ -146,7 +144,7 @@ namespace TheAdventure
         {
             _renderer.SetDrawColor(0, 0, 0, 255);
             _renderer.ClearScreen();
-            
+
             _renderer.CameraLookAt(_player.Position.X, _player.Position.Y);
 
             RenderTerrain();
@@ -229,17 +227,35 @@ namespace TheAdventure
             _player.Render(_renderer);
         }
 
-        public void AddBomb(int x, int y, bool translateCoordinates = true)
+        private void AddBomb(int x, int y, bool translateCoordinates = true)
         {
-
             var translated = translateCoordinates ? _renderer.TranslateFromScreenToWorldCoordinates(x, y) : new Vector2D<int>(x, y);
-            
+
             var spriteSheet = SpriteSheet.LoadSpriteSheet("bomb.json", "Assets", _renderer);
-            if(spriteSheet != null){
+            if (spriteSheet != null)
+            {
                 spriteSheet.ActivateAnimation("Explode");
-                TemporaryGameObject bomb = new(spriteSheet, 2.1, (translated.X, translated.Y));
+                TemporaryGameObject bomb = new TemporaryGameObject(spriteSheet, 2.1, (translated.X, translated.Y));
                 _gameObjects.Add(bomb.Id, bomb);
             }
+        }
+
+        public void AddScoreToLeaderboard(string playerName, int score)
+        {
+            _leaderboard.AddScore(playerName, score);
+        }
+
+        public void DisplayLeaderboard()
+        {
+            _leaderboard.Display();
+        }
+
+        private void RestartGame()
+        {
+            _gameObjects.Clear();
+            _player.Reset(); // Reset player state
+            _player.SetPosition(_initialPlayerPosition.X, _initialPlayerPosition.Y); // Set player position to initial position
+            _input.Reset();
         }
     }
 }
