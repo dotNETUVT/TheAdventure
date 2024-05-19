@@ -1,3 +1,4 @@
+// Engine.cs
 using System.Text.Json;
 using Silk.NET.Maths;
 using Silk.NET.SDL;
@@ -17,7 +18,15 @@ namespace TheAdventure
         private Input _input;
 
         private DateTimeOffset _lastUpdate = DateTimeOffset.Now;
-        private DateTimeOffset _lastPlayerUpdate = DateTimeOffset.Now;
+
+        private bool _displayPowerUpMessage = false;
+        private int _displayPowerUpMessageId = 0;
+        private DateTimeOffset _powerUpMessageStartTime;
+        private PowerUpObject _currentPowerUp;
+
+        private bool _displayCoins = false;
+        private int _displayCoinsMessageId = 0;
+        private DateTimeOffset _coinsMessageStartTime;
 
         public Engine(GameRenderer renderer, Input input)
         {
@@ -54,21 +63,90 @@ namespace TheAdventure
             }
 
             _currentLevel = level;
-            /*SpriteSheet spriteSheet = new(_renderer, Path.Combine("Assets", "player.png"), 10, 6, 48, 48, new FrameOffset() { OffsetX = 24, OffsetY = 42 });
-            spriteSheet.Animations["IdleDown"] = new SpriteSheet.Animation()
-            {
-                StartFrame = new FramePosition(),//(0, 0),
-                EndFrame = new FramePosition() { Row = 0, Col = 5 },
-                DurationMs = 1000,
-                Loop = true
-            };
-            */
+
             var spriteSheet = SpriteSheet.LoadSpriteSheet("player.json", "Assets", _renderer);
-            if(spriteSheet != null){
+            if (spriteSheet != null)
+            {
                 _player = new PlayerObject(spriteSheet, 100, 100);
             }
             _renderer.SetWorldBounds(new Rectangle<int>(0, 0, _currentLevel.Width * _currentLevel.TileWidth,
                 _currentLevel.Height * _currentLevel.TileHeight));
+
+            WallObject.InitializeWalls(_renderer, _gameObjects);
+            InitializePowerUps();
+            InitializeObstacles();
+        }
+
+        private void InitializePowerUps()
+        {
+            var redChestSpriteSheet = SpriteSheet.LoadSpriteSheet("redChest.json", "Assets", _renderer);
+            var blueChestSpriteSheet = SpriteSheet.LoadSpriteSheet("blueChest.json", "Assets", _renderer);
+            var yellowChestSpriteSheet = SpriteSheet.LoadSpriteSheet("yellowChest.json", "Assets", _renderer);
+            var finalChestSpriteSheet = SpriteSheet.LoadSpriteSheet("victoryChest.json", "Assets", _renderer);
+
+            if (redChestSpriteSheet != null)
+            {
+                var redPowerUp = new PowerUpObject(redChestSpriteSheet, (370, 110), PowerUpType.Red);
+                _gameObjects.Add(redPowerUp.Id, redPowerUp);
+            }
+
+            if (blueChestSpriteSheet != null)
+            {
+                var bluePowerUp = new PowerUpObject(blueChestSpriteSheet, (550, 160), PowerUpType.Blue);
+                _gameObjects.Add(bluePowerUp.Id, bluePowerUp);
+            }
+
+            if (yellowChestSpriteSheet != null)
+            {
+                var yellowPowerUp = new PowerUpObject(yellowChestSpriteSheet, (650, 410), PowerUpType.Yellow);
+                _gameObjects.Add(yellowPowerUp.Id, yellowPowerUp);
+            }
+
+            if (finalChestSpriteSheet != null)
+            {
+                var finalChest = new VictoryChestObject(finalChestSpriteSheet, (850, 420));
+                _gameObjects.Add(finalChest.Id, finalChest);
+            }
+        }
+
+        private void InitializeObstacles()
+        {
+            var redObstacleSpriteSheet = SpriteSheet.LoadSpriteSheet("redObstacle.json", "Assets", _renderer);
+            var blueObstacleSpriteSheet = SpriteSheet.LoadSpriteSheet("blueObstacle.json", "Assets", _renderer);
+            var yellowObstacleSpriteSheet = SpriteSheet.LoadSpriteSheet("yellowObstacle.json", "Assets", _renderer);
+
+            var len = _gameObjects.Count;
+            Console.WriteLine(len);
+
+            if (redObstacleSpriteSheet != null)
+            {
+                var redObstacle = new ObstacleObject(redObstacleSpriteSheet, (360, 415), ObstacleType.Red);
+                _gameObjects.Add(redObstacle.Id, redObstacle);
+                if (_gameObjects.TryGetValue(len - 3, out var redPowerUp))
+                {
+                    ((PowerUpObject)redPowerUp).CorrespondingObstacle = redObstacle;
+                }
+            }
+
+            if (blueObstacleSpriteSheet != null)
+            {
+                var blueObstacle = new ObstacleObject(blueObstacleSpriteSheet, (830, 575), ObstacleType.Blue);
+                _gameObjects.Add(blueObstacle.Id, blueObstacle);
+                if (_gameObjects.TryGetValue(len - 2, out var bluePowerUp))
+                {
+                    ((PowerUpObject)bluePowerUp).CorrespondingObstacle = blueObstacle;
+                }
+            }
+
+            if (yellowObstacleSpriteSheet != null)
+            {
+                var yellowObstacle = new ObstacleObject(yellowObstacleSpriteSheet, (610, 575), ObstacleType.Yellow);
+                _gameObjects.Add(yellowObstacle.Id, yellowObstacle);
+                if (_gameObjects.TryGetValue(len - 1, out var yellowPowerUp))
+                {
+                    ((PowerUpObject)yellowPowerUp).CorrespondingObstacle = yellowObstacle;
+                }
+            }
         }
 
         public void ProcessFrame()
@@ -84,28 +162,29 @@ namespace TheAdventure
             bool isAttacking = _input.IsKeyAPressed();
             bool addBomb = _input.IsKeyBPressed();
 
-            if(isAttacking)
+            if (isAttacking)
             {
-                var dir = up ? 1: 0;
-                dir += down? 1 : 0;
-                dir += left? 1: 0;
+                var dir = up ? 1 : 0;
+                dir += down ? 1 : 0;
+                dir += left ? 1 : 0;
                 dir += right ? 1 : 0;
-                if(dir <= 1){
+                if (dir <= 1)
+                {
                     _player.Attack(up, down, left, right);
                 }
-                else{
+                else
+                {
                     isAttacking = false;
                 }
             }
-            if(!isAttacking)
+            if (!isAttacking)
             {
                 _player.UpdatePlayerPosition(up ? 1.0 : 0.0, down ? 1.0 : 0.0, left ? 1.0 : 0.0, right ? 1.0 : 0.0,
                     _currentLevel.Width * _currentLevel.TileWidth, _currentLevel.Height * _currentLevel.TileHeight,
                     secsSinceLastFrame);
             }
-            var itemsToRemove = new List<int>();
-            itemsToRemove.AddRange(GetAllTemporaryGameObjects().Where(gameObject => gameObject.IsExpired)
-                .Select(gameObject => gameObject.Id).ToList());
+            var itemsToRemove = GetAllTemporaryGameObjects().Where(gameObject => gameObject.IsExpired)
+                .Select(gameObject => gameObject.Id).ToList();
 
             if (addBomb)
             {
@@ -114,16 +193,225 @@ namespace TheAdventure
 
             foreach (var gameObjectId in itemsToRemove)
             {
-                var gameObject = _gameObjects[gameObjectId];
-                if(gameObject is TemporaryGameObject){
-                    var tempObject = (TemporaryGameObject)gameObject;
+                if (_gameObjects.TryGetValue(gameObjectId, out var gameObject) && gameObject is TemporaryGameObject tempObject)
+                {
                     var deltaX = Math.Abs(_player.Position.X - tempObject.Position.X);
                     var deltaY = Math.Abs(_player.Position.Y - tempObject.Position.Y);
-                    if(deltaX < 32 && deltaY < 32){
+                    if (deltaX < 32 && deltaY < 32)
+                    {
                         _player.GameOver();
                     }
                 }
                 _gameObjects.Remove(gameObjectId);
+            }
+
+            CheckForObstacleCollisions(isAttacking);
+            CheckForWallCollisions();
+            CheckForBombProximity();
+            UpdatePowerUpMessage();
+            UpdateCoinsMessage();
+
+            if (_player.HasYellowPowerUp && IsNear(_player.Position, (200, 200), 32))
+            {
+                AddBomb(200, 200, false);
+                AddBomb(250, 200, false);
+                AddBomb(300, 200, false);
+            }
+        }
+
+        private void CheckForObstacleCollisions(bool isAttacking)
+        {
+            var obstacles = _gameObjects.Values.OfType<ObstacleObject>().ToList();
+
+            foreach (var obstacle in obstacles)
+            {
+                var deltaX = Math.Abs(_player.Position.X - obstacle.Position.X);
+                var deltaY = Math.Abs(_player.Position.Y - obstacle.Position.Y);
+
+                if (deltaX < 32 && deltaY < 32)
+                {
+                    if (_player.CanDestroyObstacle(obstacle.ObstacleType) && isAttacking)
+                    {
+                        _currentPowerUp = _gameObjects.Values.OfType<PowerUpObject>()
+                            .FirstOrDefault(pu => pu.CorrespondingObstacle == obstacle);
+
+                        var victoryChest = _gameObjects.Values.OfType<VictoryChestObject>()
+                            .FirstOrDefault(vc => vc.Position == obstacle.Position);
+
+                        if (_currentPowerUp != null)
+                        {
+                            _displayPowerUpMessage = true;
+                            _displayPowerUpMessageId = _currentPowerUp.Id + 1000;
+                            _powerUpMessageStartTime = DateTimeOffset.Now;
+                        }
+                        else if (victoryChest != null)
+                        {
+                            Console.WriteLine($"Removing victory chest: {victoryChest.Id}");
+                            _gameObjects.Remove(victoryChest.Id);
+                            _displayCoins = true;
+                            _coinsMessageStartTime = DateTimeOffset.Now;
+                            CreateCoins();
+                        }
+                        else
+                        {
+                            Console.WriteLine($"Removing obstacle: {obstacle.Id}");
+                            _gameObjects.Remove(obstacle.Id);
+                        }
+                    }
+                    else
+                    {
+                        if (_player.Position.X > obstacle.Position.X && _player.Position.X < obstacle.Position.X + 32)
+                        {
+                            _player.Position = (obstacle.Position.X + 32, _player.Position.Y);
+                        }
+                        else if (_player.Position.X < obstacle.Position.X && _player.Position.X + 32 > obstacle.Position.X)
+                        {
+                            _player.Position = (obstacle.Position.X - 32, _player.Position.Y);
+                        }
+
+                        if (_player.Position.Y > obstacle.Position.Y && _player.Position.Y < obstacle.Position.Y + 32)
+                        {
+                            _player.Position = (_player.Position.X, obstacle.Position.Y + 32);
+                        }
+                        else if (_player.Position.Y < obstacle.Position.Y && _player.Position.Y + 32 > obstacle.Position.Y)
+                        {
+                            _player.Position = (_player.Position.X, obstacle.Position.Y - 32);
+                        }
+                    }
+                }
+            }
+        }
+
+        private void CheckForWallCollisions()
+        {
+            var walls = _gameObjects.Values.OfType<WallObject>().ToList();
+
+            foreach (var wall in walls)
+            {
+                var wallWidth = wall.IsVertical ? wall.SpriteSheet.FrameHeight : wall.SpriteSheet.FrameWidth;
+                var wallHeight = wall.IsVertical ? wall.SpriteSheet.FrameWidth : wall.SpriteSheet.FrameHeight;
+                var deltaX = Math.Abs(_player.Position.X - wall.Position.X);
+                var deltaY = Math.Abs(_player.Position.Y - wall.Position.Y);
+
+                if (deltaX < wallWidth && deltaY < wallHeight)
+                {
+                    // Prevent player from moving through the wall by adjusting X and Y based on the wall's orientation
+                    if (wall.IsVertical)
+                    {
+                        // Vertical wall collision adjustment
+                        if (_player.Position.X > wall.Position.X && _player.Position.X < wall.Position.X + wallWidth)
+                        {
+                            _player.Position = (wall.Position.X + wallWidth, _player.Position.Y);
+                        }
+                        else if (_player.Position.X < wall.Position.X && _player.Position.X + wallWidth > wall.Position.X)
+                        {
+                            _player.Position = (wall.Position.X - wallWidth, _player.Position.Y);
+                        }
+                    }
+                    else
+                    {
+                        // Horizontal wall collision adjustment
+                        if (_player.Position.Y > wall.Position.Y && _player.Position.Y < wall.Position.Y + wallHeight)
+                        {
+                            _player.Position = (_player.Position.X, wall.Position.Y + wallHeight);
+                        }
+                        else if (_player.Position.Y < wall.Position.Y && _player.Position.Y + wallHeight > wall.Position.Y)
+                        {
+                            _player.Position = (_player.Position.X, wall.Position.Y - wallHeight);
+                        }
+                    }
+                }
+            }
+        }
+
+
+        private void CheckForBombProximity()
+        {
+            var powerUps = _gameObjects.Values.OfType<PowerUpObject>().ToList();
+            var bombs = _gameObjects.Values.OfType<TemporaryGameObject>().ToList();
+
+            foreach (var bomb in bombs)
+            {
+                foreach (var powerUp in powerUps)
+                {
+                    var deltaX = Math.Abs(bomb.Position.X - powerUp.Position.X);
+                    var deltaY = Math.Abs(bomb.Position.Y - powerUp.Position.Y);
+
+                    if (deltaX < 32 && deltaY < 32)
+                    {
+                        _player.CollectPowerUp(powerUp.PowerUpType);
+                        _currentPowerUp = powerUp;
+                        _displayPowerUpMessage = true;
+                        _displayPowerUpMessageId = powerUp.Id + 1000000;
+                        _powerUpMessageStartTime = DateTimeOffset.Now;
+                    }
+                }
+            }
+        }
+
+        private void DisplayPowerUpMessage()
+        {
+            if (_displayPowerUpMessage)
+            {
+                var powerUpSpriteSheet = SpriteSheet.LoadSpriteSheet("powerup.json", "Assets", _renderer);
+                if (powerUpSpriteSheet != null && (!_gameObjects.ContainsKey(_displayPowerUpMessageId)))
+                {
+                    var powerUpMessage = new TemporaryGameObject(powerUpSpriteSheet, 2.0, (_player.Position.X, _player.Position.Y - 50));
+                    _gameObjects.Add(_displayPowerUpMessageId, powerUpMessage);
+                }
+            }
+        }
+
+        private void UpdatePowerUpMessage()
+        {
+            if (_displayPowerUpMessage && (DateTimeOffset.Now - _powerUpMessageStartTime).TotalSeconds > 2.0)
+            {
+                _gameObjects.Remove(_displayPowerUpMessageId);
+                if (_currentPowerUp != null)
+                {
+                    Console.WriteLine($"Removing power-up: {_currentPowerUp.Id} and corresponding obstacle: {_currentPowerUp.CorrespondingObstacle?.Id}");
+                    _gameObjects.Remove(_currentPowerUp.Id);
+                    if (_currentPowerUp.CorrespondingObstacle != null)
+                    {
+                        _gameObjects.Remove(_currentPowerUp.CorrespondingObstacle.Id);
+                    }
+                }
+                _displayPowerUpMessage = false;
+            }
+        }
+
+        private void DisplayCoins()
+        {
+            if (_displayCoins)
+            {
+                var coinSpriteSheet = SpriteSheet.LoadSpriteSheet("coins.json", "Assets", _renderer);
+                if (coinSpriteSheet != null && (!_gameObjects.ContainsKey(_displayCoinsMessageId)))
+                {
+                    CreateCoins();
+                }
+            }
+        }
+
+        private void CreateCoins()
+        {
+            var coinSpriteSheet = SpriteSheet.LoadSpriteSheet("coins.json", "Assets", _renderer);
+            if (coinSpriteSheet == null) return;
+
+            Random random = new Random();
+            for (int i = 0; i < 100; i++)
+            {
+                int x = random.Next(0, _currentLevel.Width * _currentLevel.TileWidth);
+                int y = random.Next(0, _currentLevel.Height * _currentLevel.TileHeight);
+                var coin = new TemporaryGameObject(coinSpriteSheet, 2.0, (x, y));
+                _gameObjects.Add(coin.Id, coin);
+            }
+        }
+
+        private void UpdateCoinsMessage()
+        {
+            if (_displayCoins && (DateTimeOffset.Now - _coinsMessageStartTime).TotalSeconds > 2.0)
+            {
+                _displayCoins = false;
             }
         }
 
@@ -131,11 +419,13 @@ namespace TheAdventure
         {
             _renderer.SetDrawColor(0, 0, 0, 255);
             _renderer.ClearScreen();
-            
             _renderer.CameraLookAt(_player.Position.X, _player.Position.Y);
 
             RenderTerrain();
             RenderAllObjects();
+
+            DisplayPowerUpMessage();
+            DisplayCoins();
 
             _renderer.PresentFrame();
         }
@@ -208,7 +498,15 @@ namespace TheAdventure
         {
             foreach (var gameObject in GetAllRenderableObjects())
             {
-                gameObject.Render(_renderer);
+                if (gameObject is WallObject wall)
+                {
+                    double angle = wall.IsVertical ? 90.0 : 0.0; // Rotate if the wall is vertical
+                    wall.Render(_renderer, angle);
+                }
+                else
+                {
+                    gameObject.Render(_renderer);
+                }
             }
 
             _player.Render(_renderer);
@@ -216,15 +514,22 @@ namespace TheAdventure
 
         private void AddBomb(int x, int y, bool translateCoordinates = true)
         {
-
             var translated = translateCoordinates ? _renderer.TranslateFromScreenToWorldCoordinates(x, y) : new Vector2D<int>(x, y);
-            
+
             var spriteSheet = SpriteSheet.LoadSpriteSheet("bomb.json", "Assets", _renderer);
-            if(spriteSheet != null){
+            if (spriteSheet != null)
+            {
                 spriteSheet.ActivateAnimation("Explode");
                 TemporaryGameObject bomb = new(spriteSheet, 2.1, (translated.X, translated.Y));
                 _gameObjects.Add(bomb.Id, bomb);
             }
+        }
+
+        private bool IsNear((int X, int Y) position, (int X, int Y) target, int range)
+        {
+            var deltaX = Math.Abs(position.X - target.X);
+            var deltaY = Math.Abs(position.Y - target.Y);
+            return deltaX < range && deltaY < range;
         }
     }
 }
