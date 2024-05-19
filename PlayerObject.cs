@@ -23,6 +23,8 @@ public class PlayerObject : RenderableGameObject
 
     public bool StatusLife = true;
     private int _pixelsPerSecond = 192;
+    private Audio _audio;
+    private string audiopath = "Assets/sound.mp3";
     public int Health { get; private set; }
 
 
@@ -31,6 +33,7 @@ public class PlayerObject : RenderableGameObject
     public PlayerObject(SpriteSheet spriteSheet, int x, int y) : base(spriteSheet, (x, y))
     {
         Health = 100;
+        _audio = new Audio(audiopath);
         SetState(PlayerState.Idle, PlayerStateDirection.Down);
     }
     public void RenderHealthBar(GameRenderer renderer)
@@ -77,6 +80,7 @@ public class PlayerObject : RenderableGameObject
         SetState(PlayerState.GameOver, PlayerStateDirection.None);
         StatusLife = false;
         RenderHealthBar(renderer);
+        _audio.PlayGameOverSound();
     }
 
     public void Attack(bool up, bool down, bool left, bool right)
