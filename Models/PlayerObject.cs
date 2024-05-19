@@ -136,4 +136,5 @@ public class PlayerObject : RenderableGameObject
 
         Position = (x, y);
     }
+    
 }

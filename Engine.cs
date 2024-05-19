@@ -69,6 +69,13 @@ namespace TheAdventure
             }
             _renderer.SetWorldBounds(new Rectangle<int>(0, 0, _currentLevel.Width * _currentLevel.TileWidth,
                 _currentLevel.Height * _currentLevel.TileHeight));
+            
+            var rockSprite = new SpriteSheet(_renderer, "Assets/rock.png",
+                1, 1, 166, 186, 
+                new FrameOffset(166/2,186/2), 0.1f, 0.1f);
+            var rock = new RenderableGameObject(rockSprite,
+                (110, 110));
+            _gameObjects.Add(rock.Id, rock);
         }
 
         public void ProcessFrame()
