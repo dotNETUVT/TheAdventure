@@ -52,7 +52,12 @@ namespace TheAdventure
             ReadOnlySpan<byte> _keyboardState = new(_sdl.GetKeyboardState(null), (int)KeyCode.Count);
             return _keyboardState[(int)KeyCode.Down] == 1;
         }
-        
+
+        public bool IsLShiftPressed()
+        {
+            ReadOnlySpan<byte> _keyboardState = new(_sdl.GetKeyboardState(null), (int)KeyCode.Count);
+            return _keyboardState[(int)KeyCode.LShift] == 1;
+        }
         public bool ProcessInput()
         {
             var currentTime = DateTimeOffset.UtcNow;

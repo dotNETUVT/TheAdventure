@@ -3,6 +3,7 @@ using Silk.NET.Maths;
 using Silk.NET.SDL;
 using TheAdventure.Models;
 using TheAdventure.Models.Data;
+using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace TheAdventure
 {
@@ -15,6 +16,26 @@ namespace TheAdventure
         private PlayerObject _player;
         private GameRenderer _renderer;
         private Input _input;
+        private const double dashDuration = 1;
+        private double dashTimePassed = 0;
+        private const double dashCooldown = 2;
+        private double dashCooldownClock = dashCooldown;
+        private bool isDashing = false;
+        private const int _dashSize = 200;
+        private (int x, int y) _dashStartPosition;
+        private int dashRight = 0;
+        private int dashDown = 0;
+
+        private double dashFunction(double x)
+        {
+            return x == 0
+            ? 0
+            : x == 1
+            ? 1
+            : x < 0.5 ? Math.Pow(2, 20 * x - 10) / 2
+            : (2 - Math.Pow(2, -20 * x + 10)) / 2;
+
+        }
 
         private DateTimeOffset _lastUpdate = DateTimeOffset.Now;
         private DateTimeOffset _lastPlayerUpdate = DateTimeOffset.Now;
@@ -31,8 +52,9 @@ namespace TheAdventure
         {
             var jsonSerializerOptions = new JsonSerializerOptions() { PropertyNameCaseInsensitive = true };
             var levelContent = File.ReadAllText(Path.Combine("Assets", "terrain.tmj"));
-
+             
             var level = JsonSerializer.Deserialize<Level>(levelContent, jsonSerializerOptions);
+           
             if (level == null) return;
             foreach (var refTileSet in level.TileSets)
             {
@@ -83,8 +105,52 @@ namespace TheAdventure
             bool right = _input.IsRightPressed();
             bool isAttacking = _input.IsKeyAPressed();
             bool addBomb = _input.IsKeyBPressed();
+            bool isShiftDown = _input.IsLShiftPressed();
 
-            if(isAttacking)
+            double multiplier = 1;
+            dashCooldownClock += secsSinceLastFrame;
+
+            
+            if (isShiftDown && dashCooldownClock > dashCooldown)
+            {   
+                if (!isDashing)
+                {
+                   _dashStartPosition = _player.Position;
+                   dashRight = (right ? 1 : 0) + (left ? -1 : 0);
+                   dashDown = (down ? 1 : 0) + (up ? -1 : 0);
+                }
+
+
+                isDashing = true;
+                dashCooldownClock = 0;
+                dashTimePassed = 0;
+
+            }
+
+            if (isDashing)
+            {
+
+                if (dashTimePassed > dashDuration)
+                {
+                    isDashing = false;
+                    multiplier = 1;
+                   
+                }
+                else
+                {
+                    dashTimePassed += secsSinceLastFrame;
+                    double y = _dashStartPosition.y + dashFunction(dashTimePassed * 1 / dashDuration) * _dashSize * dashDown;
+                    double x = _dashStartPosition.x + dashFunction(dashTimePassed * 1 / dashDuration) * _dashSize * dashRight;
+                    _player.UpdatePlayerDashPosition(
+                        _currentLevel.Width * _currentLevel.TileWidth, _currentLevel.Height * _currentLevel.TileHeight,
+                        x, y);
+
+
+                }
+            }
+
+
+            if (isAttacking)
             {
                 var dir = up ? 1: 0;
                 dir += down? 1 : 0;
@@ -97,12 +163,14 @@ namespace TheAdventure
                     isAttacking = false;
                 }
             }
-            if(!isAttacking)
+
+            if (!isAttacking && !isDashing)
             {
-                _player.UpdatePlayerPosition(up ? 1.0 : 0.0, down ? 1.0 : 0.0, left ? 1.0 : 0.0, right ? 1.0 : 0.0,
+                _player.UpdatePlayerPosition(up ? multiplier*1.0 : 0.0, down ? multiplier * 1.0 : 0.0, left ? multiplier * 1.0 : 0.0, right ? multiplier * 1.0 : 0.0,
                     _currentLevel.Width * _currentLevel.TileWidth, _currentLevel.Height * _currentLevel.TileHeight,
                     secsSinceLastFrame);
             }
+
             var itemsToRemove = new List<int>();
             itemsToRemove.AddRange(GetAllTemporaryGameObjects().Where(gameObject => gameObject.IsExpired)
                 .Select(gameObject => gameObject.Id).ToList());

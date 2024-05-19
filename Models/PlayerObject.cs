@@ -6,14 +6,15 @@ namespace TheAdventure.Models;
 
 public class PlayerObject : RenderableGameObject
 {
-    public enum PlayerStateDirection{
+
+    public enum PlayerStateDirection {
         None = 0,
         Down,
         Up,
         Left,
         Right,
     }
-    public enum PlayerState{
+    public enum PlayerState {
         None = 0,
         Idle,
         Move,
@@ -21,7 +22,7 @@ public class PlayerObject : RenderableGameObject
         GameOver
     }
 
-    private int _pixelsPerSecond = 192;
+    public int _pixelsPerSecond { get; } = 192;
 
 
     public (PlayerState State, PlayerStateDirection Direction) State{ get; private set; }
@@ -73,6 +74,61 @@ public class PlayerObject : RenderableGameObject
             direction = PlayerStateDirection.Left;
         }
         SetState(PlayerState.Attack, direction);
+    }
+
+    public void UpdatePlayerDashPosition(int width, int height,
+        double x, double y)
+    {
+        if (State.State == PlayerState.GameOver) return;
+        
+        
+
+        if (x < 10)
+        {
+            x = 10;
+        }
+
+        if (y < 24)
+        {
+            y = 24;
+        }
+
+        if (x > width - 10)
+        {
+            x = width - 10;
+        }
+
+        if (y > height - 6)
+        {
+            y = height - 6;
+        }
+
+
+
+        if (y < Position.Y)
+        {
+            SetState(PlayerState.Move, PlayerStateDirection.Up);
+        }
+        if (y > Position.Y)
+        {
+            SetState(PlayerState.Move, PlayerStateDirection.Down);
+        }
+        if (x > Position.X)
+        {
+            SetState(PlayerState.Move, PlayerStateDirection.Right);
+        }
+        if (x < Position.X)
+        {
+            SetState(PlayerState.Move, PlayerStateDirection.Left);
+        }
+        if (x == Position.X &&
+            y == Position.Y)
+        {
+            SetState(PlayerState.Idle, State.Direction);
+        }
+
+        Position = (Convert.ToInt32(x), Convert.ToInt32(y));
+    
     }
 
     public void UpdatePlayerPosition(double up, double down, double left, double right, int width, int height,
