@@ -1,6 +1,8 @@
 using System.Formats.Asn1;
 using Silk.NET.Maths;
 using TheAdventure;
+using System.Windows.Input;
+using Silk.NET.Input;
 
 namespace TheAdventure.Models;
 
@@ -77,7 +79,7 @@ public class PlayerObject : RenderableGameObject
     }
 
     public void UpdatePlayerPosition(double up, double down, double left, double right, int width, int height,
-        double time)
+        double time, bool sprinting)
     {
         if(State.State == PlayerState.GameOver) return;
         if (up <= double.Epsilon &&
@@ -87,8 +89,8 @@ public class PlayerObject : RenderableGameObject
             State.State == PlayerState.Idle){
             return;
         }
-
-        var pixelsToMove = time * _pixelsPerSecond;
+        int speedMultiplier = sprinting ? 2 : 1;
+        var pixelsToMove = time * _pixelsPerSecond * speedMultiplier;
 
         var x = Position.X + (int)(right * pixelsToMove);
         x -= (int)(left * pixelsToMove);
