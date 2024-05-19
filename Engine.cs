@@ -84,6 +84,7 @@ namespace TheAdventure
             bool right = _input.IsRightPressed() || _input.IsDPressed();
             bool isAttacking = _input.IsKeyXPressed();
             bool addBomb = _input.IsKeyBPressed();
+            bool bombRain = _input.IsRPressed();
             
             if(isAttacking)
             {
@@ -108,10 +109,44 @@ namespace TheAdventure
             itemsToRemove.AddRange(GetAllTemporaryGameObjects().Where(gameObject => gameObject.IsExpired)
                 .Select(gameObject => gameObject.Id).ToList());
 
-            if (addBomb)
+            if (bombRain)
             {
-                AddBomb(_player.Position.X, _player.Position.Y, false);
+                Random rand = new Random();
+                int bombCount = 5;
+                int range = 300; 
+                int minDistance = 50; 
+                List<(int, int)> bombPositions = new List<(int, int)>();
+
+                for (int i = 0; i < bombCount; i++)
+                {
+                    int bombX, bombY;
+                    bool positionOk;
+
+                    do
+                    {
+                        bombX = _player.Position.X + rand.Next(-range, range + 1);
+                        bombY = _player.Position.Y + rand.Next(-range, range + 1);
+                        
+                        positionOk = true;
+                        foreach (var pos in bombPositions)
+                        {
+                            double distance = Math.Sqrt(Math.Pow(bombX - pos.Item1, 2) + Math.Pow(bombY - pos.Item2, 2));
+                            if (distance < minDistance)
+                            {
+                                positionOk = false;
+                                break;
+                            }
+                        }
+                    } while (!positionOk);
+                    
+                    AddBomb(bombX, bombY, false);
+                    bombPositions.Add((bombX, bombY));
+                }
             }
+
+
+
+           
 
             foreach (var gameObjectId in itemsToRemove)
             {
