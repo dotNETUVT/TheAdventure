@@ -17,18 +17,12 @@ public class Camera
     /// <summary>
     /// World coordinates.
     /// </summary>
-    public int X
-    {
-        get { return _x; }
-    }
+    public int X => _x;
 
     /// <summary>
     /// World coordinates.
     /// </summary>
-    public int Y
-    {
-        get { return _y; }
-    }
+    public int Y => _y;
 
     public int Width { get; init; }
     public int Height { get; init; }

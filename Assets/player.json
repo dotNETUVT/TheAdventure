@@ -110,6 +110,58 @@
             "loop" : true,
             "flip" : 0
         },
+        "MoveUpLeft": {
+            "startFrame" : {
+                "row" : 4,
+                "col" : 0
+            },
+            "endFrame" : {
+                "row" : 4,
+                "col" : 5
+            },
+            "durationMs" : 1000,
+            "loop" : true,
+            "flip" : 1
+        },
+        "MoveUpRight": {
+            "startFrame" : {
+                "row" : 4,
+                "col" : 0
+            },
+            "endFrame" : {
+                "row" : 4,
+                "col" : 5
+            },
+            "durationMs" : 1000,
+            "loop" : true,
+            "flip" : 0
+        },
+        "MoveDownLeft": {
+            "startFrame" : {
+                "row" : 4,
+                "col" : 0
+            },
+            "endFrame" : {
+                "row" : 4,
+                "col" : 5
+            },
+            "durationMs" : 1000,
+            "loop" : true,
+            "flip" : 1
+        },
+        "MoveDownRight": {
+            "startFrame" : {
+                "row" : 4,
+                "col" : 0
+            },
+            "endFrame" : {
+                "row" : 4,
+                "col" : 5
+            },
+            "durationMs" : 1000,
+            "loop" : true,
+            "flip" : 0
+        },
         "AttackLeft": {
             "startFrame" : {
                 "row" : 7,
@@ -175,6 +227,109 @@
             "loop" : false,
             "flip" : 0
         }
+    },
+    "RunLeft": {
+        "startFrame" : {
+            "row" : 4,
+            "col" : 0
+        },
+        "endFrame" : {
+            "row" : 4,
+            "col" : 5
+        },
+        "durationMs" : 500,
+        "loop" : true,
+        "flip" : 1
+    },
+    "RunRight": {
+        "startFrame" : {
+            "row" : 4,
+            "col" : 0
+        },
+        "endFrame" : {
+            "row" : 4,
+            "col" : 5
+        },
+        "durationMs" : 500,
+        "loop" : true,
+        "flip" : 0
+    },
+    "RunDown": {
+        "startFrame" : {
+            "row" : 3,
+            "col" : 0
+        },
+        "endFrame" : {
+            "row" : 3,
+            "col" : 5
+        },
+        "durationMs" : 500,
+        "loop" : true,
+        "flip" : 0
+    },
+    "RunUp": {
+        "startFrame" : {
+            "row" : 5,
+            "col" : 0
+        },
+        "endFrame" : {
+            "row" : 5,
+            "col" : 5
+        },
+        "durationMs" : 500,
+        "loop" : true,
+        "flip" : 0
+    },
+    "RunDownLeft": {
+        "startFrame" : {
+            "row" : 4,
+            "col" : 0
+        },
+        "endFrame" : {
+            "row" : 4,
+            "col" : 5
+        },
+        "durationMs" : 500,
+        "loop" : true,
+        "flip" : 1
+    },
+    "RunDownRight": {
+        "startFrame" : {
+            "row" : 4,
+            "col" : 0
+        },
+        "endFrame" : {
+            "row" : 4,
+            "col" : 5
+        },
+        "durationMs" : 500,
+        "loop" : true,
+        "flip" : 0
+    },
+    "RunUpLeft": {
+        "startFrame" : {
+            "row" : 4,
+            "col" : 0
+        },
+        "endFrame" : {
+            "row" : 4,
+            "col" : 5
+        },
+        "durationMs" : 500,
+        "loop" : true,
+        "flip" : 1
+    },
+    "RunUpRight": {
+        "startFrame" : {
+            "row" : 4,
+            "col" : 0
+        },
+        "endFrame" : {
+            "row" : 4,
+            "col" : 5
+        },
+        "durationMs" : 500,
+        "loop" : true,
+        "flip" : 0
     }
-    
 }
