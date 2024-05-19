@@ -32,21 +32,32 @@ namespace TheAdventure
             Console.WriteLine(message);
         }
 
-        public (int x, int y) GetPlayerPosition(){
+        public PlayerObject GetPlayer()
+        {
+            return _player;
+        }
+
+        public (int x, int y) GetPlayerPosition()
+        {
             var pos = _player.Position;
             return (pos.X, pos.Y);
         }
 
+
         public void InitializeWorld()
         {
+            // Attach the FileSystemWatcher and load all scripts
             var executableLocation = new FileInfo(Assembly.GetExecutingAssembly().Location);
             _scriptEngine.LoadAll(Path.Combine(executableLocation.Directory.FullName, "Assets", "Scripts"));
 
+            // Deserialize the level configuration from JSON
             var jsonSerializerOptions = new JsonSerializerOptions() { PropertyNameCaseInsensitive = true };
             var levelContent = File.ReadAllText(Path.Combine("Assets", "terrain.tmj"));
 
             var level = JsonSerializer.Deserialize<Level>(levelContent, jsonSerializerOptions);
             if (level == null) return;
+
+            // Load all tile sets referenced by the level
             foreach (var refTileSet in level.TileSets)
             {
                 var tileSetContent = File.ReadAllText(Path.Combine("Assets", refTileSet.Source));
@@ -67,25 +78,24 @@ namespace TheAdventure
             }
 
             _currentLevel = level;
-            /*SpriteSheet spriteSheet = new(_renderer, Path.Combine("Assets", "player.png"), 10, 6, 48, 48, new FrameOffset() { OffsetX = 24, OffsetY = 42 });
-            spriteSheet.Animations["IdleDown"] = new SpriteSheet.Animation()
-            {
-                StartFrame = new FramePosition(),//(0, 0),
-                EndFrame = new FramePosition() { Row = 0, Col = 5 },
-                DurationMs = 1000,
-                Loop = true
-            };
-            */
+
+            // Initialize the player's sprite sheet and set the player object
             var spriteSheet = SpriteSheet.LoadSpriteSheet("player.json", "Assets", _renderer);
-            if(spriteSheet != null){
+            if (spriteSheet != null)
+            {
                 _player = new PlayerObject(spriteSheet, 100, 100);
             }
+
+            // Set the world bounds for the renderer
             _renderer.SetWorldBounds(new Rectangle<int>(0, 0, _currentLevel.Width * _currentLevel.TileWidth,
                 _currentLevel.Height * _currentLevel.TileHeight));
         }
 
+
+
         public void ProcessFrame()
         {
+            _scriptEngine.ExecuteAll(this);
 
             var currentTime = DateTimeOffset.Now;
             var secsSinceLastFrame = (currentTime - _lastUpdate).TotalSeconds;
@@ -99,23 +109,15 @@ namespace TheAdventure
             bool addBomb = _input.IsKeyBPressed();
             bool reset = _input.IsKeyRPressed();
 
-<<<<<<< HEAD
             if (_player.IsDead())
-=======
-            _scriptEngine.ExecuteAll(this);
-
-            if(isAttacking)
->>>>>>> 336e7aa2e9e8648f88c2c6b8064b736f4052dd9a
             {
                 if (reset)
                 {
                     ResetGame();
-                    return;
                 }
             }
             else
             {
-
                 if (isAttacking)
                 {
                     var dir = up ? 1 : 0;
@@ -131,12 +133,14 @@ namespace TheAdventure
                         isAttacking = false;
                     }
                 }
+
                 if (!isAttacking)
                 {
                     _player.UpdatePlayerPosition(up ? 1.0 : 0.0, down ? 1.0 : 0.0, left ? 1.0 : 0.0, right ? 1.0 : 0.0,
                         _currentLevel.Width * _currentLevel.TileWidth, _currentLevel.Height * _currentLevel.TileHeight,
                         secsSinceLastFrame);
                 }
+
                 var itemsToRemove = new List<int>();
                 itemsToRemove.AddRange(GetAllTemporaryGameObjects().Where(gameObject => gameObject.IsExpired)
                     .Select(gameObject => gameObject.Id).ToList());
@@ -163,6 +167,7 @@ namespace TheAdventure
                 }
             }
         }
+
 
         public void RenderFrame()
         {
@@ -245,8 +250,10 @@ namespace TheAdventure
         {
             _player.Reset();
             _gameObjects.Clear();
+            _scriptEngine.ClearScripts();
             InitializeWorld();
         }
+
 
         private void RenderAllObjects()
         {

@@ -6,6 +6,12 @@ namespace TheAdventure;
 
 public class ScriptEngine
 {
+
+    public void ClearScripts()
+    {
+        _scripts.Clear();
+    }
+
     private PortableExecutableReference[] scriptReferences;
 
     private Dictionary<string, IScript> _scripts = new Dictionary<string, IScript>();
@@ -92,11 +98,16 @@ public class ScriptEngine
         }
     }
 
-    public void ExecuteAll(Engine engine){
-        foreach(var script in _scripts){
-            script.Value.Execute(engine);
+    public void ExecuteAll(Engine engine)
+    {
+        if (engine.GetPlayer().IsDead()) return;
+
+        foreach (var script in _scripts.Values)
+        {
+            script.Execute(engine);
         }
     }
+
 
     public IScript? Load(string file)
     {
