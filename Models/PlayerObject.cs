@@ -136,4 +136,12 @@ public class PlayerObject : RenderableGameObject
 
         Position = (x, y);
     }
+    
+    public async void SetSpeed(double speedMultiplier)
+    {
+        _pixelsPerSecond = (int)(192 * speedMultiplier);
+        await Task.Delay(5 * 1000);
+        _pixelsPerSecond = 192;
+    }
+    
 }

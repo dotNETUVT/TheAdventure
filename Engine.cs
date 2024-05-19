@@ -138,6 +138,12 @@ namespace TheAdventure
                     if (deltaX < tempObject.ExplosionRadius && deltaY < tempObject.ExplosionRadius){
                         _player.GameOver();
                     }
+                    if (deltaX < tempObject.ExplosionRadius*3 && deltaY < tempObject.ExplosionRadius*3)
+                    {
+                        _player.SetSpeed(0.5);
+                    }
+                    
+                    
                 }
                 _gameObjects.Remove(gameObjectId);
             }
