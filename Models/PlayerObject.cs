@@ -9,77 +9,42 @@ public class PlayerObject : RenderableGameObject
 
     private string _currentAnimation = "IdleDown";
 
+    // Speed variables for manipulating the speed variation
+    private double _baseSpeed = 150; //default speed
+    private double _currentSpeed;
 
     public PlayerObject(SpriteSheet spriteSheet, int x, int y) : base(spriteSheet, (x, y))
     {
         SpriteSheet.ActivateAnimation(_currentAnimation);
+        _currentSpeed = _baseSpeed;
        
     }
 
-    public void UpdatePlayerPosition(double up, double down, double left, double right, int width, int height,
-        double time)
+    public void UpdatePlayerPosition(double up, double down, double left, double right, int maxX, int maxY, double deltaTime)
     {
+        var newPosition = Position;
 
-        if (up <= double.Epsilon &&
-            down <= double.Epsilon &&
-            left <= double.Epsilon &&
-            right <= double.Epsilon &&
-            _currentAnimation == "IdleDown"){
-            return;
-        }
+        if (up > 0) newPosition.Y -= (int)(_currentSpeed * deltaTime);
+        if (down > 0) newPosition.Y += (int)(_currentSpeed * deltaTime);
+        if (left > 0) newPosition.X -= (int)(_currentSpeed * deltaTime);
+        if (right > 0) newPosition.X += (int)(_currentSpeed * deltaTime);
 
-        var pixelsToMove = time * _pixelsPerSecond;
+        newPosition.X = Math.Clamp(newPosition.X, 0, maxX);
+        newPosition.Y = Math.Clamp(newPosition.Y, 0, maxY);
 
-        var x = Position.X + (int)(right * pixelsToMove);
-        x -= (int)(left * pixelsToMove);
-
-        var y = Position.Y - (int)(up * pixelsToMove);
-        y += (int)(down * pixelsToMove);
-
-        if (x < 10)
-        {
-            x = 10;
-        }
-
-        if (y < 24)
-        {
-            y = 24;
-        }
-
-        if (x > width - 10)
-        {
-            x = width - 10;
-        }
-
-        if (y > height - 6)
-        {
-            y = height - 6;
-        }
-
-        if (y < Position.Y && _currentAnimation != "MoveUp"){
-            _currentAnimation = "MoveUp";
-            //Console.WriteLine($"Attempt to switch to {_currentAnimation}");
-        }
-        if (y > Position.Y && _currentAnimation != "MoveDown"){
-            _currentAnimation = "MoveDown";
-            //Console.WriteLine($"Attempt to switch to {_currentAnimation}");
-        }
-        if (x > Position.X && _currentAnimation != "MoveRight"){
-            _currentAnimation = "MoveRight";
-            //Console.WriteLine($"Attempt to switch to {_currentAnimation}");
-        }
-        if (x < Position.X && _currentAnimation != "MoveLeft"){
-            _currentAnimation = "MoveLeft";
-            //Console.WriteLine($"Attempt to switch to {_currentAnimation}");
-        }
-        if (x == Position.X && _currentAnimation != "IdleDown" &&
-            y == Position.Y && _currentAnimation != "IdleDown"){
-            _currentAnimation = "IdleDown";
-            //Console.WriteLine($"Attempt to switch to {_currentAnimation}");
-        }
-
-        //Console.WriteLine($"Will to switch to {_currentAnimation}");
-        SpriteSheet.ActivateAnimation(_currentAnimation);
-        Position = (x, y);
+        Position = newPosition;
     }
+
+    public void IncreaseSpeed(double factor)
+    {
+        // Increase speed based on the factor that is provided in the code, my case = 3.0 (tripled it, for the player to run)
+        _currentSpeed = _baseSpeed * factor;
+    }
+
+    public void ResetSpeed()
+    {
+        // Reset the speed for when Tab is released
+        _currentSpeed = _baseSpeed;
+    }
+
 }

@@ -73,15 +73,6 @@ namespace TheAdventure
             }
 
             _currentLevel = level;
-            /*SpriteSheet spriteSheet = new(_renderer, Path.Combine("Assets", "player.png"), 10, 6, 48, 48, new FrameOffset() { OffsetX = 24, OffsetY = 42 });
-            spriteSheet.Animations["IdleDown"] = new SpriteSheet.Animation()
-            {
-                StartFrame = new FramePosition(),//(0, 0),
-                EndFrame = new FramePosition() { Row = 0, Col = 5 },
-                DurationMs = 1000,
-                Loop = true
-            };
-            */
             var spriteSheet = SpriteSheet.LoadSpriteSheet("player.json", "Assets", _renderer);
             if (spriteSheet != null)
             {
@@ -101,12 +92,28 @@ namespace TheAdventure
             bool down = _input.IsDownPressed();
             bool left = _input.IsLeftPressed();
             bool right = _input.IsRightPressed();
+
             // Adding a new variable to check if SpaceBar is pressed
             bool IsSpaceBar = _input.IsSpaceBarPressed();
+
+            // Adding a new variable to check if Tab is pressed
+            bool IsTab = _input.IsTabPressed();
+
             if (IsSpaceBar)
             {
                 AddSmokeEffect(_player.Position.X, _player.Position.Y, true);
                 //PlaySmokeSound();
+            }
+
+            // Check if Tab is pressed, if so, triple the speed to make the player run
+            if (IsTab)
+            {
+                _player.IncreaseSpeed(3.0);
+            }
+            else
+            {
+                // Otherwise, reset speed at the default value
+                _player.ResetSpeed();
             }
 
             _player.UpdatePlayerPosition(up ? 1.0 : 0.0, down ? 1.0 : 0.0, left ? 1.0 : 0.0, right ? 1.0 : 0.0,
@@ -213,14 +220,6 @@ namespace TheAdventure
         private void AddBomb(int x, int y)
         {
             var translated = _renderer.TranslateFromScreenToWorldCoordinates(x, y);
-            /*SpriteSheet spriteSheet = new(_renderer, "BombExploding.png", 1, 13, 32, 64, (16, 48));
-            spriteSheet.Animations["Explode"] = new SpriteSheet.Animation()
-            {
-                StartFrame = (0, 0),
-                EndFrame = (0, 12),
-                DurationMs = 2000,
-                Loop = false
-            };*/
             var spriteSheet = SpriteSheet.LoadSpriteSheet("bomb.json", "Assets", _renderer);
             if (spriteSheet != null)
             {
@@ -263,7 +262,7 @@ namespace TheAdventure
 
         }
 
-       private void PlaySmokeSound()
+        private void PlaySmokeSound()
         {
             // Set the source of the sound output
             _soundOut.Initialize(_soundSource);
