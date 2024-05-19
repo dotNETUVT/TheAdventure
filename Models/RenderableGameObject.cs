@@ -9,7 +9,7 @@ public class RenderableGameObject : GameObject
     public (int X, int Y) Position { get; set; }
     public double Angle { get; set; }
     public Point RotationCenter { get; set; }
-
+    
     public RenderableGameObject(SpriteSheet spriteSheet, (int X, int Y) position, double angle = 0.0, Point rotationCenter = new())
         : base()
     {

@@ -9,11 +9,13 @@ namespace TheAdventure
 {
     public class Engine
     {
+        private const int MaxEnemies = 10;
         private readonly Dictionary<int, GameObject> _gameObjects = new();
         private readonly Dictionary<string, TileSet> _loadedTileSets = new();
 
         private Level? _currentLevel;
         private PlayerObject _player;
+        private EnemyObject _enemy;
         private GameRenderer _renderer;
         private Input _input;
         private ScriptEngine _scriptEngine;
@@ -82,8 +84,23 @@ namespace TheAdventure
             }
             _renderer.SetWorldBounds(new Rectangle<int>(0, 0, _currentLevel.Width * _currentLevel.TileWidth,
                 _currentLevel.Height * _currentLevel.TileHeight));
-        }
+            InitializeEnemies();
 
+        }
+        private void InitializeEnemies()
+        {
+            var enemySpriteSheet = SpriteSheet.LoadSpriteSheet("enemy.json", "Assets", _renderer);
+            if (enemySpriteSheet != null)
+            {
+                for (int i = 0; i < MaxEnemies; i++)
+                {
+                    int spawnX = i * 20;
+                        int spawnY = 0;
+                        EnemyObject enemy = new(enemySpriteSheet, spawnX, spawnY);
+                    _gameObjects.Add(enemy.Id, enemy);
+                }
+            }
+        }
         public void ProcessFrame()
         {
             var currentTime = DateTimeOffset.Now;
@@ -140,8 +157,18 @@ namespace TheAdventure
                 }
                 _gameObjects.Remove(gameObjectId);
             }
+            UpdateEnemies(secsSinceLastFrame);
         }
-
+        private void UpdateEnemies(double secsSinceLastFrame)
+        {
+            foreach (var gameObject in _gameObjects.Values)
+            {
+                if (gameObject is EnemyObject enemy)
+                {
+                    enemy.UpdateEnemyPosition(_player.Position.X, _player.Position.Y, secsSinceLastFrame);
+                }
+            }
+        }
         public void RenderFrame()
         {
             _renderer.SetDrawColor(0, 0, 0, 255);
@@ -151,7 +178,6 @@ namespace TheAdventure
 
             RenderTerrain();
             RenderAllObjects();
-
             _renderer.PresentFrame();
         }
 
@@ -225,7 +251,13 @@ namespace TheAdventure
             {
                 gameObject.Render(_renderer);
             }
-
+            foreach (var gameObject in _gameObjects.Values)
+            {
+                if (gameObject is EnemyObject enemy)
+                {
+                    enemy.Render(_renderer);
+                }
+            }
             _player.Render(_renderer);
         }
 
