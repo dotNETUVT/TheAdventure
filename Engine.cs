@@ -46,6 +46,15 @@ namespace TheAdventure
             var levelContent = File.ReadAllText(Path.Combine("Assets", "terrain.tmj"));
 
             var level = JsonSerializer.Deserialize<Level>(levelContent, jsonSerializerOptions);
+
+            Random random = new Random();
+
+            for (int i = 0; i < level.Layers[0].Data.Length; i++)
+            {
+                level.Layers[0].Data[i] = random.Next(1, 5);
+
+            }
+
             if (level == null) return;
             foreach (var refTileSet in level.TileSets)
             {
