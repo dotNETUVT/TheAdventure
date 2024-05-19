@@ -87,6 +87,13 @@ public unsafe class GameRenderer
     {
         _sdl.SetRenderDrawColor(_renderer, r, g, b, a);
     }
+    public void RenderRectangle(int x, int y, int width, int height)
+    {
+
+        var rect = new Rectangle<int>(x, y, width, height);
+        _sdl.RenderFillRect(_renderer, ref rect);
+    }
+
 
     public void ClearScreen()
     {
