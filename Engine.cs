@@ -18,6 +18,7 @@ namespace TheAdventure
 
         private DateTimeOffset _lastUpdate = DateTimeOffset.Now;
         private DateTimeOffset _lastPlayerUpdate = DateTimeOffset.Now;
+        private Soundtrack _backgroundMusic;
 
         public Engine(GameRenderer renderer, Input input)
         {
@@ -25,6 +26,8 @@ namespace TheAdventure
             _input = input;
 
             _input.OnMouseClick += (_, coords) => AddBomb(coords.x, coords.y);
+            _backgroundMusic = new Soundtrack(Path.Combine("Assets/soundtrack.mp3"));
+            _backgroundMusic.Play();
         }
 
         public void InitializeWorld()
@@ -83,6 +86,7 @@ namespace TheAdventure
             bool right = _input.IsRightPressed();
             bool isAttacking = _input.IsKeyAPressed();
             bool addBomb = _input.IsKeyBPressed();
+            
 
             if(isAttacking)
             {
@@ -102,6 +106,10 @@ namespace TheAdventure
                 _player.UpdatePlayerPosition(up ? 1.0 : 0.0, down ? 1.0 : 0.0, left ? 1.0 : 0.0, right ? 1.0 : 0.0,
                     _currentLevel.Width * _currentLevel.TileWidth, _currentLevel.Height * _currentLevel.TileHeight,
                     secsSinceLastFrame);
+            }
+            if (_input.IsPKeyPressed())
+            {
+                _backgroundMusic.TogglePlayPause();
             }
             var itemsToRemove = new List<int>();
             itemsToRemove.AddRange(GetAllTemporaryGameObjects().Where(gameObject => gameObject.IsExpired)

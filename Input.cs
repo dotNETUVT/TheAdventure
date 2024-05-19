@@ -18,6 +18,11 @@ namespace TheAdventure
             _gameWindow = window;
             _renderer = renderer;
         }
+        public bool IsPKeyPressed()
+        {
+            ReadOnlySpan<byte> _keyboardState = new(_sdl.GetKeyboardState(null), (int)KeyCode.Count);
+            return _keyboardState[(int)KeyCode.P] == 1;
+        }
 
         public bool IsKeyAPressed(){
             ReadOnlySpan<byte> _keyboardState = new(_sdl.GetKeyboardState(null), (int)KeyCode.Count);
