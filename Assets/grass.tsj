@@ -8,49 +8,37 @@
  "margin":0,
  "name":"Grass",
  "spacing":0,
- "tilecount":7,
+ "tilecount":5,
  "tiledversion":"1.10.2",
  "tileheight":64,
  "tiles":[
         {
          "id":0,
-         "image":"grass_003.png",
-         "imageheight":16,
-         "imagewidth":16
-        }, 
-        {
-         "id":1,
-         "image":"grass_001.png",
-         "imageheight":16,
-         "imagewidth":16
-        }, 
-        {
-         "id":2,
-         "image":"grass_002.png",
-         "imageheight":16,
-         "imagewidth":16
-        }, 
-        {
-         "id":3,
-         "image":"tree.png",
-         "imageheight":64,
-         "imagewidth":64
-        }, 
-        {
-         "id":4,
-         "image":"Rock2_grass_shadow2.png",
-         "imageheight":64,
-         "imagewidth":64
-        }, 
-        {
-         "id":5,
          "image":"grass_004.png",
          "imageheight":16,
          "imagewidth":16
         }, 
         {
-         "id":6,
-         "image":"dirt.png",
+         "id":1,
+         "image":"tree.png",
+         "imageheight":64,
+         "imagewidth":64
+        }, 
+        {
+         "id":2,
+         "image":"grass_001.png",
+         "imageheight":16,
+         "imagewidth":16
+        }, 
+        {
+         "id":3,
+         "image":"grass_002.png",
+         "imageheight":16,
+         "imagewidth":16
+        }, 
+        {
+         "id":4,
+         "image":"grass_003.png",
          "imageheight":16,
          "imagewidth":16
         }],
