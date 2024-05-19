@@ -1,0 +1,25 @@
+{
+  "FileName": "wall.png",
+  "RowCount": 1,
+  "ColumnCount": 1,
+  "FrameWidth": 32,
+  "FrameHeight": 16,
+  "FrameCenter": {
+    "OffsetX": 16,
+    "OffsetY": 8
+  },
+  "Animations": {
+    "Idle": {
+      "StartFrame": {
+        "Row": 0,
+        "Col": 0
+      },
+      "EndFrame": {
+        "Row": 0,
+        "Col": 0
+      },
+      "DurationMs": 1000,
+      "Loop": true
+    }
+  }
+}
