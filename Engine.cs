@@ -20,12 +20,15 @@ namespace TheAdventure
 
         private DateTimeOffset _lastUpdate = DateTimeOffset.Now;
         private DateTimeOffset _lastPlayerUpdate = DateTimeOffset.Now;
+
+        private bool _gameOver;
         public Engine(GameRenderer renderer, Input input)
         {
             _renderer = renderer;
             _input = input;
             _scriptEngine = new ScriptEngine();
             _input.OnMouseClick += (_, coords) => AddBomb(coords.x, coords.y);
+            _input.OnRestartRequested += RestartGame;
         }
 
         public void WriteToConsole(string message){
@@ -136,6 +139,7 @@ namespace TheAdventure
                     var deltaY = Math.Abs(_player.Position.Y - tempObject.Position.Y);
                     if(deltaX < 32 && deltaY < 32){
                         _player.GameOver();
+                        _gameOver = true;
                     }
                 }
                 _gameObjects.Remove(gameObjectId);
@@ -151,8 +155,14 @@ namespace TheAdventure
 
             RenderTerrain();
             RenderAllObjects();
+            _renderer.RenderRestart();
 
             _renderer.PresentFrame();
+        }
+        private void RestartGame()
+        {
+            _gameOver = false;
+            InitializeWorld();
         }
 
         private Tile? GetTile(int id)
