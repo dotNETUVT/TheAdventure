@@ -30,6 +30,9 @@ namespace TheAdventure
 
         private int _playerDeaths = 0;
 
+        private int _score = 0;
+        private int _bombsAvoided = 0;
+
         
         
 
@@ -113,6 +116,7 @@ namespace TheAdventure
             bool right = _input.IsRightPressed();
             bool isAttacking = _input.IsKeyAPressed();
             bool addBomb = _input.IsKeyBPressed();
+            bool speed = _input.IsKeyXPressed();
 
             _scriptEngine.ExecuteAll(this);
 
@@ -156,7 +160,17 @@ namespace TheAdventure
 
             if (addBomb)
             {
-                AddBomb(_player.Position.X, _player.Position.Y, false);
+                bool bombAvoided = true;
+                if(bombAvoided)
+                {
+                    AddBomb(_player.Position.X, _player.Position.Y, false);
+                    _bombsAvoided++; 
+                    _score += 10;
+                }
+            }
+
+            if(speed) {
+                _player.IncreaseSpeed();
             }
 
             foreach (var gameObjectId in itemsToRemove)
@@ -166,7 +180,14 @@ namespace TheAdventure
                     var tempObject = (TemporaryGameObject)gameObject;
                     var deltaX = Math.Abs(_player.Position.X - tempObject.Position.X);
                     var deltaY = Math.Abs(_player.Position.Y - tempObject.Position.Y);
-                    if (deltaX < 32 && deltaY < 32)
+
+                    bool bombAvoided = deltaX > 32 || deltaY > 32;
+
+                    if(bombAvoided)
+                    {
+                        _score += 10;
+                        Console.WriteLine($"Score: {_score}");
+                    }else 
                     {
                         _player.LoseLife(_renderer);
                         if (_player.IsDead)
@@ -186,6 +207,7 @@ namespace TheAdventure
                 }
                 _gameObjects.Remove(gameObjectId);
             }
+            
         }
 
         public void RenderFrame()

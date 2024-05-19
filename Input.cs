@@ -1,4 +1,8 @@
 using Silk.NET.SDL;
+using TheAdventure.Models;
+
+
+
 
 namespace TheAdventure
 {
@@ -7,6 +11,8 @@ namespace TheAdventure
         private Sdl _sdl;
         private GameWindow _gameWindow;
         private GameRenderer _renderer;
+
+        private PlayerObject player;
         
         byte[] _mouseButtonStates = new byte[(int)MouseButton.Count];
         
@@ -52,6 +58,13 @@ namespace TheAdventure
             ReadOnlySpan<byte> _keyboardState = new(_sdl.GetKeyboardState(null), (int)KeyCode.Count);
             return _keyboardState[(int)KeyCode.Down] == 1;
         }
+
+        public bool IsKeyXPressed()
+        {
+            ReadOnlySpan<byte> keyboardState = new(_sdl.GetKeyboardState(null), (int)KeyCode.Count);
+            return keyboardState[(int)KeyCode.X] == 1;
+        }
+
         
         public bool ProcessInput()
         {
@@ -180,7 +193,7 @@ namespace TheAdventure
 
                     case (uint)EventType.Keydown:
                     {
-                        break;
+                                            break;
                     }
                 }
             }

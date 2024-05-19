@@ -27,6 +27,10 @@ public class PlayerObject : RenderableGameObject
     public bool IsDead => Lives <= 0;
     public event EventHandler<int> LifeLost;
 
+    private const int DefaultPixelsPerSecond = 192;
+    private const int IncreasedSpeedPixelsPerSecond = 300; // Define increased speed
+
+    private int _currentPixelsPerSecond = DefaultPixelsPerSecond; 
 
     public (PlayerState State, PlayerStateDirection Direction) State{ get; private set; }
 
@@ -89,6 +93,17 @@ public class PlayerObject : RenderableGameObject
     public void GameOver(){
             SetState(PlayerState.GameOver, PlayerStateDirection.None);
     }
+
+   public void IncreaseSpeed()
+    {
+        _pixelsPerSecond += 10; 
+    }
+
+
+    public void ResetSpeed()
+        {
+            _currentPixelsPerSecond = DefaultPixelsPerSecond; 
+        }
 
     public void Attack(bool up, bool down, bool left, bool right)
     {

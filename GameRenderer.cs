@@ -104,12 +104,6 @@ public unsafe class GameRenderer
         _sdl.RenderPresent(_renderer);
     }
 
-    public void LoadEmojiTexture()
-    {
-    _emojiTextureId = LoadTexture("path/to/your/emoji.png", out _);
-
-
-    }
 
    public void RenderEmoji(int x, int y)
     {
