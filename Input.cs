@@ -7,7 +7,7 @@ namespace TheAdventure
         private Sdl _sdl;
         private GameWindow _gameWindow;
         private GameRenderer _renderer;
-        
+        public event EventHandler<char> OnKeyPress;
         byte[] _mouseButtonStates = new byte[(int)MouseButton.Count];
         
         public EventHandler<(int x, int y)> OnMouseClick;
@@ -23,7 +23,52 @@ namespace TheAdventure
             ReadOnlySpan<byte> _keyboardState = new(_sdl.GetKeyboardState(null), (int)KeyCode.Count);
             return _keyboardState[(int)KeyCode.A] == 1;
         }
+        public bool IsKeyRPressed()
+        {
+            ReadOnlySpan<byte> _keyboardState = new(_sdl.GetKeyboardState(null), (int)KeyCode.Count);
+            return _keyboardState[(int)KeyCode.R] == 1;
+        }
+        public bool IsKeyWPressed()
+        {
+            ReadOnlySpan<byte> _keyboardState = new(_sdl.GetKeyboardState(null), (int)KeyCode.Count);
+            return _keyboardState[(int)KeyCode.W] == 1;
+        }
+        public bool IsKeyDPressed()
+        {
+            ReadOnlySpan<byte> _keyboardState = new(_sdl.GetKeyboardState(null), (int)KeyCode.Count);
+            return _keyboardState[(int)KeyCode.D] == 1;
+        }
+        public bool IsKeySPressed()
+        {
+            ReadOnlySpan<byte> _keyboardState = new(_sdl.GetKeyboardState(null), (int)KeyCode.Count);
+            return _keyboardState[(int)KeyCode.S] == 1;
+        }
+        public bool IsKeyJPressed()
+        {
+            ReadOnlySpan<byte> _keyboardState = new(_sdl.GetKeyboardState(null), (int)KeyCode.Count);
+            return _keyboardState[(int)KeyCode.J] == 1;
+        }
+        public bool IsKeySpacePressed()
+        {
+            ReadOnlySpan<byte> _keyboardState = new(_sdl.GetKeyboardState(null), (int)KeyCode.Count);
+            return _keyboardState[(int)KeyCode.Space] == 1;
+        }
+        public bool IsKeyMPressed()
+        {
+            ReadOnlySpan<byte> _keyboardState = new(_sdl.GetKeyboardState(null), (int)KeyCode.Count);
+            return _keyboardState[(int)KeyCode.M] == 1;
+        }
+        public bool IsKeyQPressed()
+        {
+            ReadOnlySpan<byte> _keyboardState = new(_sdl.GetKeyboardState(null), (int)KeyCode.Count);
+            return _keyboardState[(int)KeyCode.Q] == 1;
+        }
 
+        public bool IsKeyPPressed()
+        {
+            ReadOnlySpan<byte> _keyboardState = new(_sdl.GetKeyboardState(null), (int)KeyCode.Count);
+            return _keyboardState[(int)KeyCode.P] == 1;
+        }
         public bool IsKeyBPressed(){
             ReadOnlySpan<byte> _keyboardState = new(_sdl.GetKeyboardState(null), (int)KeyCode.Count);
             return _keyboardState[(int)KeyCode.B] == 1;
@@ -175,7 +220,8 @@ namespace TheAdventure
 
                     case (uint)EventType.Keyup:
                     {
-                        break;
+                            OnKeyPress?.Invoke(this, (char)ev.Key.Keysym.Sym);
+                            break;
                     }
 
                     case (uint)EventType.Keydown:

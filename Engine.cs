@@ -4,6 +4,7 @@ using Silk.NET.Maths;
 using Silk.NET.SDL;
 using TheAdventure.Models;
 using TheAdventure.Models.Data;
+using NAudio.Wave;
 
 namespace TheAdventure
 {
@@ -16,8 +17,14 @@ namespace TheAdventure
         private PlayerObject _player;
         private GameRenderer _renderer;
         private Input _input;
+      
         private ScriptEngine _scriptEngine;
 
+
+
+     
+
+        private Audio audio;
         private DateTimeOffset _lastUpdate = DateTimeOffset.Now;
         private DateTimeOffset _lastPlayerUpdate = DateTimeOffset.Now;
         public Engine(GameRenderer renderer, Input input)
@@ -26,7 +33,13 @@ namespace TheAdventure
             _input = input;
             _scriptEngine = new ScriptEngine();
             _input.OnMouseClick += (_, coords) => AddBomb(coords.x, coords.y);
+            
         }
+     
+
+
+
+     
 
         public void WriteToConsole(string message){
             Console.WriteLine(message);
@@ -36,7 +49,7 @@ namespace TheAdventure
             var pos = _player.Position;
             return (pos.X, pos.Y);
         }
-
+ 
         public void InitializeWorld()
         {
             var executableLocation = new FileInfo(Assembly.GetExecutingAssembly().Location);
@@ -64,6 +77,9 @@ namespace TheAdventure
                 }
 
                 refTileSet.Set = tileSet;
+                audio = new Audio();
+                audio.LoadBackgroundMusic("Assets/background.mp3");
+                audio.PlayBackgroundMusic();
             }
 
             _currentLevel = level;
@@ -76,8 +92,11 @@ namespace TheAdventure
                 Loop = true
             };
             */
+ 
             var spriteSheet = SpriteSheet.LoadSpriteSheet("player.json", "Assets", _renderer);
-            if(spriteSheet != null){
+      
+        
+            if (spriteSheet != null){
                 _player = new PlayerObject(spriteSheet, 100, 100);
             }
             _renderer.SetWorldBounds(new Rectangle<int>(0, 0, _currentLevel.Width * _currentLevel.TileWidth,
@@ -86,19 +105,45 @@ namespace TheAdventure
 
         public void ProcessFrame()
         {
-            var currentTime = DateTimeOffset.Now;
+
+         DateTimeOffset _lastPauseToggle = DateTimeOffset.MinValue;
+        var currentTime = DateTimeOffset.Now;
             var secsSinceLastFrame = (currentTime - _lastUpdate).TotalSeconds;
             _lastUpdate = currentTime;
-
-            bool up = _input.IsUpPressed();
-            bool down = _input.IsDownPressed();
-            bool left = _input.IsLeftPressed();
-            bool right = _input.IsRightPressed();
-            bool isAttacking = _input.IsKeyAPressed();
+         
+            bool up = _input.IsUpPressed() || _input.IsKeyWPressed();
+            bool down = _input.IsDownPressed() || _input.IsKeySPressed();
+            bool left = _input.IsLeftPressed() || _input.IsKeyAPressed();
+            bool right = _input.IsRightPressed() || _input.IsKeyDPressed();
+            bool isAttacking = _input.IsKeyJPressed();
             bool addBomb = _input.IsKeyBPressed();
+            bool restart = _input.IsKeyRPressed();
+            bool quit = _input.IsKeyQPressed();
+            bool sprint = _input.IsKeySpacePressed();
+            bool music = _input.IsKeyMPressed();
+
+            if (music)
+            {
+                audio.ResumeBackgroundMusic ();
+            }
+         
+
+
 
             _scriptEngine.ExecuteAll(this);
 
+            if (restart)
+            {
+               audio.StopBackgroundMusic();
+                InitializeWorld();
+
+            }
+            if(quit)
+            {
+                audio.StopBackgroundMusic();
+                
+                Environment.Exit(0);
+            }
             if(isAttacking)
             {
                 var dir = up ? 1: 0;
@@ -114,9 +159,18 @@ namespace TheAdventure
             }
             if(!isAttacking)
             {
-                _player.UpdatePlayerPosition(up ? 1.0 : 0.0, down ? 1.0 : 0.0, left ? 1.0 : 0.0, right ? 1.0 : 0.0,
-                    _currentLevel.Width * _currentLevel.TileWidth, _currentLevel.Height * _currentLevel.TileHeight,
-                    secsSinceLastFrame);
+                if (sprint)
+                {
+                    _player.UpdatePlayerPosition(up ? 3.0 : 0.0, down ? 3.0 : 0.0, left ? 3.0 : 0.0, right ? 3.0 : 0.0,
+                       _currentLevel.Width * _currentLevel.TileWidth, _currentLevel.Height * _currentLevel.TileHeight,
+                       secsSinceLastFrame);
+                }
+                else
+                {
+                    _player.UpdatePlayerPosition(up ? 1.0 : 0.0, down ? 1.0 : 0.0, left ? 1.0 : 0.0, right ? 1.0 : 0.0,
+                        _currentLevel.Width * _currentLevel.TileWidth, _currentLevel.Height * _currentLevel.TileHeight,
+                        secsSinceLastFrame);
+                }
             }
             var itemsToRemove = new List<int>();
             itemsToRemove.AddRange(GetAllTemporaryGameObjects().Where(gameObject => gameObject.IsExpired)
@@ -125,6 +179,7 @@ namespace TheAdventure
             if (addBomb)
             {
                 AddBomb(_player.Position.X, _player.Position.Y, false);
+        
             }
 
             foreach (var gameObjectId in itemsToRemove)
@@ -144,6 +199,7 @@ namespace TheAdventure
 
         public void RenderFrame()
         {
+         
             _renderer.SetDrawColor(0, 0, 0, 255);
             _renderer.ClearScreen();
             

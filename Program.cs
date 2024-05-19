@@ -25,13 +25,17 @@ public static class Program
             engine.InitializeWorld();
 
             bool quit = false;
+          
             while (!quit)
             {
                 quit = input.ProcessInput();
                 if (quit) break;
+
                 
-                engine.ProcessFrame();
-                engine.RenderFrame();
+                    engine.ProcessFrame();
+                    engine.RenderFrame();
+                
+                
             }
         }
 
