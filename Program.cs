@@ -16,7 +16,7 @@ public static class Program
             throw new InvalidOperationException("Failed to initialize SDL.");
         }
 
-        using (var window = new GameWindow(sdl, 800, 480))
+        using (var window = new GameWindow(sdl, 800, 680))
         {
             var renderer = new GameRenderer(sdl, window);
             var input = new Input(sdl, window, renderer);

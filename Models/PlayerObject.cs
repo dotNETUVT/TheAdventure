@@ -134,9 +134,10 @@ public class PlayerObject : RenderableGameObject
             x = 10;
         }
 
-        if (y < 24)
+        const int skyHeight = 300;
+        if (y < skyHeight + 24)
         {
-            y = 24;
+            y = skyHeight + 24;
         }
 
         if (x > width - 10)

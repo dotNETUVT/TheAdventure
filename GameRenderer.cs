@@ -18,6 +18,11 @@ public unsafe class GameRenderer
     private Dictionary<int, TextureInfo> _textureData = new();
     private int _textureId;
     
+    private int _skyTextureId = -1;
+    private TextureInfo _skyTextureInfo;
+    
+    private Level? _currentLevel;
+    
     private bool _cinematicCircleClosing = false;
     private bool _cinematicCircleOpening = false;
     private DateTimeOffset _cinematicStartTime;
@@ -70,6 +75,67 @@ public unsafe class GameRenderer
         }
 
         return _textureId++;
+    }
+
+    public void LoadSkyTexture(string fileName)
+    {
+        _skyTextureId = LoadTexture(fileName, out _skyTextureInfo);
+    }
+
+    public void RenderSky(int height)
+    {
+        if (_skyTextureId != -1)
+        {
+            var src = new Rectangle<int>(0, 0, _skyTextureInfo.Width, _skyTextureInfo.Height);
+            var dst = new Rectangle<int>(0, 0, _window.Size.Width, height);
+            _sdl.RenderCopy(_renderer, (Texture*)_textures[_skyTextureId], src, dst);
+        }
+    }
+    
+    public void SetCurrentLevel(Level level)
+    {
+        _currentLevel = level;
+    }
+    
+    public void RenderTerrainShifted(int shiftY)
+    {
+        if (_currentLevel == null) return;
+        for (var layer = 0; layer < _currentLevel.Layers.Length; ++layer)
+        {
+            var cLayer = _currentLevel.Layers[layer];
+
+            for (var i = 0; i < _currentLevel.Width; ++i)
+            {
+                for (var j = 0; j < _currentLevel.Height; ++j)
+                {
+                    var cTileId = cLayer.Data[j * cLayer.Width + i] - 1;
+                    var cTile = GetTile(cTileId);
+                    if (cTile == null) continue;
+
+                    var src = new Rectangle<int>(0, 0, cTile.ImageWidth, cTile.ImageHeight);
+                    var dst = new Rectangle<int>(i * cTile.ImageWidth, j * cTile.ImageHeight + shiftY, cTile.ImageWidth, cTile.ImageHeight);
+
+                    RenderTexture(cTile.InternalTextureId, src, dst);
+                }
+            }
+        }
+    }
+
+    private Tile? GetTile(int id)
+    {
+        if (_currentLevel == null) return null;
+        foreach (var tileSet in _currentLevel.TileSets)
+        {
+            foreach (var tile in tileSet.Set.Tiles)
+            {
+                if (tile.Id == id)
+                {
+                    return tile;
+                }
+            }
+        }
+
+        return null;
     }
 
     public void RenderTexture(int textureId, Rectangle<int> src, Rectangle<int> dst,
