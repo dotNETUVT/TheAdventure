@@ -67,10 +67,11 @@ public class SpriteSheet
         LoadTexture(renderer);
     }
 
-    public void ActivateAnimation(string name)
+    public void ActivateAnimation(string? name)
     {
         if(name == null){
             ActiveAnimation = null;
+            return;
         }
         if (!Animations.TryGetValue(name, out var animation)) return;
         ActiveAnimation = animation;

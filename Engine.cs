@@ -149,8 +149,9 @@ namespace TheAdventure
                     var tempObject = (Coin)gameObject;
                     var deltaX = Math.Abs(_player.Position.X - tempObject.Position.X);
                     var deltaY = Math.Abs(_player.Position.Y - tempObject.Position.Y);
-                    if(deltaX < 32 && deltaY < 32){
+                    if(deltaX < 10 && deltaY < 10){
                         ((Coin)gameObject).SetState(true);
+                        _gameObjects.Remove(id);
                     }else
                         ((Coin)gameObject).SetState(false);
                 }

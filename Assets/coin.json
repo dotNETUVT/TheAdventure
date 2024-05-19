@@ -5,7 +5,7 @@
   "frameHeight": 16,
   "frameCenter": {
     "offsetX": 8,
-    "offsetY": 0
+    "offsetY": 8
   },
   "fileName": "coin.png",
   "animations": {

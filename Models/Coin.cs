@@ -24,14 +24,18 @@ public class Coin : TemporaryGameObject
         if (playerCollision)
         {
             State = CoinState.Collected;
-            
+            SpriteSheet.ActivateAnimation(null);
             return;
         }
-        if ((DateTimeOffset.Now - _spawnTime).TotalSeconds >= Ttl-0.3)
+
+        if ((DateTimeOffset.Now - _spawnTime).TotalSeconds >= Ttl - 0.3)
         {
             State = CoinState.Fading;
-            SpriteSheet.ActivateAnimation("Fading");
+            SpriteSheet.Animations.TryGetValue("Spinning", out var animation);
+            if (SpriteSheet.ActiveAnimation == animation)
+                SpriteSheet.ActivateAnimation("Fading");
         }
+
         if (IsExpired)
         {
             State = CoinState.Faded;
