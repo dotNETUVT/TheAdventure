@@ -1,0 +1,25 @@
+{
+  "rowCount": 6,
+  "columnCount": 1,
+  "frameWidth": 48,
+  "frameHeight": 48,
+  "frameCenter": {
+    "offsetX": 24,
+    "offsetY": 42
+  },
+  "fileName": "Idle.png",
+  "animations": {
+    "Idle": {
+      "startFrame": {
+        "row": 0,
+        "col": 0
+      },
+      "endFrame": {
+        "row": 5,
+        "col": 0
+      },
+      "durationMs": 700,
+      "loop": true
+    }
+  }
+}

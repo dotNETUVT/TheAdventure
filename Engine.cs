@@ -13,6 +13,7 @@ namespace TheAdventure
 
         private Level? _currentLevel;
         private PlayerObject _player;
+        private Ally _ally;
         private GameRenderer _renderer;
         private Input _input;
 
@@ -64,11 +65,34 @@ namespace TheAdventure
             };
             */
             var spriteSheet = SpriteSheet.LoadSpriteSheet("player.json", "Assets", _renderer);
-            if(spriteSheet != null){
+            if (spriteSheet != null)
+            {
                 _player = new PlayerObject(spriteSheet, 100, 100);
+            }
+            
+            // Initialize ally
+            var allySpriteSheet = SpriteSheet.LoadSpriteSheet("ally.json", "Assets", _renderer);
+            if (allySpriteSheet != null)
+            {
+                _ally = new Ally(allySpriteSheet, _player, 80, 80); // Initialize ally close to the player
+            }
+
+            // Initialize enemies
+            var enemySpriteSheet = SpriteSheet.LoadSpriteSheet("enemy.json", "Assets", _renderer);
+            if (enemySpriteSheet != null)
+            {
+                // Add a few stationary enemies for example
+                AddEnemy(enemySpriteSheet, 200, 200);
+                AddEnemy(enemySpriteSheet, 300, 400);
             }
             _renderer.SetWorldBounds(new Rectangle<int>(0, 0, _currentLevel.Width * _currentLevel.TileWidth,
                 _currentLevel.Height * _currentLevel.TileHeight));
+        }
+        
+        private void AddEnemy(SpriteSheet spriteSheet, int x, int y)
+        {
+            var enemy = new EnemyObject(spriteSheet, x, y);
+            _gameObjects.Add(enemy.Id, enemy);
         }
 
         public void ProcessFrame()
@@ -103,6 +127,9 @@ namespace TheAdventure
                     _currentLevel.Width * _currentLevel.TileWidth, _currentLevel.Height * _currentLevel.TileHeight,
                     secsSinceLastFrame);
             }
+            
+            _ally.Update(); // Update ally position each frame
+            
             var itemsToRemove = new List<int>();
             itemsToRemove.AddRange(GetAllTemporaryGameObjects().Where(gameObject => gameObject.IsExpired)
                 .Select(gameObject => gameObject.Id).ToList());
@@ -212,6 +239,7 @@ namespace TheAdventure
             }
 
             _player.Render(_renderer);
+            _ally.Render(_renderer);
         }
 
         private void AddBomb(int x, int y, bool translateCoordinates = true)
