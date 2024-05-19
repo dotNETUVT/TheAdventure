@@ -19,15 +19,24 @@ namespace TheAdventure
         private Input _input;
         private ScriptEngine _scriptEngine;
         private bool _bombAddedRecently = false;
+        private bool _projectileAddedRecently = false;
 
         private DateTimeOffset _lastUpdate = DateTimeOffset.Now;
         private DateTimeOffset _lastPlayerUpdate = DateTimeOffset.Now;
+
+        private int _knifeTextureId;
+        private int _knifeWidth;
+        private int _knifeHeight;
+
         public Engine(GameRenderer renderer, Input input)
         {
             _renderer = renderer;
             _input = input;
             _scriptEngine = new ScriptEngine();
             _input.OnMouseClick += (_, coords) => AddBomb(coords.x, coords.y, true);
+            _knifeTextureId = _renderer.LoadTexture("Assets/Knife.png", out var size);
+            _knifeWidth = size.Width;
+            _knifeHeight = size.Height;
         }
 
         public void WriteToConsole(string message)
@@ -71,22 +80,13 @@ namespace TheAdventure
             }
 
             _currentLevel = level;
-            /*SpriteSheet spriteSheet = new(_renderer, Path.Combine("Assets", "player.png"), 10, 6, 48, 48, new FrameOffset() { OffsetX = 24, OffsetY = 42 });
-            spriteSheet.Animations["IdleDown"] = new SpriteSheet.Animation()
-            {
-                StartFrame = new FramePosition(),//(0, 0),
-                EndFrame = new FramePosition() { Row = 0, Col = 5 },
-                DurationMs = 1000,
-                Loop = true
-            };
-            */
+
             var spriteSheet = SpriteSheet.LoadSpriteSheet("player.json", "Assets", _renderer);
             if (spriteSheet != null)
             {
-                _player = new PlayerObject(spriteSheet, 100, 100);
+                _player = new PlayerObject(spriteSheet, 100, 100, this);
             }
-            _renderer.SetWorldBounds(new Rectangle<int>(0, 0, _currentLevel.Width * _currentLevel.TileWidth,
-                _currentLevel.Height * _currentLevel.TileHeight));
+            _renderer.SetWorldBounds(new Rectangle<int>(0, 0, _currentLevel.Width * _currentLevel.TileWidth, _currentLevel.Height * _currentLevel.TileHeight));
         }
 
         public void ProcessFrame()
@@ -100,9 +100,12 @@ namespace TheAdventure
             bool left = _input.IsLeftPressed();
             bool right = _input.IsRightPressed();
             bool isAttacking = _input.IsKeyAPressed();
+            bool launchProjectile = _input.IsKeyCPressed(); // Assign a key for launching projectiles
             bool addBomb = _input.IsKeyBPressed();
 
             _scriptEngine.ExecuteAll(this);
+
+            UpdateProjectiles(secsSinceLastFrame);
 
             if (isAttacking)
             {
@@ -119,6 +122,13 @@ namespace TheAdventure
                     isAttacking = false;
                 }
             }
+
+            if (launchProjectile && !_projectileAddedRecently)
+            {
+                _projectileAddedRecently = true;
+                _player.LaunchProjectile(_knifeTextureId, _knifeWidth, _knifeHeight);
+            }
+
             if (!isAttacking)
             {
                 _player.UpdatePlayerPosition(up ? 1.0 : 0.0, down ? 1.0 : 0.0, left ? 1.0 : 0.0, right ? 1.0 : 0.0,
@@ -130,25 +140,27 @@ namespace TheAdventure
             itemsToRemove.AddRange(GetAllTemporaryGameObjects().Where(gameObject => gameObject.IsExpired)
                 .Select(gameObject => gameObject.Id).ToList());
 
-            // Verific daca o bomba a fost pusa recent, pentru a evita spam-ul
             if (addBomb && !_bombAddedRecently)
             {
                 _bombAddedRecently = true;
                 AddBomb(0, 0);
             }
 
-            // Resetarea indicatorului care previne spam-ul bombelor
             if (!_input.IsKeyBPressed())
             {
                 _bombAddedRecently = false;
             }
 
+            if (!_input.IsKeyCPressed())
+            {
+                _projectileAddedRecently = false;
+            }
+
             foreach (var gameObjectId in itemsToRemove)
             {
                 var gameObject = _gameObjects[gameObjectId];
-                if (gameObject is TemporaryGameObject)
+                if (gameObject is TemporaryGameObject tempObject)
                 {
-                    var tempObject = (TemporaryGameObject)gameObject;
                     var deltaX = Math.Abs(_player.Position.X - tempObject.Position.X);
                     var deltaY = Math.Abs(_player.Position.Y - tempObject.Position.Y);
                     if (deltaX < 32 && deltaY < 32)
@@ -156,10 +168,14 @@ namespace TheAdventure
                         _player.GameOver();
                     }
                 }
+                if (gameObject is ProjectileObject projectile)
+                {
+                    // Add debug output to check if the Update method is called for projectiles
+                    projectile.Update(secsSinceLastFrame);
+                }
                 _gameObjects.Remove(gameObjectId);
             }
         }
-
         public void RenderFrame()
         {
             _renderer.SetDrawColor(0, 0, 0, 255);
@@ -247,23 +263,17 @@ namespace TheAdventure
             _player.Render(_renderer);
         }
 
-        // Modificata functia de adaugare a bombelor
-        // isMousePlacement determina cum ar trebui plasata bomba, in functie de ce a fost apasat
         private void AddBomb(int offsetX, int offsetY, bool isMousePlacement = false)
         {
-            // Calculam noua pozitie a bombei
             int bombX, bombY;
 
-            // Daca s-a folosit click, bomba e plasata sub cursor
             if (isMousePlacement)
             {
                 bombX = offsetX;
                 bombY = offsetY;
             }
-            // Daca e folosit B, bomba este pusa mai departe de player, pentru a nu mai exploda sub el
             else
             {
-                // Calculam o noua pozitie relativa pozitiei player-ului, pentru a nu mai plasa bomba sub el
                 bombX = _player.Position.X + offsetX;
                 bombY = _player.Position.Y + offsetY;
 
@@ -274,10 +284,10 @@ namespace TheAdventure
                         bombY -= 40;
                         break;
                     case PlayerObject.PlayerStateDirection.Down:
-                        bombY += 40; 
+                        bombY += 40;
                         break;
                     case PlayerObject.PlayerStateDirection.Left:
-                        bombX -= 40; 
+                        bombX -= 40;
                         break;
                     case PlayerObject.PlayerStateDirection.Right:
                         bombX += 40;
@@ -296,5 +306,23 @@ namespace TheAdventure
             }
         }
 
+        public void UpdateProjectiles(double deltaTime)
+        {
+            foreach (var gameObject in _gameObjects.Values)
+            {
+                if (gameObject is ProjectileObject projectile)
+                {
+                    projectile.Update(deltaTime);
+                }
+            }
+        }
+
+        public void AddProjectile(ProjectileObject projectile)
+        {
+            _gameObjects.Add(projectile.Id, projectile);
+        }
+
+
     }
 }
+
