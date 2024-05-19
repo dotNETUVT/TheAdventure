@@ -12,10 +12,10 @@ namespace TheAdventure
         private const int MaxEnemies = 10;
         private readonly Dictionary<int, GameObject> _gameObjects = new();
         private readonly Dictionary<string, TileSet> _loadedTileSets = new();
+        private readonly Dictionary<int, EnemyObject> _enemies = new();
 
         private Level? _currentLevel;
         private PlayerObject _player;
-        private EnemyObject _enemy;
         private GameRenderer _renderer;
         private Input _input;
         private ScriptEngine _scriptEngine;
@@ -87,17 +87,17 @@ namespace TheAdventure
             InitializeEnemies();
 
         }
-        private void InitializeEnemies()
+        private void InitializeEnemies(int current=0)
         {
             var enemySpriteSheet = SpriteSheet.LoadSpriteSheet("enemy.json", "Assets", _renderer);
             if (enemySpriteSheet != null)
             {
-                for (int i = 0; i < MaxEnemies; i++)
+                for (int i = current; i < MaxEnemies; i++)
                 {
                     int spawnX = i * 20;
-                        int spawnY = 0;
+                        int spawnY = i * 20;
                         EnemyObject enemy = new(enemySpriteSheet, spawnX, spawnY);
-                    _gameObjects.Add(enemy.Id, enemy);
+                    _enemies.Add(enemy.Id, enemy);
                 }
             }
         }
@@ -147,27 +147,43 @@ namespace TheAdventure
             foreach (var gameObjectId in itemsToRemove)
             {
                 var gameObject = _gameObjects[gameObjectId];
-                if(gameObject is TemporaryGameObject){
+    
+                if (gameObject is TemporaryGameObject)
+                {
+                    var bomb = (TemporaryGameObject)gameObject;
+                    foreach (var (enemyId, enemy) in _enemies)
+                    {
+                        var deltaX = Math.Abs(enemy.Position.X - bomb.Position.X);
+                        var deltaY = Math.Abs(enemy.Position.Y - bomb.Position.Y);
+                        if (deltaX < 32 && deltaY < 32)
+                        {
+                            enemy.GameOver();
+                            _enemies.Remove(enemyId);
+                        }
+                    }
+                    _gameObjects.Remove(gameObjectId);
+                }
+                else if (gameObject is TemporaryGameObject)
+                {
                     var tempObject = (TemporaryGameObject)gameObject;
                     var deltaX = Math.Abs(_player.Position.X - tempObject.Position.X);
                     var deltaY = Math.Abs(_player.Position.Y - tempObject.Position.Y);
-                    if(deltaX < 32 && deltaY < 32){
+                    if (deltaX < 32 && deltaY < 32)
+                    {
                         _player.GameOver();
                     }
+        
+                    _gameObjects.Remove(gameObjectId);
                 }
-                _gameObjects.Remove(gameObjectId);
             }
             UpdateEnemies(secsSinceLastFrame);
         }
         private void UpdateEnemies(double secsSinceLastFrame)
         {
-            foreach (var gameObject in _gameObjects.Values)
-            {
-                if (gameObject is EnemyObject enemy)
-                {
-                    enemy.UpdateEnemyPosition(_player.Position.X, _player.Position.Y, secsSinceLastFrame);
-                }
-            }
+            if (_enemies.Count < MaxEnemies)
+                InitializeEnemies(_enemies.Count);
+            foreach (var enemy in _enemies.Values)
+                enemy.UpdateEnemyPosition(_player.Position.X, _player.Position.Y, secsSinceLastFrame);
         }
         public void RenderFrame()
         {
@@ -251,12 +267,9 @@ namespace TheAdventure
             {
                 gameObject.Render(_renderer);
             }
-            foreach (var gameObject in _gameObjects.Values)
+            foreach (var enemy in _enemies.Values)
             {
-                if (gameObject is EnemyObject enemy)
-                {
-                    enemy.Render(_renderer);
-                }
+                enemy.Render(_renderer);
             }
             _player.Render(_renderer);
         }

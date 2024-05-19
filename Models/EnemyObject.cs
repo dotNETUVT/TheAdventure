@@ -17,8 +17,11 @@ public class EnemyObject : PlayerObject
         var directionY = playerY - Position.Y;
 
         var distanceToPlayer = Math.Sqrt(directionX * directionX + directionY * directionY);
-        if (distanceToPlayer == 0)
+        if (distanceToPlayer < 10)
+        {
+            SetState(PlayerState.Attack, PlayerStateDirection.Down);
             return;
+        }
         // Normalize the direction vector
         var normDirectionX = directionX / distanceToPlayer;
         var normDirectionY = directionY / distanceToPlayer;
