@@ -1,5 +1,6 @@
 using System.Reflection;
 using System.Text.Json;
+using Silk.NET.Input;
 using Silk.NET.Maths;
 using Silk.NET.SDL;
 using TheAdventure.Models;
@@ -17,6 +18,7 @@ namespace TheAdventure
         private GameRenderer _renderer;
         private Input _input;
         private ScriptEngine _scriptEngine;
+        private bool _bombAddedRecently = false;
 
         private DateTimeOffset _lastUpdate = DateTimeOffset.Now;
         private DateTimeOffset _lastPlayerUpdate = DateTimeOffset.Now;
@@ -25,14 +27,16 @@ namespace TheAdventure
             _renderer = renderer;
             _input = input;
             _scriptEngine = new ScriptEngine();
-            _input.OnMouseClick += (_, coords) => AddBomb(coords.x, coords.y);
+            _input.OnMouseClick += (_, coords) => AddBomb(coords.x, coords.y, true);
         }
 
-        public void WriteToConsole(string message){
+        public void WriteToConsole(string message)
+        {
             Console.WriteLine(message);
         }
 
-        public (int x, int y) GetPlayerPosition(){
+        public (int x, int y) GetPlayerPosition()
+        {
             var pos = _player.Position;
             return (pos.X, pos.Y);
         }
@@ -77,7 +81,8 @@ namespace TheAdventure
             };
             */
             var spriteSheet = SpriteSheet.LoadSpriteSheet("player.json", "Assets", _renderer);
-            if(spriteSheet != null){
+            if (spriteSheet != null)
+            {
                 _player = new PlayerObject(spriteSheet, 100, 100);
             }
             _renderer.SetWorldBounds(new Rectangle<int>(0, 0, _currentLevel.Width * _currentLevel.TileWidth,
@@ -99,42 +104,55 @@ namespace TheAdventure
 
             _scriptEngine.ExecuteAll(this);
 
-            if(isAttacking)
+            if (isAttacking)
             {
-                var dir = up ? 1: 0;
-                dir += down? 1 : 0;
-                dir += left? 1: 0;
+                var dir = up ? 1 : 0;
+                dir += down ? 1 : 0;
+                dir += left ? 1 : 0;
                 dir += right ? 1 : 0;
-                if(dir <= 1){
+                if (dir <= 1)
+                {
                     _player.Attack(up, down, left, right);
                 }
-                else{
+                else
+                {
                     isAttacking = false;
                 }
             }
-            if(!isAttacking)
+            if (!isAttacking)
             {
                 _player.UpdatePlayerPosition(up ? 1.0 : 0.0, down ? 1.0 : 0.0, left ? 1.0 : 0.0, right ? 1.0 : 0.0,
                     _currentLevel.Width * _currentLevel.TileWidth, _currentLevel.Height * _currentLevel.TileHeight,
                     secsSinceLastFrame);
             }
+
             var itemsToRemove = new List<int>();
             itemsToRemove.AddRange(GetAllTemporaryGameObjects().Where(gameObject => gameObject.IsExpired)
                 .Select(gameObject => gameObject.Id).ToList());
 
-            if (addBomb)
+            // Verific daca o bomba a fost pusa recent, pentru a evita spam-ul
+            if (addBomb && !_bombAddedRecently)
             {
-                AddBomb(_player.Position.X, _player.Position.Y, false);
+                _bombAddedRecently = true;
+                AddBomb(0, 0);
+            }
+
+            // Resetarea indicatorului care previne spam-ul bombelor
+            if (!_input.IsKeyBPressed())
+            {
+                _bombAddedRecently = false;
             }
 
             foreach (var gameObjectId in itemsToRemove)
             {
                 var gameObject = _gameObjects[gameObjectId];
-                if(gameObject is TemporaryGameObject){
+                if (gameObject is TemporaryGameObject)
+                {
                     var tempObject = (TemporaryGameObject)gameObject;
                     var deltaX = Math.Abs(_player.Position.X - tempObject.Position.X);
                     var deltaY = Math.Abs(_player.Position.Y - tempObject.Position.Y);
-                    if(deltaX < 32 && deltaY < 32){
+                    if (deltaX < 32 && deltaY < 32)
+                    {
                         _player.GameOver();
                     }
                 }
@@ -146,7 +164,7 @@ namespace TheAdventure
         {
             _renderer.SetDrawColor(0, 0, 0, 255);
             _renderer.ClearScreen();
-            
+
             _renderer.CameraLookAt(_player.Position.X, _player.Position.Y);
 
             RenderTerrain();
@@ -229,17 +247,54 @@ namespace TheAdventure
             _player.Render(_renderer);
         }
 
-        public void AddBomb(int x, int y, bool translateCoordinates = true)
+        // Modificata functia de adaugare a bombelor
+        // isMousePlacement determina cum ar trebui plasata bomba, in functie de ce a fost apasat
+        private void AddBomb(int offsetX, int offsetY, bool isMousePlacement = false)
         {
+            // Calculam noua pozitie a bombei
+            int bombX, bombY;
 
-            var translated = translateCoordinates ? _renderer.TranslateFromScreenToWorldCoordinates(x, y) : new Vector2D<int>(x, y);
-            
+            // Daca s-a folosit click, bomba e plasata sub cursor
+            if (isMousePlacement)
+            {
+                bombX = offsetX;
+                bombY = offsetY;
+            }
+            // Daca e folosit B, bomba este pusa mai departe de player, pentru a nu mai exploda sub el
+            else
+            {
+                // Calculam o noua pozitie relativa pozitiei player-ului, pentru a nu mai plasa bomba sub el
+                bombX = _player.Position.X + offsetX;
+                bombY = _player.Position.Y + offsetY;
+
+                var playerDirection = _player.State.Direction;
+                switch (playerDirection)
+                {
+                    case PlayerObject.PlayerStateDirection.Up:
+                        bombY -= 40;
+                        break;
+                    case PlayerObject.PlayerStateDirection.Down:
+                        bombY += 40; 
+                        break;
+                    case PlayerObject.PlayerStateDirection.Left:
+                        bombX -= 40; 
+                        break;
+                    case PlayerObject.PlayerStateDirection.Right:
+                        bombX += 40;
+                        break;
+                    default:
+                        break;
+                }
+            }
+
             var spriteSheet = SpriteSheet.LoadSpriteSheet("bomb.json", "Assets", _renderer);
-            if(spriteSheet != null){
+            if (spriteSheet != null)
+            {
                 spriteSheet.ActivateAnimation("Explode");
-                TemporaryGameObject bomb = new(spriteSheet, 2.1, (translated.X, translated.Y));
+                TemporaryGameObject bomb = new(spriteSheet, 2.1, (bombX, bombY));
                 _gameObjects.Add(bomb.Id, bomb);
             }
         }
+
     }
 }
