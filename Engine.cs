@@ -9,6 +9,7 @@ namespace TheAdventure
 {
     public class Engine
     {
+        private const int BombRange = 32;
         private const int MaxEnemies = 10;
         private readonly Dictionary<int, GameObject> _gameObjects = new();
         private readonly Dictionary<string, TileSet> _loadedTileSets = new();
@@ -92,11 +93,13 @@ namespace TheAdventure
             var enemySpriteSheet = SpriteSheet.LoadSpriteSheet("enemy.json", "Assets", _renderer);
             if (enemySpriteSheet != null)
             {
+                Random random = new Random();
+
                 for (int i = current; i < MaxEnemies; i++)
                 {
-                    int spawnX = i * 20;
-                        int spawnY = i * 20;
-                        EnemyObject enemy = new(enemySpriteSheet, spawnX, spawnY);
+                    int spawnX = random.Next(0, _currentLevel.Width * _currentLevel.TileWidth); 
+                    int spawnY = random.Next(0, _currentLevel.Height * _currentLevel.TileHeight); 
+                    EnemyObject enemy = new EnemyObject(enemySpriteSheet, spawnX, spawnY);
                     _enemies.Add(enemy.Id, enemy);
                 }
             }
@@ -153,26 +156,21 @@ namespace TheAdventure
                     var bomb = (TemporaryGameObject)gameObject;
                     foreach (var (enemyId, enemy) in _enemies)
                     {
-                        var deltaX = Math.Abs(enemy.Position.X - bomb.Position.X);
-                        var deltaY = Math.Abs(enemy.Position.Y - bomb.Position.Y);
-                        if (deltaX < 32 && deltaY < 32)
+                        var deltaXEnemy = Math.Abs(enemy.Position.X - bomb.Position.X);
+                        var deltaYEnemy = Math.Abs(enemy.Position.Y - bomb.Position.Y);
+                        if (deltaXEnemy < BombRange && deltaYEnemy < BombRange)
                         {
                             enemy.GameOver();
                             _enemies.Remove(enemyId);
                         }
                     }
-                    _gameObjects.Remove(gameObjectId);
-                }
-                else if (gameObject is TemporaryGameObject)
-                {
-                    var tempObject = (TemporaryGameObject)gameObject;
-                    var deltaX = Math.Abs(_player.Position.X - tempObject.Position.X);
-                    var deltaY = Math.Abs(_player.Position.Y - tempObject.Position.Y);
-                    if (deltaX < 32 && deltaY < 32)
+                    var deltaXPlayer = Math.Abs(_player.Position.X - bomb.Position.X);
+                    var deltaYPlayer = Math.Abs(_player.Position.Y - bomb.Position.Y);
+                    if (deltaXPlayer < BombRange && deltaYPlayer < BombRange)
                     {
                         _player.GameOver();
                     }
-        
+
                     _gameObjects.Remove(gameObjectId);
                 }
             }

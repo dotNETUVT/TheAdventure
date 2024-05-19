@@ -2,38 +2,50 @@ using Silk.NET.Maths;
 using TheAdventure;
 
 namespace TheAdventure.Models;
+
 public class EnemyObject : PlayerObject
 {
-    private int _basePixelPerSecond = 80;
+    private const int AttackRange = 5;
+    private const int BasePixelsPerSecond = 80;
+
     public EnemyObject(SpriteSheet spriteSheet, int x, int y) : base(spriteSheet, x, y)
     {
     }
+
     public void UpdateEnemyPosition(int playerX, int playerY, double deltaTime)
     {
         var randomFactor = (float)(1 + (new Random().NextDouble() * 0.2 - 0.1));
-        var pixelsPerSecond = (int)(_basePixelPerSecond * randomFactor);
-        // Calculate movement towards the player
+        var pixelsPerSecond = (int)(BasePixelsPerSecond * randomFactor);
+
         var directionX = playerX - Position.X;
         var directionY = playerY - Position.Y;
 
         var distanceToPlayer = Math.Sqrt(directionX * directionX + directionY * directionY);
-        if (distanceToPlayer < 10)
+        if (distanceToPlayer < AttackRange)
         {
             SetState(PlayerState.Attack, PlayerStateDirection.Down);
             return;
         }
-        // Normalize the direction vector
+
+        // Calculate normalized direction vector
         var normDirectionX = directionX / distanceToPlayer;
         var normDirectionY = directionY / distanceToPlayer;
 
-        // Calculate movement based on normalized direction and speed
+        // Calculate movement components
         var moveX = (int)(pixelsPerSecond * deltaTime * normDirectionX);
         var moveY = (int)(pixelsPerSecond * deltaTime * normDirectionY);
 
-        // Update enemy position
-        Position = (Position.X + moveX, Position.Y + moveY);
+        if (Math.Abs(moveX) < 1 && Math.Abs(moveY) >= 1)
+        {
+            moveX = Math.Sign(normDirectionX);
+        }
+        else if (Math.Abs(moveY) < 1 && Math.Abs(moveX) >= 1)
+        {
+            moveY = Math.Sign(normDirectionY);
+        }
 
-        // Determine animation based on movement direction
+        // Apply movement
+        Position = (Position.X + moveX, Position.Y + moveY);
         if (Math.Abs(moveX) > Math.Abs(moveY))
         {
             if (moveX > 0)
@@ -59,5 +71,4 @@ public class EnemyObject : PlayerObject
         else
             SetState(PlayerState.Idle, State.Direction);
     }
-
 }
