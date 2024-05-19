@@ -27,7 +27,6 @@ namespace TheAdventure
             _renderer = renderer;
             _input = input;
             
-            
             _soundManager = new Sound();
             _soundManager.LoadSound("Explosion", "Assets/explosion.wav");
             _soundManager.LoadSound("Walking", "Assets/walkingplayer.wav");
@@ -77,6 +76,8 @@ namespace TheAdventure
             }
             _renderer.SetWorldBounds(new Rectangle<int>(0, 0, _currentLevel.Width * _currentLevel.TileWidth,
                 _currentLevel.Height * _currentLevel.TileHeight));
+            PopulateMapWithStars(28);
+            PopulateMapWithTrees(35);
         }
 
         public void ProcessFrame()
@@ -93,7 +94,6 @@ namespace TheAdventure
             _player.UpdatePlayerPosition(up ? 1.0 : 0.0, down ? 1.0 : 0.0, left ? 1.0 : 0.0, right ? 1.0 : 0.0,
                 _currentLevel.Width * _currentLevel.TileWidth, _currentLevel.Height * _currentLevel.TileHeight,
                 secsSinceLastFrame);
-            
 
             if (up || down || left || right)
             {
@@ -220,5 +220,31 @@ namespace TheAdventure
             }
             _soundManager.PlaySound("Explosion");
         }
+        public void PopulateMapWithStars(int number)
+        {
+            var random = new Random();
+            var spriteSheet = SpriteSheet.LoadSpriteSheet("Star.json", "Assets", _renderer);
+            for (int i = 0; i < number; i++)
+            {
+                var x = random.Next(0, _currentLevel.Width * _currentLevel.TileWidth);
+                var y = random.Next(0, _currentLevel.Height * _currentLevel.TileHeight);
+                var star = new Star(spriteSheet, (x, y));
+                _gameObjects.Add(star.Id, star);
+            }
+        }
+        
+        public void PopulateMapWithTrees(int number)
+        {
+            var random = new Random();
+            var spriteSheet = SpriteSheet.LoadSpriteSheet("Tree.json", "Assets", _renderer);
+            for (int i = 0; i < number; i++)
+            {
+                var x = random.Next(0, _currentLevel.Width * _currentLevel.TileWidth);
+                var y = random.Next(0, _currentLevel.Height * _currentLevel.TileHeight);
+                var tree = new Tree(spriteSheet, (x, y));
+                _gameObjects.Add(tree.Id, tree);
+            }
+        }
+        
     }
 }
