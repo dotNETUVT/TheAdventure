@@ -14,6 +14,7 @@ namespace TheAdventure
 
         private Level? _currentLevel;
         private PlayerObject _player;
+        private FriendObject _friend;
         private GameRenderer _renderer;
         private Input _input;
         private ScriptEngine _scriptEngine;
@@ -128,8 +129,28 @@ namespace TheAdventure
             if(spriteSheet != null){
                 _player = new PlayerObject(spriteSheet, 100, 100);
             }
+
+            var friendSpriteSheet = SpriteSheet.LoadSpriteSheet("friend.json", "Assets", _renderer);
+            if (friendSpriteSheet != null)
+            {
+                // Randomly positioning the friend
+                var random = new Random();
+                var randomX = random.Next(200, 400);
+                var randomY = random.Next(200, 400);
+
+                _friend = new FriendObject(friendSpriteSheet, randomX, randomY);
+            }
+
             _renderer.SetWorldBounds(new Rectangle<int>(0, 0, _currentLevel.Width * _currentLevel.TileWidth,
                 _currentLevel.Height * _currentLevel.TileHeight));
+        }
+
+        private bool PlayerMeetsFriend()
+        {
+            var playerBox = _player.GetBoundingBox();
+            var friendBox = _friend.GetBoundingBox();
+
+            return RectanglesIntersect(playerBox, friendBox);
         }
 
         public void ProcessFrame()
@@ -149,8 +170,14 @@ namespace TheAdventure
             bool addBomb = _input.IsKeyBPressed();
 
             _player.UpdatePlayerPosition(up ? 1.0 : 0.0, down ? 1.0 : 0.0, left ? 1.0 : 0.0, right ? 1.0 : 0.0,
-                _currentLevel.Width * _currentLevel.TileWidth, _currentLevel.Height * _currentLevel.TileHeight,
-                secsSinceLastFrame, GetAllTemporaryGameObjects(), _layerCoordinates);
+               _currentLevel.Width * _currentLevel.TileWidth, _currentLevel.Height * _currentLevel.TileHeight,
+               secsSinceLastFrame, GetAllTemporaryGameObjects(), _layerCoordinates);
+
+            if (PlayerMeetsFriend())
+            {
+                _friend.UpdateFriendPosition(up ? 1.0 : 0.0, down ? 1.0 : 0.0, left ? 1.0 : 0.0, right ? 1.0 : 0.0, _player.Position, _currentLevel.Width * _currentLevel.TileWidth,
+                    _currentLevel.Height * _currentLevel.TileHeight, secsSinceLastFrame, GetAllTemporaryGameObjects(), _layerCoordinates);
+            }
 
             // Check collision between player and bombs
             foreach (var gameObject in GetAllTemporaryGameObjects())
@@ -162,6 +189,14 @@ namespace TheAdventure
                         // Check proximity
                         double distance = Math.Sqrt(Math.Pow(_player.Position.X - bomb.Position.X, 2) + Math.Pow(_player.Position.Y - bomb.Position.Y, 2));
                         if (distance < 50 && bomb.IsExpired) 
+                        {
+                            GameOver();
+                            return;
+                        }
+                    } else if (RectanglesIntersect(_friend.GetBoundingBox(), bomb.GetBoundingBox())) {
+                        // Check proximity
+                        double distance = Math.Sqrt(Math.Pow(_friend.Position.X - bomb.Position.X, 2) + Math.Pow(_friend.Position.Y - bomb.Position.Y, 2));
+                        if (distance < 50 && bomb.IsExpired)
                         {
                             GameOver();
                             return;
@@ -350,6 +385,7 @@ namespace TheAdventure
             }
 
             _player.Render(_renderer);
+            _friend.Render(_renderer);
         }
 
         public void AddBomb(int x, int y, bool translateCoordinates = true)
