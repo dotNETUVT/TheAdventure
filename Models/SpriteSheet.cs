@@ -77,12 +77,12 @@ public class SpriteSheet
         _animationStart = DateTimeOffset.Now;
     }
 
-    public void Render(GameRenderer renderer, (int X, int Y) dest, double angle = 0.0, Point rotationCenter = new())
+    public void Render(GameRenderer renderer, (int X, double Y) dest, double angle = 0.0, Point rotationCenter = new())
     {
         if (ActiveAnimation == null)
         {
             renderer.RenderTexture(_textureId, new Rectangle<int>(0, 0, FrameWidth, FrameHeight),
-                new Rectangle<int>(dest.X - FrameCenter.OffsetX, dest.Y - FrameCenter.OffsetY, FrameWidth, FrameHeight),
+                new Rectangle<int>(dest.X - FrameCenter.OffsetX, (int)(dest.Y - FrameCenter.OffsetY), FrameWidth, FrameHeight),
                 RendererFlip.None, angle, rotationCenter);
         }
         else
@@ -109,7 +109,7 @@ public class SpriteSheet
 
             renderer.RenderTexture(_textureId,
                 new Rectangle<int>(currentCol * FrameWidth, currentRow * FrameHeight, FrameWidth, FrameHeight),
-                new Rectangle<int>(dest.X - FrameCenter.OffsetX, dest.Y - FrameCenter.OffsetY, FrameWidth, FrameHeight),
+                new Rectangle<int>(dest.X - FrameCenter.OffsetX, (int)(dest.Y - FrameCenter.OffsetY), FrameWidth, FrameHeight),
                 ActiveAnimation.Flip, angle, rotationCenter);
         }
     }
