@@ -4,6 +4,11 @@ using Silk.NET.Maths;
 using Silk.NET.SDL;
 using TheAdventure.Models;
 using TheAdventure.Models.Data;
+using Silk.NET.Maths;
+using Silk.NET.SDL;
+using System.Timers;
+using TheAdventure.Models;
+using static TheAdventure.GameRenderer;
 
 namespace TheAdventure
 {
@@ -20,19 +25,26 @@ namespace TheAdventure
 
         private DateTimeOffset _lastUpdate = DateTimeOffset.Now;
         private DateTimeOffset _lastPlayerUpdate = DateTimeOffset.Now;
+
+        private DateTimeOffset _gameOverTime;
+        private bool _isGameOverTriggered = false;
+
         public Engine(GameRenderer renderer, Input input)
         {
             _renderer = renderer;
             _input = input;
             _scriptEngine = new ScriptEngine();
             _input.OnMouseClick += (_, coords) => AddBomb(coords.x, coords.y);
+            _renderer.LoadGameOverTexture(Path.Combine("Assets", "gameover.png"));
         }
 
-        public void WriteToConsole(string message){
+        public void WriteToConsole(string message)
+        {
             Console.WriteLine(message);
         }
 
-        public (int x, int y) GetPlayerPosition(){
+        public (int x, int y) GetPlayerPosition()
+        {
             var pos = _player.Position;
             return (pos.X, pos.Y);
         }
@@ -77,15 +89,27 @@ namespace TheAdventure
             };
             */
             var spriteSheet = SpriteSheet.LoadSpriteSheet("player.json", "Assets", _renderer);
-            if(spriteSheet != null){
+            if (spriteSheet != null)
+            {
                 _player = new PlayerObject(spriteSheet, 100, 100);
             }
+
             _renderer.SetWorldBounds(new Rectangle<int>(0, 0, _currentLevel.Width * _currentLevel.TileWidth,
                 _currentLevel.Height * _currentLevel.TileHeight));
         }
 
         public void ProcessFrame()
         {
+            if (_isGameOverTriggered)
+            {
+                var currentTime2 = DateTimeOffset.Now;
+                if ((currentTime2 - _gameOverTime).TotalSeconds > 3)
+                {
+                    _renderer.SetGameOver(true);
+                    return;
+                }
+            }
+
             var currentTime = DateTimeOffset.Now;
             var secsSinceLastFrame = (currentTime - _lastUpdate).TotalSeconds;
             _lastUpdate = currentTime;
@@ -99,25 +123,29 @@ namespace TheAdventure
 
             _scriptEngine.ExecuteAll(this);
 
-            if(isAttacking)
+            if (isAttacking)
             {
-                var dir = up ? 1: 0;
-                dir += down? 1 : 0;
-                dir += left? 1: 0;
+                var dir = up ? 1 : 0;
+                dir += down ? 1 : 0;
+                dir += left ? 1 : 0;
                 dir += right ? 1 : 0;
-                if(dir <= 1){
+                if (dir <= 1)
+                {
                     _player.Attack(up, down, left, right);
                 }
-                else{
+                else
+                {
                     isAttacking = false;
                 }
             }
-            if(!isAttacking)
+
+            if (!isAttacking)
             {
                 _player.UpdatePlayerPosition(up ? 1.0 : 0.0, down ? 1.0 : 0.0, left ? 1.0 : 0.0, right ? 1.0 : 0.0,
                     _currentLevel.Width * _currentLevel.TileWidth, _currentLevel.Height * _currentLevel.TileHeight,
                     secsSinceLastFrame);
             }
+
             var itemsToRemove = new List<int>();
             itemsToRemove.AddRange(GetAllTemporaryGameObjects().Where(gameObject => gameObject.IsExpired)
                 .Select(gameObject => gameObject.Id).ToList());
@@ -130,14 +158,17 @@ namespace TheAdventure
             foreach (var gameObjectId in itemsToRemove)
             {
                 var gameObject = _gameObjects[gameObjectId];
-                if(gameObject is TemporaryGameObject){
+                if (gameObject is TemporaryGameObject)
+                {
                     var tempObject = (TemporaryGameObject)gameObject;
                     var deltaX = Math.Abs(_player.Position.X - tempObject.Position.X);
                     var deltaY = Math.Abs(_player.Position.Y - tempObject.Position.Y);
-                    if(deltaX < 32 && deltaY < 32){
+                    if (deltaX < 32 && deltaY < 32)
+                    {
                         _player.GameOver();
                     }
                 }
+
                 _gameObjects.Remove(gameObjectId);
             }
         }
@@ -146,13 +177,28 @@ namespace TheAdventure
         {
             _renderer.SetDrawColor(0, 0, 0, 255);
             _renderer.ClearScreen();
-            
-            _renderer.CameraLookAt(_player.Position.X, _player.Position.Y);
 
+            if (_renderer.IsGameOver)
+            {
+                _renderer.RenderGameOverScreen();
+                _renderer.PresentFrame();
+                return;
+            }
+
+            _renderer.CameraLookAt(_player.Position.X, _player.Position.Y);
             RenderTerrain();
             RenderAllObjects();
 
             _renderer.PresentFrame();
+        }
+
+        private void CheckPlayerGameOver()
+        {
+            if (_player.State.State == PlayerObject.PlayerState.GameOver && !_isGameOverTriggered)
+            {
+                _gameOverTime = DateTimeOffset.Now;
+                _isGameOverTriggered = true;
+            }
         }
 
         private Tile? GetTile(int id)
@@ -231,14 +277,19 @@ namespace TheAdventure
 
         public void AddBomb(int x, int y, bool translateCoordinates = true)
         {
+            var translated = translateCoordinates
+                ? _renderer.TranslateFromScreenToWorldCoordinates(x, y)
+                : new Vector2D<int>(x, y);
 
-            var translated = translateCoordinates ? _renderer.TranslateFromScreenToWorldCoordinates(x, y) : new Vector2D<int>(x, y);
-            
             var spriteSheet = SpriteSheet.LoadSpriteSheet("bomb.json", "Assets", _renderer);
-            if(spriteSheet != null){
+            if (spriteSheet != null)
+            {
                 spriteSheet.ActivateAnimation("Explode");
                 TemporaryGameObject bomb = new(spriteSheet, 2.1, (translated.X, translated.Y));
                 _gameObjects.Add(bomb.Id, bomb);
+
+                // Check if player is near the bomb and trigger game over if needed
+                CheckPlayerGameOver();
             }
         }
     }

@@ -18,6 +18,32 @@ public unsafe class GameRenderer
     private Dictionary<int, TextureInfo> _textureData = new();
     private int _textureId;
 
+    private int _gameOverTextureId;
+    private bool _isGameOver = false;
+
+    // Method to load the game over texture
+    public void LoadGameOverTexture(string fileName)
+    {
+        _gameOverTextureId = LoadTexture(fileName, out _);
+    }
+
+    // Method to render the game over screen
+    public void RenderGameOverScreen()
+    {
+        if (_textures.TryGetValue(_gameOverTextureId, out var imageTexture))
+        {
+            var windowSize = _window.Size;
+            var dst = new Rectangle<int>(0, 0, windowSize.Width, windowSize.Height);
+            _sdl.RenderCopy(_renderer, (Texture*)imageTexture, null, dst);
+        }
+    }
+
+    public bool IsGameOver { get; private set; }
+
+    public void SetGameOver(bool isGameOver)
+    {
+        IsGameOver = isGameOver;
+    }
     public GameRenderer(Sdl sdl, GameWindow window)
     {
         _window = window;
