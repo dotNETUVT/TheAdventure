@@ -25,7 +25,8 @@ namespace TheAdventure
             _renderer = renderer;
             _input = input;
             _scriptEngine = new ScriptEngine();
-            _input.OnMouseClick += (_, coords) => AddBomb(coords.x, coords.y);
+            _input.OnMouseClick += (_, coords) => AddBomb(coords.x, coords.y, 32); // Normal radius
+            _input.OnRightMouseClick += (_, coords) => AddBomb(coords.x, coords.y, 64); // Larger radius
         }
 
         public void WriteToConsole(string message){
@@ -124,7 +125,7 @@ namespace TheAdventure
 
             if (addBomb)
             {
-                AddBomb(_player.Position.X, _player.Position.Y, false);
+                AddBomb(_player.Position.X, _player.Position.Y,32, false);
             }
 
             foreach (var gameObjectId in itemsToRemove)
@@ -134,7 +135,7 @@ namespace TheAdventure
                     var tempObject = (TemporaryGameObject)gameObject;
                     var deltaX = Math.Abs(_player.Position.X - tempObject.Position.X);
                     var deltaY = Math.Abs(_player.Position.Y - tempObject.Position.Y);
-                    if(deltaX < 32 && deltaY < 32){
+                    if (deltaX < tempObject.ExplosionRadius && deltaY < tempObject.ExplosionRadius){
                         _player.GameOver();
                     }
                 }
@@ -229,7 +230,7 @@ namespace TheAdventure
             _player.Render(_renderer);
         }
 
-        public void AddBomb(int x, int y, bool translateCoordinates = true)
+        public void AddBomb(int x, int y,double explosionRadius, bool translateCoordinates = true)
         {
 
             var translated = translateCoordinates ? _renderer.TranslateFromScreenToWorldCoordinates(x, y) : new Vector2D<int>(x, y);
@@ -237,7 +238,7 @@ namespace TheAdventure
             var spriteSheet = SpriteSheet.LoadSpriteSheet("bomb.json", "Assets", _renderer);
             if(spriteSheet != null){
                 spriteSheet.ActivateAnimation("Explode");
-                TemporaryGameObject bomb = new(spriteSheet, 2.1, (translated.X, translated.Y));
+                TemporaryGameObject bomb = new(spriteSheet, 2.1, (translated.X, translated.Y), explosionRadius);
                 _gameObjects.Add(bomb.Id, bomb);
             }
         }

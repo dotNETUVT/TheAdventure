@@ -9,6 +9,7 @@ namespace TheAdventure
         private GameRenderer _renderer;
         
         byte[] _mouseButtonStates = new byte[(int)MouseButton.Count];
+        public event EventHandler<(int x, int y)> OnRightMouseClick;
         
         public EventHandler<(int x, int y)> OnMouseClick;
         
@@ -151,6 +152,10 @@ namespace TheAdventure
                         if (ev.Button.Button == (byte)MouseButton.Primary)
                         {
                             OnMouseClick?.Invoke(this, (mouseX, mouseY));
+                        }
+                        else if (ev.Button.Button == (byte)MouseButton.Secondary)
+                        {
+                            OnRightMouseClick?.Invoke(this, (mouseX, mouseY));
                         }
                         
                         break;
