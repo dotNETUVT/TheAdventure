@@ -1,13 +1,11 @@
-using System.Drawing;
 using Silk.NET.Maths;
-using Point = Silk.NET.SDL.Point;
+using Silk.NET.SDL;
 
 namespace TheAdventure.Models;
 
 public class RenderableGameObject : GameObject
 {
     public SpriteSheet SpriteSheet { get; set; }
-    public Size Size { get; set; }
     public (int X, int Y) Position { get; set; }
     public double Angle { get; set; }
     public Point RotationCenter { get; set; }

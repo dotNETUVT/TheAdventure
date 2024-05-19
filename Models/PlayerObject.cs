@@ -82,14 +82,4 @@ public class PlayerObject : RenderableGameObject
         SpriteSheet.ActivateAnimation(_currentAnimation);
         Position = (x, y);
     }
-    
-    public bool CollidesWith(RenderableGameObject other)
-    {
-        // Simple collision detection based on position and size of game objects
-        // You might need to adjust this based on your game's specifics
-        return Position.X < other.Position.X + other.Size.Width &&
-               Position.X + Size.Width > other.Position.X &&
-               Position.Y < other.Position.Y + other.Size.Height &&
-               Position.Y + Size.Height > other.Position.Y;
-    }
 }
