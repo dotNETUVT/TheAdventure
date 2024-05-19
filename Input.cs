@@ -21,7 +21,7 @@ namespace TheAdventure
 
         public bool IsKeyAPressed(){
             ReadOnlySpan<byte> _keyboardState = new(_sdl.GetKeyboardState(null), (int)KeyCode.Count);
-            return _keyboardState[(int)KeyCode.A] == 1;
+            return _keyboardState[(int)KeyCode.V] == 1;
         }
 
         public bool IsKeyBPressed(){
@@ -52,7 +52,38 @@ namespace TheAdventure
             ReadOnlySpan<byte> _keyboardState = new(_sdl.GetKeyboardState(null), (int)KeyCode.Count);
             return _keyboardState[(int)KeyCode.Down] == 1;
         }
-        
+
+        // Methods for the second player
+        public bool IsKeyWPressed(){
+            ReadOnlySpan<byte> _keyboardState = new(_sdl.GetKeyboardState(null), (int)KeyCode.Count);
+            return _keyboardState[(int)KeyCode.W] == 1;
+        }
+
+        public bool IsKeySPressed(){
+            ReadOnlySpan<byte> _keyboardState = new(_sdl.GetKeyboardState(null), (int)KeyCode.Count);
+            return _keyboardState[(int)KeyCode.S] == 1;
+        }
+
+        public bool IsKeyDPressed(){
+            ReadOnlySpan<byte> _keyboardState = new(_sdl.GetKeyboardState(null), (int)KeyCode.Count);
+            return _keyboardState[(int)KeyCode.D] == 1;
+        }
+
+        public bool IsKeyAPressedPlayer2(){
+            ReadOnlySpan<byte> _keyboardState = new(_sdl.GetKeyboardState(null), (int)KeyCode.Count);
+            return _keyboardState[(int)KeyCode.A] == 1;
+        }
+
+        public bool IsKeyJPressed(){
+            ReadOnlySpan<byte> _keyboardState = new(_sdl.GetKeyboardState(null), (int)KeyCode.Count);
+            return _keyboardState[(int)KeyCode.J] == 1;
+        }
+
+        public bool IsKeyKPressed(){
+            ReadOnlySpan<byte> _keyboardState = new(_sdl.GetKeyboardState(null), (int)KeyCode.Count);
+            return _keyboardState[(int)KeyCode.K] == 1;
+        }
+
         public bool ProcessInput()
         {
             var currentTime = DateTimeOffset.UtcNow;

@@ -12,12 +12,12 @@ namespace TheAdventure
         private readonly Dictionary<string, TileSet> _loadedTileSets = new();
 
         private Level? _currentLevel;
-        private PlayerObject _player;
+        private PlayerObject _player1;
+        private PlayerObject _player2;  // Add second player
         private GameRenderer _renderer;
         private Input _input;
 
         private DateTimeOffset _lastUpdate = DateTimeOffset.Now;
-        private DateTimeOffset _lastPlayerUpdate = DateTimeOffset.Now;
 
         public Engine(GameRenderer renderer, Input input)
         {
@@ -54,19 +54,21 @@ namespace TheAdventure
             }
 
             _currentLevel = level;
-            /*SpriteSheet spriteSheet = new(_renderer, Path.Combine("Assets", "player.png"), 10, 6, 48, 48, new FrameOffset() { OffsetX = 24, OffsetY = 42 });
-            spriteSheet.Animations["IdleDown"] = new SpriteSheet.Animation()
-            {
-                StartFrame = new FramePosition(),//(0, 0),
-                EndFrame = new FramePosition() { Row = 0, Col = 5 },
-                DurationMs = 1000,
-                Loop = true
-            };
-            */
             var spriteSheet = SpriteSheet.LoadSpriteSheet("player.json", "Assets", _renderer);
-            if(spriteSheet != null){
-                _player = new PlayerObject(spriteSheet, 100, 100);
+            if (spriteSheet != null)
+            {
+                _player1 = new PlayerObject(spriteSheet, 100, 100);
+                _player2 = new PlayerObject(spriteSheet, 200, 200);  // Initialize second player
             }
+
+            // Initialize potion
+            var potionSpriteSheet = SpriteSheet.LoadSpriteSheet("potion.json", "Assets", _renderer);
+            if (potionSpriteSheet != null)
+            {
+                var potion = new PotionObject(potionSpriteSheet, 200, 200);
+                _gameObjects.Add(potion.Id, potion);
+            }
+
             _renderer.SetWorldBounds(new Rectangle<int>(0, 0, _currentLevel.Width * _currentLevel.TileWidth,
                 _currentLevel.Height * _currentLevel.TileHeight));
         }
@@ -77,50 +79,96 @@ namespace TheAdventure
             var secsSinceLastFrame = (currentTime - _lastUpdate).TotalSeconds;
             _lastUpdate = currentTime;
 
-            bool up = _input.IsUpPressed();
-            bool down = _input.IsDownPressed();
-            bool left = _input.IsLeftPressed();
-            bool right = _input.IsRightPressed();
-            bool isAttacking = _input.IsKeyAPressed();
-            bool addBomb = _input.IsKeyBPressed();
+            ProcessPlayerInput(_player1, _input, secsSinceLastFrame);
+            ProcessPlayerInput(_player2, _input, secsSinceLastFrame, playerIndex: 2);
 
-            if(isAttacking)
+            CheckPotionCollision();
+            RemoveExpiredObjects();
+        }
+
+        private void ProcessPlayerInput(PlayerObject player, Input input, double secsSinceLastFrame, int playerIndex = 1)
+        {
+            bool up = playerIndex == 1 ? input.IsUpPressed() : input.IsKeyWPressed();
+            bool down = playerIndex == 1 ? input.IsDownPressed() : input.IsKeySPressed();
+            bool left = playerIndex == 1 ? input.IsLeftPressed() : input.IsKeyAPressedPlayer2();
+            bool right = playerIndex == 1 ? input.IsRightPressed() : input.IsKeyDPressed();
+            bool isAttacking = playerIndex == 1 ? input.IsKeyAPressed() : input.IsKeyJPressed();
+            bool addBomb = playerIndex == 1 ? input.IsKeyBPressed() : input.IsKeyKPressed();
+
+            if (isAttacking)
             {
-                var dir = up ? 1: 0;
-                dir += down? 1 : 0;
-                dir += left? 1: 0;
+                var dir = up ? 1 : 0;
+                dir += down ? 1 : 0;
+                dir += left ? 1 : 0;
                 dir += right ? 1 : 0;
-                if(dir <= 1){
-                    _player.Attack(up, down, left, right);
+                if (dir <= 1)
+                {
+                    player.Attack(up, down, left, right);
                 }
-                else{
+                else
+                {
                     isAttacking = false;
                 }
             }
-            if(!isAttacking)
+            if (!isAttacking)
             {
-                _player.UpdatePlayerPosition(up ? 1.0 : 0.0, down ? 1.0 : 0.0, left ? 1.0 : 0.0, right ? 1.0 : 0.0,
+                player.UpdatePlayerPosition(up ? 1.0 : 0.0, down ? 1.0 : 0.0, left ? 1.0 : 0.0, right ? 1.0 : 0.0,
                     _currentLevel.Width * _currentLevel.TileWidth, _currentLevel.Height * _currentLevel.TileHeight,
                     secsSinceLastFrame);
             }
+
+            if (addBomb)
+            {
+                AddBomb(player.Position.X, player.Position.Y, false);
+            }
+        }
+
+        private void CheckPotionCollision()
+        {
+            foreach (var gameObject in _gameObjects.Values)
+            {
+                if (gameObject is PotionObject potion)
+                {
+                    if (IsColliding(_player1, potion))
+                    {
+                        _player1.DrinkPotion();
+                        _gameObjects.Remove(potion.Id);
+                        break;
+                    }
+                    if (IsColliding(_player2, potion))
+                    {
+                        _player2.DrinkPotion();
+                        _gameObjects.Remove(potion.Id);
+                        break;
+                    }
+                }
+            }
+        }
+
+        private void RemoveExpiredObjects()
+        {
             var itemsToRemove = new List<int>();
             itemsToRemove.AddRange(GetAllTemporaryGameObjects().Where(gameObject => gameObject.IsExpired)
                 .Select(gameObject => gameObject.Id).ToList());
 
-            if (addBomb)
-            {
-                AddBomb(_player.Position.X, _player.Position.Y, false);
-            }
-
             foreach (var gameObjectId in itemsToRemove)
             {
                 var gameObject = _gameObjects[gameObjectId];
-                if(gameObject is TemporaryGameObject){
+                if (gameObject is TemporaryGameObject)
+                {
                     var tempObject = (TemporaryGameObject)gameObject;
-                    var deltaX = Math.Abs(_player.Position.X - tempObject.Position.X);
-                    var deltaY = Math.Abs(_player.Position.Y - tempObject.Position.Y);
-                    if(deltaX < 32 && deltaY < 32){
-                        _player.GameOver();
+                    var deltaX = Math.Abs(_player1.Position.X - tempObject.Position.X);
+                    var deltaY = Math.Abs(_player1.Position.Y - tempObject.Position.Y);
+                    if (deltaX < 32 && deltaY < 32)
+                    {
+                        _player1.GameOver();
+                    }
+
+                    deltaX = Math.Abs(_player2.Position.X - tempObject.Position.X);
+                    deltaY = Math.Abs(_player2.Position.Y - tempObject.Position.Y);
+                    if (deltaX < 32 && deltaY < 32)
+                    {
+                        _player2.GameOver();
                     }
                 }
                 _gameObjects.Remove(gameObjectId);
@@ -131,8 +179,8 @@ namespace TheAdventure
         {
             _renderer.SetDrawColor(0, 0, 0, 255);
             _renderer.ClearScreen();
-            
-            _renderer.CameraLookAt(_player.Position.X, _player.Position.Y);
+
+            _renderer.CameraLookAt(_player1.Position.X, _player1.Position.Y);
 
             RenderTerrain();
             RenderAllObjects();
@@ -211,20 +259,28 @@ namespace TheAdventure
                 gameObject.Render(_renderer);
             }
 
-            _player.Render(_renderer);
+            _player1.Render(_renderer);
+            _player2.Render(_renderer);  // Render second player
         }
 
         private void AddBomb(int x, int y, bool translateCoordinates = true)
         {
-
             var translated = translateCoordinates ? _renderer.TranslateFromScreenToWorldCoordinates(x, y) : new Vector2D<int>(x, y);
-            
+
             var spriteSheet = SpriteSheet.LoadSpriteSheet("bomb.json", "Assets", _renderer);
-            if(spriteSheet != null){
+            if (spriteSheet != null)
+            {
                 spriteSheet.ActivateAnimation("Explode");
                 TemporaryGameObject bomb = new(spriteSheet, 2.1, (translated.X, translated.Y));
                 _gameObjects.Add(bomb.Id, bomb);
             }
+        }
+
+        private bool IsColliding(RenderableGameObject a, RenderableGameObject b)
+        {
+            var deltaX = Math.Abs(a.Position.X - b.Position.X);
+            var deltaY = Math.Abs(a.Position.Y - b.Position.Y);
+            return deltaX < 32 && deltaY < 32;
         }
     }
 }
