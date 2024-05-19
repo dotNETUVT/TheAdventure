@@ -4,6 +4,7 @@ using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.PixelFormats;
 using TheAdventure.Models;
 using Point = Silk.NET.SDL.Point;
+using Rectangle = Silk.NET.Maths.Rectangle;
 
 namespace TheAdventure;
 
@@ -18,6 +19,14 @@ public unsafe class GameRenderer
     private Dictionary<int, TextureInfo> _textureData = new();
     private int _textureId;
 
+    
+    public void FillRectangle(Rectangle<int> rect)
+    {
+        _sdl.RenderFillRect(_renderer, rect);
+    }
+
+
+    
     public GameRenderer(Sdl sdl, GameWindow window)
     {
         _window = window;

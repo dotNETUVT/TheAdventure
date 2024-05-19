@@ -1,4 +1,3 @@
-using System.Reflection;
 using System.Text.Json;
 using Silk.NET.Maths;
 using Silk.NET.SDL;
@@ -16,32 +15,21 @@ namespace TheAdventure
         private PlayerObject _player;
         private GameRenderer _renderer;
         private Input _input;
-        private ScriptEngine _scriptEngine;
+        private bool _isPaused = false;
 
         private DateTimeOffset _lastUpdate = DateTimeOffset.Now;
         private DateTimeOffset _lastPlayerUpdate = DateTimeOffset.Now;
+
         public Engine(GameRenderer renderer, Input input)
         {
             _renderer = renderer;
             _input = input;
-            _scriptEngine = new ScriptEngine();
+
             _input.OnMouseClick += (_, coords) => AddBomb(coords.x, coords.y);
-        }
-
-        public void WriteToConsole(string message){
-            Console.WriteLine(message);
-        }
-
-        public (int x, int y) GetPlayerPosition(){
-            var pos = _player.Position;
-            return (pos.X, pos.Y);
         }
 
         public void InitializeWorld()
         {
-            var executableLocation = new FileInfo(Assembly.GetExecutingAssembly().Location);
-            _scriptEngine.LoadAll(Path.Combine(executableLocation.Directory.FullName, "Assets", "Scripts"));
-
             var jsonSerializerOptions = new JsonSerializerOptions() { PropertyNameCaseInsensitive = true };
             var levelContent = File.ReadAllText(Path.Combine("Assets", "terrain.tmj"));
 
@@ -90,14 +78,12 @@ namespace TheAdventure
             var secsSinceLastFrame = (currentTime - _lastUpdate).TotalSeconds;
             _lastUpdate = currentTime;
 
-            bool up = _input.IsUpPressed();
-            bool down = _input.IsDownPressed();
-            bool left = _input.IsLeftPressed();
-            bool right = _input.IsRightPressed();
-            bool isAttacking = _input.IsKeyAPressed();
+            bool up = _input.IsWPressed();
+            bool down = _input.IsSPressed();
+            bool left = _input.IsAPressed();
+            bool right = _input.IsDPressed();
+            bool isAttacking = _input.IsSpacePressed();
             bool addBomb = _input.IsKeyBPressed();
-
-            _scriptEngine.ExecuteAll(this);
 
             if(isAttacking)
             {
@@ -122,6 +108,17 @@ namespace TheAdventure
             itemsToRemove.AddRange(GetAllTemporaryGameObjects().Where(gameObject => gameObject.IsExpired)
                 .Select(gameObject => gameObject.Id).ToList());
 
+            if (_input.IsEscapePressed())
+            {
+                _isPaused = !_isPaused;
+            }
+
+            if (_isPaused)
+            {
+                // If paused, render the pause menu and return without processing the frame
+                RenderPauseMenu();
+                return;
+            }
             if (addBomb)
             {
                 AddBomb(_player.Position.X, _player.Position.Y, false);
@@ -135,22 +132,32 @@ namespace TheAdventure
                     var deltaX = Math.Abs(_player.Position.X - tempObject.Position.X);
                     var deltaY = Math.Abs(_player.Position.Y - tempObject.Position.Y);
                     if(deltaX < 32 && deltaY < 32){
-                        _player.GameOver();
+                        _player.GameOver(_renderer);
+                        RenderFrame();
                     }
                 }
                 _gameObjects.Remove(gameObjectId);
             }
         }
 
+        private void RenderPauseMenu()
+        {
+            _renderer.SetDrawColor(237, 231, 225, 1); 
+            _renderer.ClearScreen();
+            
+            // Present the frame
+            _renderer.PresentFrame();
+        }
         public void RenderFrame()
         {
             _renderer.SetDrawColor(0, 0, 0, 255);
             _renderer.ClearScreen();
-            
+    
             _renderer.CameraLookAt(_player.Position.X, _player.Position.Y);
 
             RenderTerrain();
             RenderAllObjects();
+            _player.RenderHealthBar(_renderer);
 
             _renderer.PresentFrame();
         }
@@ -229,7 +236,7 @@ namespace TheAdventure
             _player.Render(_renderer);
         }
 
-        public void AddBomb(int x, int y, bool translateCoordinates = true)
+        private void AddBomb(int x, int y, bool translateCoordinates = true)
         {
 
             var translated = translateCoordinates ? _renderer.TranslateFromScreenToWorldCoordinates(x, y) : new Vector2D<int>(x, y);
