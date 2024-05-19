@@ -12,6 +12,7 @@ namespace TheAdventure
         
         public EventHandler<(int x, int y)> OnMouseClick;
         
+
         public Input(Sdl sdl, GameWindow window, GameRenderer renderer)
         {
             _sdl = sdl;
@@ -24,6 +25,11 @@ namespace TheAdventure
             return _keyboardState[(int)KeyCode.A] == 1;
         }
 
+        public bool IsKeyRPressed()
+        {
+            ReadOnlySpan<byte> keyboardState = new ReadOnlySpan<byte>(_sdl.GetKeyboardState(null), (int)KeyCode.Count);
+            return keyboardState[(int)KeyCode.R] == 1;
+        }
         public bool IsKeyBPressed(){
             ReadOnlySpan<byte> _keyboardState = new(_sdl.GetKeyboardState(null), (int)KeyCode.Count);
             return _keyboardState[(int)KeyCode.B] == 1;
@@ -46,7 +52,13 @@ namespace TheAdventure
             ReadOnlySpan<byte> _keyboardState = new(_sdl.GetKeyboardState(null), (int)KeyCode.Count);
             return _keyboardState[(int)KeyCode.Up] == 1;
         }
-        
+       
+        public bool IsSpacePressed()
+        {
+            ReadOnlySpan<byte> _keyboardState = new(_sdl.GetKeyboardState(null), (int)KeyCode.Count);
+            return _keyboardState[(int)KeyCode.Space] == 1;
+        }
+
         public bool IsDownPressed()
         {
             ReadOnlySpan<byte> _keyboardState = new(_sdl.GetKeyboardState(null), (int)KeyCode.Count);
