@@ -1,0 +1,21 @@
+﻿using TheAdventure;
+using System;
+
+namespace TheAdventure;
+
+public class RandomCoin : IScript
+{
+    DateTimeOffset _nextCoinTimestamp;
+    public void Initialize() {
+        _nextCoinTimestamp = DateTimeOffset.UtcNow.AddSeconds(Random.Shared.Next(2, 5));
+    }
+    public void Execute(Engine engine) {
+        if(_nextCoinTimestamp < DateTimeOffset.UtcNow){
+            _nextCoinTimestamp = DateTimeOffset.UtcNow.AddSeconds(Random.Shared.Next(2, 5));
+            var playerPos = engine.GetPlayerPosition();
+            var coinPosX = playerPos.x + Random.Shared.Next(-200, 200);
+            var coinPosY = playerPos.y + Random.Shared.Next(-200, 200);
+            engine.AddCoin(coinPosX, coinPosY, false);
+        }
+    }
+}

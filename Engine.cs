@@ -135,11 +135,27 @@ namespace TheAdventure
                     var deltaX = Math.Abs(_player.Position.X - tempObject.Position.X);
                     var deltaY = Math.Abs(_player.Position.Y - tempObject.Position.Y);
                     if(deltaX < 32 && deltaY < 32){
-                        _player.GameOver();
+                        if(gameObject is not Coin)
+                            _player.GameOver();
                     }
                 }
                 _gameObjects.Remove(gameObjectId);
             }
+
+            foreach (var (id,gameObject) in _gameObjects)
+            {
+                if (gameObject is Coin)
+                {
+                    var tempObject = (Coin)gameObject;
+                    var deltaX = Math.Abs(_player.Position.X - tempObject.Position.X);
+                    var deltaY = Math.Abs(_player.Position.Y - tempObject.Position.Y);
+                    if(deltaX < 32 && deltaY < 32){
+                        ((Coin)gameObject).SetState(true);
+                    }else
+                        ((Coin)gameObject).SetState(false);
+                }
+            }
+            
         }
 
         public void RenderFrame()
@@ -239,6 +255,19 @@ namespace TheAdventure
                 spriteSheet.ActivateAnimation("Explode");
                 TemporaryGameObject bomb = new(spriteSheet, 2.1, (translated.X, translated.Y));
                 _gameObjects.Add(bomb.Id, bomb);
+            }
+        }
+        
+        public void AddCoin(int x, int y, bool translateCoordinates = true)
+        {
+
+            var translated = translateCoordinates ? _renderer.TranslateFromScreenToWorldCoordinates(x, y) : new Vector2D<int>(x, y);
+            
+            var spriteSheet = SpriteSheet.LoadSpriteSheet("coin.json", "Assets", _renderer);
+            if(spriteSheet != null){
+                spriteSheet.ActivateAnimation("Explode");
+                Coin coin = new((translated.X, translated.Y), spriteSheet);
+                _gameObjects.Add(coin.Id, coin);
             }
         }
     }
