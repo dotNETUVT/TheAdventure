@@ -1,0 +1,25 @@
+{
+  "FileName": "powerup.png",
+  "RowCount": 1,
+  "ColumnCount": 1,
+  "FrameWidth": 320,
+  "FrameHeight": 160,
+  "FrameCenter": {
+    "OffsetX": 160,
+    "OffsetY": 80
+  },
+  "Animations": {
+    "Idle": {
+      "StartFrame": {
+        "Row": 0,
+        "Col": 0
+      },
+      "EndFrame": {
+        "Row": 0,
+        "Col": 0
+      },
+      "DurationMs": 1000,
+      "Loop": true
+    }
+  }
+}

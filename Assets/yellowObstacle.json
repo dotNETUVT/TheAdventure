@@ -1,0 +1,25 @@
+{
+  "FileName": "yellowObstacle.png",
+  "RowCount": 1,
+  "ColumnCount": 1,
+  "FrameWidth": 64,
+  "FrameHeight": 32,
+  "FrameCenter": {
+    "OffsetX": 32,
+    "OffsetY": 16
+  },
+  "Animations": {
+    "Idle": {
+      "StartFrame": {
+        "Row": 0,
+        "Col": 0
+      },
+      "EndFrame": {
+        "Row": 0,
+        "Col": 0
+      },
+      "DurationMs": 1000,
+      "Loop": true
+    }
+  }
+}

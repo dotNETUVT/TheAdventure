@@ -1,0 +1,25 @@
+{
+  "FileName": "yellowChest.png",
+  "RowCount": 1,
+  "ColumnCount": 1,
+  "FrameWidth": 64,
+  "FrameHeight": 64,
+  "FrameCenter": {
+    "OffsetX": 32,
+    "OffsetY": 32
+  },
+  "Animations": {
+    "Idle": {
+      "StartFrame": {
+        "Row": 0,
+        "Col": 0
+      },
+      "EndFrame": {
+        "Row": 0,
+        "Col": 0
+      },
+      "DurationMs": 1000,
+      "Loop": true
+    }
+  }
+}

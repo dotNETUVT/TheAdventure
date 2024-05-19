@@ -1,0 +1,25 @@
+{
+  "FileName": "coins.png",
+  "RowCount": 1,
+  "ColumnCount": 8,
+  "FrameWidth": 640,
+  "FrameHeight": 320,
+  "FrameCenter": {
+    "OffsetX": 320,
+    "OffsetY": 160
+  },
+  "Animations": {
+    "Idle": {
+      "StartFrame": {
+        "Row": 0,
+        "Col": 0
+      },
+      "EndFrame": {
+        "Row": 0,
+        "Col": 7
+      },
+      "DurationMs": 1000,
+      "Loop": true
+    }
+  }
+}
