@@ -1,3 +1,4 @@
+using System.Reflection;
 using System.Text.Json;
 using Silk.NET.Maths;
 using Silk.NET.SDL;
@@ -15,20 +16,32 @@ namespace TheAdventure
         private PlayerObject _player;
         private GameRenderer _renderer;
         private Input _input;
+        private ScriptEngine _scriptEngine;
 
         private DateTimeOffset _lastUpdate = DateTimeOffset.Now;
         private DateTimeOffset _lastPlayerUpdate = DateTimeOffset.Now;
-
         public Engine(GameRenderer renderer, Input input)
         {
             _renderer = renderer;
             _input = input;
-
+            _scriptEngine = new ScriptEngine();
             _input.OnMouseClick += (_, coords) => AddBomb(coords.x, coords.y);
+        }
+
+        public void WriteToConsole(string message){
+            Console.WriteLine(message);
+        }
+
+        public (int x, int y) GetPlayerPosition(){
+            var pos = _player.Position;
+            return (pos.X, pos.Y);
         }
 
         public void InitializeWorld()
         {
+            var executableLocation = new FileInfo(Assembly.GetExecutingAssembly().Location);
+            _scriptEngine.LoadAll(Path.Combine(executableLocation.Directory.FullName, "Assets", "Scripts"));
+
             var jsonSerializerOptions = new JsonSerializerOptions() { PropertyNameCaseInsensitive = true };
             var levelContent = File.ReadAllText(Path.Combine("Assets", "terrain.tmj"));
 
@@ -86,7 +99,13 @@ namespace TheAdventure
             bool addBomb = _input.IsKeyBPressed();
             bool reset = _input.IsKeyRPressed();
 
+<<<<<<< HEAD
             if (_player.IsDead())
+=======
+            _scriptEngine.ExecuteAll(this);
+
+            if(isAttacking)
+>>>>>>> 336e7aa2e9e8648f88c2c6b8064b736f4052dd9a
             {
                 if (reset)
                 {
@@ -239,7 +258,7 @@ namespace TheAdventure
             _player.Render(_renderer);
         }
 
-        private void AddBomb(int x, int y, bool translateCoordinates = true)
+        public void AddBomb(int x, int y, bool translateCoordinates = true)
         {
 
             var translated = translateCoordinates ? _renderer.TranslateFromScreenToWorldCoordinates(x, y) : new Vector2D<int>(x, y);

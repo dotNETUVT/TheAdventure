@@ -1,0 +1,21 @@
+using TheAdventure;
+using System;
+
+namespace TheAdventure;
+
+public class RandomBomb : IScript
+{
+    DateTimeOffset _nextBombTimestamp;
+    public void Initialize() {
+        _nextBombTimestamp = DateTimeOffset.UtcNow.AddSeconds(Random.Shared.Next(2, 5));
+    }
+    public void Execute(Engine engine) {
+        if(_nextBombTimestamp < DateTimeOffset.UtcNow){
+            _nextBombTimestamp = DateTimeOffset.UtcNow.AddSeconds(Random.Shared.Next(2, 5));
+            var playerPos = engine.GetPlayerPosition();
+            var bombPosX = playerPos.x + Random.Shared.Next(-50, 50);
+            var bombPosY = playerPos.y + Random.Shared.Next(-50, 50);
+            engine.AddBomb(bombPosX, bombPosY, false);
+        }
+    }
+}
