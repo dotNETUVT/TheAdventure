@@ -73,6 +73,7 @@ namespace TheAdventure
 
         public void ProcessFrame()
         {
+
             var currentTime = DateTimeOffset.Now;
             var secsSinceLastFrame = (currentTime - _lastUpdate).TotalSeconds;
             _lastUpdate = currentTime;
@@ -83,47 +84,64 @@ namespace TheAdventure
             bool right = _input.IsRightPressed();
             bool isAttacking = _input.IsKeyAPressed();
             bool addBomb = _input.IsKeyBPressed();
+            bool reset = _input.IsKeyRPressed();
 
-            if(isAttacking)
+            if (_player.IsDead())
             {
-                var dir = up ? 1: 0;
-                dir += down? 1 : 0;
-                dir += left? 1: 0;
-                dir += right ? 1 : 0;
-                if(dir <= 1){
-                    _player.Attack(up, down, left, right);
-                }
-                else{
-                    isAttacking = false;
+                if (reset)
+                {
+                    ResetGame();
+                    return;
                 }
             }
-            if(!isAttacking)
+            else
             {
-                _player.UpdatePlayerPosition(up ? 1.0 : 0.0, down ? 1.0 : 0.0, left ? 1.0 : 0.0, right ? 1.0 : 0.0,
-                    _currentLevel.Width * _currentLevel.TileWidth, _currentLevel.Height * _currentLevel.TileHeight,
-                    secsSinceLastFrame);
-            }
-            var itemsToRemove = new List<int>();
-            itemsToRemove.AddRange(GetAllTemporaryGameObjects().Where(gameObject => gameObject.IsExpired)
-                .Select(gameObject => gameObject.Id).ToList());
 
-            if (addBomb)
-            {
-                AddBomb(_player.Position.X, _player.Position.Y, false);
-            }
-
-            foreach (var gameObjectId in itemsToRemove)
-            {
-                var gameObject = _gameObjects[gameObjectId];
-                if(gameObject is TemporaryGameObject){
-                    var tempObject = (TemporaryGameObject)gameObject;
-                    var deltaX = Math.Abs(_player.Position.X - tempObject.Position.X);
-                    var deltaY = Math.Abs(_player.Position.Y - tempObject.Position.Y);
-                    if(deltaX < 32 && deltaY < 32){
-                        _player.GameOver();
+                if (isAttacking)
+                {
+                    var dir = up ? 1 : 0;
+                    dir += down ? 1 : 0;
+                    dir += left ? 1 : 0;
+                    dir += right ? 1 : 0;
+                    if (dir <= 1)
+                    {
+                        _player.Attack(up, down, left, right);
+                    }
+                    else
+                    {
+                        isAttacking = false;
                     }
                 }
-                _gameObjects.Remove(gameObjectId);
+                if (!isAttacking)
+                {
+                    _player.UpdatePlayerPosition(up ? 1.0 : 0.0, down ? 1.0 : 0.0, left ? 1.0 : 0.0, right ? 1.0 : 0.0,
+                        _currentLevel.Width * _currentLevel.TileWidth, _currentLevel.Height * _currentLevel.TileHeight,
+                        secsSinceLastFrame);
+                }
+                var itemsToRemove = new List<int>();
+                itemsToRemove.AddRange(GetAllTemporaryGameObjects().Where(gameObject => gameObject.IsExpired)
+                    .Select(gameObject => gameObject.Id).ToList());
+
+                if (addBomb)
+                {
+                    AddBomb(_player.Position.X, _player.Position.Y, false);
+                }
+
+                foreach (var gameObjectId in itemsToRemove)
+                {
+                    var gameObject = _gameObjects[gameObjectId];
+                    if (gameObject is TemporaryGameObject)
+                    {
+                        var tempObject = (TemporaryGameObject)gameObject;
+                        var deltaX = Math.Abs(_player.Position.X - tempObject.Position.X);
+                        var deltaY = Math.Abs(_player.Position.Y - tempObject.Position.Y);
+                        if (deltaX < 32 && deltaY < 32)
+                        {
+                            _player.GameOver();
+                        }
+                    }
+                    _gameObjects.Remove(gameObjectId);
+                }
             }
         }
 
@@ -202,6 +220,13 @@ namespace TheAdventure
                     yield return temporaryGameObject;
                 }
             }
+        }
+
+        public void ResetGame()
+        {
+            _player.Reset();
+            _gameObjects.Clear();
+            InitializeWorld();
         }
 
         private void RenderAllObjects()

@@ -7,3 +7,4 @@ public struct TextureInfo
 
     public int PixelDataSize => Width * Height * 4;
 }
+
