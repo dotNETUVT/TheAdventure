@@ -2,6 +2,7 @@ using System.Text.Json;
 using Silk.NET.Maths;
 using Silk.NET.SDL;
 using System.Timers;
+using System.Media;
 using TheAdventure.Models;
 using TheAdventure.Models.Data;
 
@@ -18,6 +19,7 @@ namespace TheAdventure
         private PlayerObject _player;
         private GameRenderer _renderer;
         private Input _input;
+        private int score = 0;
 
         private DateTimeOffset _lastUpdate = DateTimeOffset.Now;
         private DateTimeOffset _lastPlayerUpdate = DateTimeOffset.Now;
@@ -28,22 +30,14 @@ namespace TheAdventure
             _input = input;
 
             _input.OnMouseClick += (_, coords) => AddBomb(coords.x, coords.y);
-
-            _debugTimer = new System.Timers.Timer(1000);
-            _debugTimer.Elapsed += OnDebugTimerElapsed;
-            _debugTimer.Start();
         }
-
-        private void OnDebugTimerElapsed(object sender, ElapsedEventArgs e)
-        {
-            Console.WriteLine($"CanMoveUp: {_player.CanMoveUp}, CanMoveDown: {_player.CanMoveDown}, CanMoveLeft: {_player.CanMoveLeft}, CanMoveRight: {_player.CanMoveRight}");
-            Console.WriteLine($"Width: {_player.SpriteSheet.FrameWidth}, Height: {_player.SpriteSheet.FrameHeight}");
-        }
-
         public void InitializeWorld()
         {
             var jsonSerializerOptions = new JsonSerializerOptions() { PropertyNameCaseInsensitive = true };
             var levelContent = File.ReadAllText(Path.Combine("Assets", "terrain.tmj"));
+
+            SoundPlayer music = new SoundPlayer(@"Assets\music.wav");
+            music.Play();
 
             var level = JsonSerializer.Deserialize<Level>(levelContent, jsonSerializerOptions);
             if (level == null) return;
@@ -127,6 +121,7 @@ namespace TheAdventure
             bool right = _input.IsRightPressed();
             bool isAttacking = _input.IsKeyAPressed();
             bool addBomb = _input.IsKeyBPressed();
+            bool Space = _input.IsKeySpacePressed();
 
             UpdateMovementFlags();
 
@@ -190,7 +185,7 @@ namespace TheAdventure
             int playerWidth = _player.SpriteSheet.FrameWidth;
             int playerHeight = _player.SpriteSheet.FrameHeight;
 
-            foreach (var gameObject in _gameObjects.Values)
+            foreach (var gameObject in _gameObjects.Values.ToList())
             {
                 if (gameObject is Boulder boulder)
                 {
@@ -198,7 +193,6 @@ namespace TheAdventure
                     int boulderY = boulder.Position.Y;
                     int boulderWidth = boulder.SpriteSheet.FrameWidth;
                     int boulderHeight = boulder.SpriteSheet.FrameHeight;
-
 
                     int minX = _player.Position.X - playerWidth / 3;
                     int minY = _player.Position.Y - playerHeight / 3;
@@ -208,7 +202,6 @@ namespace TheAdventure
                     if (boulderX >= minX && boulderX < maxX &&
                         boulderY >= minY && boulderY < maxY)
                     {
-
                         if (boulderX + boulderWidth / 2 < _player.Position.X)
                         {
                             _player.CanMoveLeft = false;
@@ -225,6 +218,13 @@ namespace TheAdventure
                         else if (boulderY + boulderHeight / 2 > _player.Position.Y)
                         {
                             _player.CanMoveDown = false;
+                        }
+
+                        if (_input.IsKeySpacePressed())
+                        {
+                            _gameObjects.Remove(boulder.Id);
+                            score++;
+                            Console.WriteLine($"Score: {score}");
                         }
                     }
                 }
