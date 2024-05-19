@@ -1,9 +1,11 @@
-namespace TheAdventure.Models;
-
-public struct TextureInfo
+namespace TheAdventure.Models
 {
-    public int Width { get; set; }
-    public int Height { get; set; }
 
-    public int PixelDataSize => Width * Height * 4;
+    public struct TextureInfo
+    {
+        public int Width { get; set; }
+        public int Height { get; set; }
+
+        public int PixelDataSize => Width * Height * 4;
+    }
 }

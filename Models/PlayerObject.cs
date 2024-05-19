@@ -1,85 +1,190 @@
+using System.Formats.Asn1;
 using Silk.NET.Maths;
 using TheAdventure;
 
-namespace TheAdventure.Models;
-
-public class PlayerObject : RenderableGameObject
+namespace TheAdventure.Models
 {
-    private int _pixelsPerSecond = 192;
-
-    private string _currentAnimation = "IdleDown";
-
-
-    public PlayerObject(SpriteSheet spriteSheet, int x, int y) : base(spriteSheet, (x, y))
+    public class PlayerObject : RenderableGameObject
     {
-        SpriteSheet.ActivateAnimation(_currentAnimation);
-       
-    }
-
-    public void UpdatePlayerPosition(double up, double down, double left, double right, int width, int height,
-        double time)
-    {
-
-        if (up <= double.Epsilon &&
-            down <= double.Epsilon &&
-            left <= double.Epsilon &&
-            right <= double.Epsilon &&
-            _currentAnimation == "IdleDown"){
-            return;
-        }
-
-        var pixelsToMove = time * _pixelsPerSecond;
-
-        var x = Position.X + (int)(right * pixelsToMove);
-        x -= (int)(left * pixelsToMove);
-
-        var y = Position.Y - (int)(up * pixelsToMove);
-        y += (int)(down * pixelsToMove);
-
-        if (x < 10)
+        public enum PlayerStateDirection
         {
-            x = 10;
+            None = 0,
+            Down,
+            Up,
+            Left,
+            Right,
         }
 
-        if (y < 24)
+        public enum PlayerState
         {
-            y = 24;
+            None = 0,
+            Idle,
+            Move,
+            Attack,
+            GameOver
         }
 
-        if (x > width - 10)
+        private int _pixelsPerSecond = 192;
+        private (int X, int Y) _previousPosition;
+
+        public bool CanMoveUp { get; set; } = true;
+        public bool CanMoveDown { get; set; } = true;
+        public bool CanMoveLeft { get; set; } = true;
+        public bool CanMoveRight { get; set; } = true;
+
+        public (PlayerState State, PlayerStateDirection Direction) State { get; private set; }
+
+        public PlayerObject(SpriteSheet spriteSheet, int x, int y) : base(spriteSheet, (x, y))
         {
-            x = width - 10;
+            SetState(PlayerState.Idle, PlayerStateDirection.Down);
+            _previousPosition = (x, y);
         }
 
-        if (y > height - 6)
+        public void SetState(PlayerState state, PlayerStateDirection direction)
         {
-            y = height - 6;
+            if (State.State == PlayerState.GameOver) return;
+            if (State.State == state && State.Direction == direction)
+            {
+                return;
+            }
+            else if (state == PlayerState.None && direction == PlayerStateDirection.None)
+            {
+                SpriteSheet.ActivateAnimation(null);
+            }
+            else if (state == PlayerState.GameOver)
+            {
+                SpriteSheet.ActivateAnimation(Enum.GetName(state));
+            }
+            else
+            {
+                var animationName = Enum.GetName<PlayerState>(state) + Enum.GetName<PlayerStateDirection>(direction);
+                SpriteSheet.ActivateAnimation(animationName);
+            }
+            State = (state, direction);
         }
 
-        if (y < Position.Y && _currentAnimation != "MoveUp"){
-            _currentAnimation = "MoveUp";
-            //Console.WriteLine($"Attempt to switch to {_currentAnimation}");
-        }
-        if (y > Position.Y && _currentAnimation != "MoveDown"){
-            _currentAnimation = "MoveDown";
-            //Console.WriteLine($"Attempt to switch to {_currentAnimation}");
-        }
-        if (x > Position.X && _currentAnimation != "MoveRight"){
-            _currentAnimation = "MoveRight";
-            //Console.WriteLine($"Attempt to switch to {_currentAnimation}");
-        }
-        if (x < Position.X && _currentAnimation != "MoveLeft"){
-            _currentAnimation = "MoveLeft";
-            //Console.WriteLine($"Attempt to switch to {_currentAnimation}");
-        }
-        if (x == Position.X && _currentAnimation != "IdleDown" &&
-            y == Position.Y && _currentAnimation != "IdleDown"){
-            _currentAnimation = "IdleDown";
-            //Console.WriteLine($"Attempt to switch to {_currentAnimation}");
+        public void GameOver()
+        {
+            SetState(PlayerState.GameOver, PlayerStateDirection.None);
         }
 
-        //Console.WriteLine($"Will to switch to {_currentAnimation}");
-        SpriteSheet.ActivateAnimation(_currentAnimation);
-        Position = (x, y);
+        public void Attack(bool up, bool down, bool left, bool right)
+        {
+            if (State.State == PlayerState.GameOver) return;
+            var direction = State.Direction;
+            if (up)
+            {
+                direction = PlayerStateDirection.Up;
+            }
+            else if (down)
+            {
+                direction = PlayerStateDirection.Down;
+            }
+            else if (right)
+            {
+                direction = PlayerStateDirection.Right;
+            }
+            else if (left)
+            {
+                direction = PlayerStateDirection.Left;
+            }
+            SetState(PlayerState.Attack, direction);
+        }
+
+        public void UpdatePlayerPosition(double up, double down, double left, double right, int width, int height,
+            double time)
+        {
+            if (State.State == PlayerState.GameOver) return;
+            if (up <= double.Epsilon &&
+                down <= double.Epsilon &&
+                left <= double.Epsilon &&
+                right <= double.Epsilon &&
+                State.State == PlayerState.Idle)
+            {
+                return;
+            }
+
+            var pixelsToMove = time * _pixelsPerSecond;
+
+            var x = Position.X;
+            var y = Position.Y;
+
+            if (up > double.Epsilon && CanMoveUp)
+            {
+                y -= (int)(up * pixelsToMove);
+            }
+
+            if (down > double.Epsilon && CanMoveDown)
+            {
+                y += (int)(down * pixelsToMove);
+            }
+
+            if (left > double.Epsilon && CanMoveLeft)
+            {
+                x -= (int)(left * pixelsToMove);
+            }
+
+            if (right > double.Epsilon && CanMoveRight)
+            {
+                x += (int)(right * pixelsToMove);
+            }
+
+            if (x < 10)
+            {
+                x = 10;
+            }
+
+            if (y < 24)
+            {
+                y = 24;
+            }
+
+            if (x > width - 10)
+            {
+                x = width - 10;
+            }
+
+            if (y > height - 6)
+            {
+                y = height - 6;
+            }
+
+            if (y < Position.Y)
+            {
+                SetState(PlayerState.Move, PlayerStateDirection.Up);
+            }
+            else if (y > Position.Y)
+            {
+                SetState(PlayerState.Move, PlayerStateDirection.Down);
+            }
+            else if (x > Position.X)
+            {
+                SetState(PlayerState.Move, PlayerStateDirection.Right);
+            }
+            else if (x < Position.X)
+            {
+                SetState(PlayerState.Move, PlayerStateDirection.Left);
+            }
+            else
+            {
+                SetState(PlayerState.Idle, State.Direction);
+            }
+
+            _previousPosition = Position;
+            Position = (x, y);
+        }
+
+        public void MoveBackToPreviousPosition()
+        {
+            Position = _previousPosition;
+        }
+
+        public void ResetMovementFlags()
+        {
+            CanMoveUp = true;
+            CanMoveDown = true;
+            CanMoveLeft = true;
+            CanMoveRight = true;
+        }
     }
 }

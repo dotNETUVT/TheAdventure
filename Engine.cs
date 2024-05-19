@@ -1,6 +1,7 @@
 using System.Text.Json;
 using Silk.NET.Maths;
 using Silk.NET.SDL;
+using System.Timers;
 using TheAdventure.Models;
 using TheAdventure.Models.Data;
 
@@ -10,6 +11,8 @@ namespace TheAdventure
     {
         private readonly Dictionary<int, GameObject> _gameObjects = new();
         private readonly Dictionary<string, TileSet> _loadedTileSets = new();
+
+        private System.Timers.Timer _debugTimer;
 
         private Level? _currentLevel;
         private PlayerObject _player;
@@ -25,6 +28,16 @@ namespace TheAdventure
             _input = input;
 
             _input.OnMouseClick += (_, coords) => AddBomb(coords.x, coords.y);
+
+            _debugTimer = new System.Timers.Timer(1000);
+            _debugTimer.Elapsed += OnDebugTimerElapsed;
+            _debugTimer.Start();
+        }
+
+        private void OnDebugTimerElapsed(object sender, ElapsedEventArgs e)
+        {
+            Console.WriteLine($"CanMoveUp: {_player.CanMoveUp}, CanMoveDown: {_player.CanMoveDown}, CanMoveLeft: {_player.CanMoveLeft}, CanMoveRight: {_player.CanMoveRight}");
+            Console.WriteLine($"Width: {_player.SpriteSheet.FrameWidth}, Height: {_player.SpriteSheet.FrameHeight}");
         }
 
         public void InitializeWorld()
@@ -64,11 +77,42 @@ namespace TheAdventure
             };
             */
             var spriteSheet = SpriteSheet.LoadSpriteSheet("player.json", "Assets", _renderer);
-            if(spriteSheet != null){
+            if (spriteSheet != null)
+            {
                 _player = new PlayerObject(spriteSheet, 100, 100);
             }
             _renderer.SetWorldBounds(new Rectangle<int>(0, 0, _currentLevel.Width * _currentLevel.TileWidth,
                 _currentLevel.Height * _currentLevel.TileHeight));
+
+            var boulderSpriteSheet = SpriteSheet.LoadSpriteSheet("boulder.json", "Assets", _renderer);
+            if (boulderSpriteSheet != null)
+            {
+                int mazeWidth = _currentLevel.Width;
+                int mazeHeight = _currentLevel.Height;
+                MazeGenerator mazeGenerator = new MazeGenerator(mazeWidth, mazeHeight);
+                bool[,] maze = mazeGenerator.GenerateMaze();
+
+                int playerStartX = _player.Position.X / _currentLevel.TileWidth;
+                int playerStartY = _player.Position.Y / _currentLevel.TileHeight;
+                int safeZoneRadius = 2;
+
+                for (int x = 0; x < mazeWidth; x++)
+                {
+                    for (int y = 0; y < mazeHeight; y++)
+                    {
+                        bool isInSafeZone = Math.Abs(x - playerStartX) <= safeZoneRadius &&
+                                            Math.Abs(y - playerStartY) <= safeZoneRadius;
+
+                        if (!maze[x, y] && !isInSafeZone)
+                        {
+                            int worldX = x * _currentLevel.TileWidth;
+                            int worldY = y * _currentLevel.TileHeight;
+                            var boulder = new Boulder(boulderSpriteSheet, worldX, worldY);
+                            _gameObjects.Add(boulder.Id, boulder);
+                        }
+                    }
+                }
+            }
         }
 
         public void ProcessFrame()
@@ -81,18 +125,109 @@ namespace TheAdventure
             bool down = _input.IsDownPressed();
             bool left = _input.IsLeftPressed();
             bool right = _input.IsRightPressed();
+            bool isAttacking = _input.IsKeyAPressed();
+            bool addBomb = _input.IsKeyBPressed();
 
-            _player.UpdatePlayerPosition(up ? 1.0 : 0.0, down ? 1.0 : 0.0, left ? 1.0 : 0.0, right ? 1.0 : 0.0,
-                _currentLevel.Width * _currentLevel.TileWidth, _currentLevel.Height * _currentLevel.TileHeight,
-                secsSinceLastFrame);
+            UpdateMovementFlags();
+
+            if (isAttacking)
+            {
+                var dir = up ? 1 : 0;
+                dir += down ? 1 : 0;
+                dir += left ? 1 : 0;
+                dir += right ? 1 : 0;
+                if (dir <= 1)
+                {
+                    _player.Attack(up, down, left, right);
+                }
+                else
+                {
+                    isAttacking = false;
+                }
+            }
+            if (!isAttacking)
+            {
+                _player.UpdatePlayerPosition(up ? 1.0 : 0.0, down ? 1.0 : 0.0, left ? 1.0 : 0.0, right ? 1.0 : 0.0,
+                    _currentLevel.Width * _currentLevel.TileWidth, _currentLevel.Height * _currentLevel.TileHeight,
+                    secsSinceLastFrame);
+            }
 
             var itemsToRemove = new List<int>();
             itemsToRemove.AddRange(GetAllTemporaryGameObjects().Where(gameObject => gameObject.IsExpired)
                 .Select(gameObject => gameObject.Id).ToList());
 
-            foreach (var gameObject in itemsToRemove)
+            if (addBomb)
             {
-                _gameObjects.Remove(gameObject);
+                AddBomb(_player.Position.X, _player.Position.Y, false);
+            }
+
+            foreach (var gameObjectId in itemsToRemove)
+            {
+                var gameObject = _gameObjects[gameObjectId];
+                if (gameObject is TemporaryGameObject)
+                {
+                    var tempObject = (TemporaryGameObject)gameObject;
+                    var deltaX = Math.Abs(_player.Position.X - tempObject.Position.X);
+                    var deltaY = Math.Abs(_player.Position.Y - tempObject.Position.Y);
+                    if (deltaX < 32 && deltaY < 32)
+                    {
+                        _player.GameOver();
+                    }
+                }
+                _gameObjects.Remove(gameObjectId);
+            }
+        }
+
+        private void UpdateMovementFlags()
+        {
+            _player.CanMoveUp = true;
+            _player.CanMoveDown = true;
+            _player.CanMoveLeft = true;
+            _player.CanMoveRight = true;
+
+            int playerX = _player.Position.X;
+            int playerY = _player.Position.Y;
+            int playerWidth = _player.SpriteSheet.FrameWidth;
+            int playerHeight = _player.SpriteSheet.FrameHeight;
+
+            foreach (var gameObject in _gameObjects.Values)
+            {
+                if (gameObject is Boulder boulder)
+                {
+                    int boulderX = boulder.Position.X;
+                    int boulderY = boulder.Position.Y;
+                    int boulderWidth = boulder.SpriteSheet.FrameWidth;
+                    int boulderHeight = boulder.SpriteSheet.FrameHeight;
+
+
+                    int minX = _player.Position.X - playerWidth / 3;
+                    int minY = _player.Position.Y - playerHeight / 3;
+                    int maxX = _player.Position.X + playerWidth / 3;
+                    int maxY = _player.Position.Y + playerHeight / 3;
+
+                    if (boulderX >= minX && boulderX < maxX &&
+                        boulderY >= minY && boulderY < maxY)
+                    {
+
+                        if (boulderX + boulderWidth / 2 < _player.Position.X)
+                        {
+                            _player.CanMoveLeft = false;
+                        }
+                        else if (boulderX + boulderWidth / 2 > _player.Position.X)
+                        {
+                            _player.CanMoveRight = false;
+                        }
+
+                        if (boulderY + boulderHeight / 2 < _player.Position.Y)
+                        {
+                            _player.CanMoveUp = false;
+                        }
+                        else if (boulderY + boulderHeight / 2 > _player.Position.Y)
+                        {
+                            _player.CanMoveDown = false;
+                        }
+                    }
+                }
             }
         }
 
@@ -100,7 +235,7 @@ namespace TheAdventure
         {
             _renderer.SetDrawColor(0, 0, 0, 255);
             _renderer.ClearScreen();
-            
+
             _renderer.CameraLookAt(_player.Position.X, _player.Position.Y);
 
             RenderTerrain();
@@ -183,19 +318,14 @@ namespace TheAdventure
             _player.Render(_renderer);
         }
 
-        private void AddBomb(int x, int y)
+        private void AddBomb(int x, int y, bool translateCoordinates = true)
         {
-            var translated = _renderer.TranslateFromScreenToWorldCoordinates(x, y);
-            /*SpriteSheet spriteSheet = new(_renderer, "BombExploding.png", 1, 13, 32, 64, (16, 48));
-            spriteSheet.Animations["Explode"] = new SpriteSheet.Animation()
-            {
-                StartFrame = (0, 0),
-                EndFrame = (0, 12),
-                DurationMs = 2000,
-                Loop = false
-            };*/
+
+            var translated = translateCoordinates ? _renderer.TranslateFromScreenToWorldCoordinates(x, y) : new Vector2D<int>(x, y);
+
             var spriteSheet = SpriteSheet.LoadSpriteSheet("bomb.json", "Assets", _renderer);
-            if(spriteSheet != null){
+            if (spriteSheet != null)
+            {
                 spriteSheet.ActivateAnimation("Explode");
                 TemporaryGameObject bomb = new(spriteSheet, 2.1, (translated.X, translated.Y));
                 _gameObjects.Add(bomb.Id, bomb);

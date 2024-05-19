@@ -1,0 +1,11 @@
+﻿{
+  "FileName": "bouldersprite.png",
+  "RowCount": 1,
+  "ColumnCount": 1,
+  "FrameWidth": 16,
+  "FrameHeight": 16,
+  "FrameCenter": {
+    "OffsetX": 8,
+    "OffsetY": 8
+  }
+}
