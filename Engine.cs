@@ -9,6 +9,17 @@ namespace TheAdventure
 {
     public class Engine
     {
+        private enum GameState
+        {
+            Playing,
+            PlayerDying,
+            PlayerRespawning
+        }
+        
+        private GameState _currentState = GameState.Playing;
+        private DateTimeOffset _deathTime;
+        private readonly TimeSpan _deathDuration = TimeSpan.FromSeconds(2);
+        
         private readonly Dictionary<int, GameObject> _gameObjects = new();
         private readonly Dictionary<string, TileSet> _loadedTileSets = new();
 
@@ -17,9 +28,10 @@ namespace TheAdventure
         private GameRenderer _renderer;
         private Input _input;
         private ScriptEngine _scriptEngine;
+        private Camera _camera;
 
         private DateTimeOffset _lastUpdate = DateTimeOffset.Now;
-        private DateTimeOffset _lastPlayerUpdate = DateTimeOffset.Now;
+        
         public Engine(GameRenderer renderer, Input input)
         {
             _renderer = renderer;
@@ -90,33 +102,50 @@ namespace TheAdventure
             var secsSinceLastFrame = (currentTime - _lastUpdate).TotalSeconds;
             _lastUpdate = currentTime;
 
+            switch (_currentState)
+            {
+                case GameState.Playing:
+                    ProcessPlayingState(secsSinceLastFrame);
+                    break;
+                case GameState.PlayerDying:
+                    ProcessPlayerDyingState(currentTime);
+                    break;
+                case GameState.PlayerRespawning:
+                    ProcessPlayerRespawningState(currentTime);
+                    break;
+            }
+        }
+
+        private void ProcessPlayingState(double secsSinceLastFrame)
+        {
             bool up = _input.IsUpPressed();
             bool down = _input.IsDownPressed();
             bool left = _input.IsLeftPressed();
             bool right = _input.IsRightPressed();
             bool isAttacking = _input.IsKeyAPressed();
             bool addBomb = _input.IsKeyBPressed();
+            bool isRunning = _input.IsShiftPressed();
 
-            _scriptEngine.ExecuteAll(this);
-
-            if(isAttacking)
+            if (isAttacking)
             {
-                var dir = up ? 1: 0;
-                dir += down? 1 : 0;
-                dir += left? 1: 0;
+                var dir = up ? 1 : 0;
+                dir += down ? 1 : 0;
+                dir += left ? 1 : 0;
                 dir += right ? 1 : 0;
-                if(dir <= 1){
+                if (dir <= 1)
+                {
                     _player.Attack(up, down, left, right);
                 }
-                else{
+                else
+                {
                     isAttacking = false;
                 }
             }
-            if(!isAttacking)
+            if (!isAttacking)
             {
                 _player.UpdatePlayerPosition(up ? 1.0 : 0.0, down ? 1.0 : 0.0, left ? 1.0 : 0.0, right ? 1.0 : 0.0,
                     _currentLevel.Width * _currentLevel.TileWidth, _currentLevel.Height * _currentLevel.TileHeight,
-                    secsSinceLastFrame);
+                    secsSinceLastFrame, isRunning);
             }
             var itemsToRemove = new List<int>();
             itemsToRemove.AddRange(GetAllTemporaryGameObjects().Where(gameObject => gameObject.IsExpired)
@@ -130,15 +159,42 @@ namespace TheAdventure
             foreach (var gameObjectId in itemsToRemove)
             {
                 var gameObject = _gameObjects[gameObjectId];
-                if(gameObject is TemporaryGameObject){
+                if (gameObject is TemporaryGameObject)
+                {
                     var tempObject = (TemporaryGameObject)gameObject;
                     var deltaX = Math.Abs(_player.Position.X - tempObject.Position.X);
                     var deltaY = Math.Abs(_player.Position.Y - tempObject.Position.Y);
-                    if(deltaX < 32 && deltaY < 32){
+                    if (deltaX < 32 && deltaY < 32)
+                    {
                         _player.GameOver();
+                        _currentState = GameState.PlayerDying;
+                        _deathTime = DateTimeOffset.Now;
+                        Console.WriteLine("Player died at: " + _deathTime);
                     }
                 }
                 _gameObjects.Remove(gameObjectId);
+            }
+        }
+        
+        private void ProcessPlayerDyingState(DateTimeOffset currentTime)
+        {
+            if ((currentTime - _deathTime) >= _deathDuration)
+            {
+                _currentState = GameState.PlayerRespawning;
+                _renderer.StartCinematicCircleClosing();
+                Console.WriteLine("Transitioning to PlayerRespawning state at: " + currentTime);
+            }
+        }
+
+        private void ProcessPlayerRespawningState(DateTimeOffset currentTime)
+        {
+            if (_renderer.IsCinematicCircleClosed())
+            {
+                _player.Respawn(100, 100);
+                _renderer.StartCinematicCircleOpening();
+                _currentState = GameState.Playing;
+                Console.WriteLine("Player respawned at: " + currentTime);
+                Console.WriteLine($"Player state after respawn: {_player.State.State}, direction: {_player.State.Direction}");
             }
         }
 
@@ -152,6 +208,7 @@ namespace TheAdventure
             RenderTerrain();
             RenderAllObjects();
 
+            _renderer.RenderCinematicCircle();
             _renderer.PresentFrame();
         }
 

@@ -17,6 +17,12 @@ public unsafe class GameRenderer
     private Dictionary<int, IntPtr> _textures = new();
     private Dictionary<int, TextureInfo> _textureData = new();
     private int _textureId;
+    
+    private bool _cinematicCircleClosing = false;
+    private bool _cinematicCircleOpening = false;
+    private DateTimeOffset _cinematicStartTime;
+    private readonly TimeSpan _cinematicDuration = TimeSpan.FromSeconds(1);
+    private bool _cinematicCircleClosed = false;
 
     public GameRenderer(Sdl sdl, GameWindow window)
     {
@@ -96,5 +102,82 @@ public unsafe class GameRenderer
     public void PresentFrame()
     {
         _sdl.RenderPresent(_renderer);
+    }
+    public void StartCinematicCircleClosing()
+    {
+        _cinematicCircleClosing = true;
+        _cinematicStartTime = DateTimeOffset.Now;
+        _cinematicCircleClosed = false;
+        Console.WriteLine("Starting cinematic circle closing.");
+    }
+
+    public void StartCinematicCircleOpening()
+    {
+        _cinematicCircleOpening = true;
+        _cinematicStartTime = DateTimeOffset.Now;
+        Console.WriteLine("Starting cinematic circle opening.");
+    }
+
+    public bool IsCinematicCircleClosed()
+    {
+        return _cinematicCircleClosed;
+    }
+
+    public void RenderCinematicCircle()
+    {
+        if (_cinematicCircleClosing || _cinematicCircleOpening)
+        {
+            var elapsed = (DateTimeOffset.Now - _cinematicStartTime).TotalMilliseconds;
+            var progress = Math.Min(elapsed / _cinematicDuration.TotalMilliseconds, 1.0);
+            if (_cinematicCircleOpening)
+            {
+                progress = 1.0 - progress;
+            }
+
+            int width = _window.Size.Width;
+            int height = _window.Size.Height;
+            int centerX = width / 2;
+            int centerY = height / 2;
+            int maxRadius = (int)Math.Sqrt(centerX * centerX + centerY * centerY);
+            int currentRadius = (int)(maxRadius * progress);
+
+            _sdl.SetRenderDrawColor(_renderer, 0, 0, 0, 255);
+            _sdl.RenderDrawCircle(_renderer, centerX, centerY, currentRadius);
+
+            if (_cinematicCircleClosing && progress >= 1.0)
+            {
+                _cinematicCircleClosed = true;
+                _cinematicCircleClosing = false;
+                Console.WriteLine("Cinematic circle closed.");
+            }
+            else if (_cinematicCircleOpening && progress <= 0.0)
+            {
+                _cinematicCircleOpening = false;
+                _cinematicCircleClosed = false;
+                Console.WriteLine("Cinematic circle opened.");
+            }
+        }
+    }
+}
+
+public static unsafe class SdlRendererExtensions
+{
+    public static void RenderDrawCircle(this Sdl sdl, Renderer* renderer, int centerX, int centerY, int radius)
+    {
+        for (int w = 0; w < radius * 2; w++)
+        {
+            for (int h = 0; h < radius * 2; h++)
+            {
+                int dx = radius - w;
+                int dy = radius - h;
+                if ((dx * dx + dy * dy) <= (radius * radius))
+                {
+                    sdl.RenderDrawPoint(renderer, centerX + dx, centerY + dy);
+                    sdl.RenderDrawPoint(renderer, centerX - dx, centerY + dy);
+                    sdl.RenderDrawPoint(renderer, centerX + dx, centerY - dy);
+                    sdl.RenderDrawPoint(renderer, centerX - dx, centerY - dy);
+                }
+            }
+        }
     }
 }
