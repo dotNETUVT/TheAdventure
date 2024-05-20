@@ -101,8 +101,18 @@ namespace TheAdventure
             bool right = _input.IsRightPressed();
             bool isAttacking = _input.IsKeyAPressed();
             bool addBomb = _input.IsKeyBPressed();
+            bool sprint = _input.IsShiftPressed();
 
             _scriptEngine.ExecuteAll(this);
+            
+
+            if (sprint)
+            {
+                float sprintSpeed = 1.3f;
+                _player.UpdatePlayerPosition(up ? sprintSpeed : 0.0, down ? sprintSpeed : 0.0, left ? sprintSpeed : 0.0, right ? sprintSpeed : 0.0,
+                    _currentLevel.Width * _currentLevel.TileWidth, _currentLevel.Height * _currentLevel.TileHeight,
+                    secsSinceLastFrame);
+            }
 
             if(isAttacking)
             {
