@@ -22,34 +22,13 @@ public class PlayerObject : RenderableGameObject
     }
 
     private int _pixelsPerSecond = 192;
-    public int Level { get; private set; }
-    public int CurrentXP { get; private set; }
-    public int XPToNextLevel { get; private set; }
 
 
     public (PlayerState State, PlayerStateDirection Direction) State{ get; private set; }
 
     public PlayerObject(SpriteSheet spriteSheet, int x, int y) : base(spriteSheet, (x, y))
     {
-        Level = 1;
-        CurrentXP = 0;
-        XPToNextLevel = 100;
         SetState(PlayerState.Idle, PlayerStateDirection.Down);
-    }
-    public void GainXP(int amount)
-    {
-        CurrentXP += amount;
-        if (CurrentXP >= XPToNextLevel)
-        {
-            LevelUp();
-        }
-    }
-    private void LevelUp()
-    {
-        Level++;
-        CurrentXP -= XPToNextLevel;
-        XPToNextLevel = (int)(XPToNextLevel * 1.5); 
-                                                    
     }
 
     public void SetState(PlayerState state, PlayerStateDirection direction)
