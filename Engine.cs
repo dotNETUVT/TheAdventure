@@ -93,6 +93,10 @@ namespace TheAdventure
                 _currentLevel.Height * _currentLevel.TileHeight));
         }
 
+        private bool isGameOver = false;
+
+        public void Start() { }
+
         public void ProcessFrame()
         {
             var currentTime = DateTimeOffset.Now;
@@ -105,10 +109,23 @@ namespace TheAdventure
             bool right = _input.IsRightPressed();
             bool isAttacking = _input.IsKeyAPressed();
             bool addBomb = _input.IsKeyBPressed();
+            bool restart = _input.IsKeyRPressed();
 
             _scriptEngine.ExecuteAll(this);
 
-            if(isAttacking)
+            Console.WriteLine(restart);
+
+            if (isGameOver)
+            {
+                Console.WriteLine(restart);
+                if (restart)
+                {
+                    RestartGame();
+                }
+                return;
+            }
+
+            if (isAttacking)
             {
                 var dir = up ? 1: 0;
                 dir += down? 1 : 0;
@@ -143,13 +160,17 @@ namespace TheAdventure
                     var tempObject = (TemporaryGameObject)gameObject;
                     var deltaX = Math.Abs(_player.Position.X - tempObject.Position.X);
                     var deltaY = Math.Abs(_player.Position.Y - tempObject.Position.Y);
-                    if(deltaX < 32 && deltaY < 32){
+                    if (deltaX < 32 && deltaY < 32)
+                    {
                         _player.GameOver();
+                        isGameOver = true;
                     }
                 }
                 _gameObjects.Remove(gameObjectId);
             }
         }
+
+
 
         public void RenderFrame()
         {
@@ -164,6 +185,20 @@ namespace TheAdventure
             _renderer.PresentFrame();
         }
 
+
+        private void RenderGameOverScreen()
+        {
+            _renderer.SetDrawColor(255, 0, 0, 255);
+            //_renderer.RenderText("Game Over! Press 'R' to Restart", 200, 200);
+        }
+
+        private void RestartGame()
+        {
+            _player.Reset();
+            isGameOver = false;
+            _gameObjects.Clear();
+            InitializeWorld(); 
+        }
         private Tile? GetTile(int id)
         {
             if (_currentLevel == null) return null;

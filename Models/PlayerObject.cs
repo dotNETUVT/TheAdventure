@@ -22,6 +22,7 @@ public class PlayerObject : RenderableGameObject
     }
 
     private int _pixelsPerSecond = 192;
+    public int Health { get; set; }
 
 
     public (PlayerState State, PlayerStateDirection Direction) State{ get; private set; }
@@ -50,8 +51,17 @@ public class PlayerObject : RenderableGameObject
         State = (state, direction);
     }
 
-    public void GameOver(){
+    public void GameOver()
+    {
         SetState(PlayerState.GameOver, PlayerStateDirection.None);
+        Health = 0;
+    }
+
+    public void Reset()
+    {
+        Health = 100; // Reset health
+        Position = (100, 100); // Example initial position
+        // Reset other states as necessary
     }
 
     public void Attack(bool up, bool down, bool left, bool right)
