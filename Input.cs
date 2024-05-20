@@ -19,6 +19,11 @@ namespace TheAdventure
             _renderer = renderer;
         }
 
+        public bool IsShiftPressed(){
+            ReadOnlySpan<byte> _keyboardState = new(_sdl.GetKeyboardState(null), (int)KeyCode.Count);
+            return _keyboardState[(int)KeyCode.LShift] == 1;
+        }
+
         public bool IsKeyAPressed(){
             ReadOnlySpan<byte> _keyboardState = new(_sdl.GetKeyboardState(null), (int)KeyCode.Count);
             return _keyboardState[(int)KeyCode.A] == 1;
