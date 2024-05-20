@@ -2,6 +2,7 @@ using System.Reflection;
 using System.Text.Json;
 using Silk.NET.Maths;
 using Silk.NET.SDL;
+using System.Media;
 using TheAdventure.Models;
 using TheAdventure.Models.Data;
 
@@ -39,6 +40,10 @@ namespace TheAdventure
 
         public void InitializeWorld()
         {
+
+            SoundPlayer bgmusic = new SoundPlayer(@"Assets\bgmusic.wav");
+            bgmusic.Play();
+
             var executableLocation = new FileInfo(Assembly.GetExecutingAssembly().Location);
             _scriptEngine.LoadAll(Path.Combine(executableLocation.Directory.FullName, "Assets", "Scripts"));
 
