@@ -32,9 +32,19 @@ namespace TheAdventure
         private float autoBoostInterval = 5.0f; // Interval for automatic speed boost in seconds
         private float autoBoostTimer = 0.0f;
 
+        // Invincibility variables
+        private bool isInvincible = false;
+        private float invincibilityDuration = 3.0f; // Invincibility duration in seconds
+        private float invincibilityTimer = 0.0f;
+        private float autoInvincibilityInterval = 8.0f; // Interval for automatic invincibility in seconds
+        private float autoInvincibilityTimer = 0.0f;
+
         // Game over variables
         private bool isGameOver = false;
         private DateTimeOffset gameOverStartTime;
+
+        // Score variables
+        private int playerScore = 0;
 
         public Engine(GameRenderer renderer, Input input)
         {
@@ -82,6 +92,7 @@ namespace TheAdventure
 
             playerSpeed = normalSpeed; // Initialize player speed
             autoBoostTimer = autoBoostInterval; // Initialize the auto boost timer
+            autoInvincibilityTimer = autoInvincibilityInterval; // Initialize the auto invincibility timer
         }
 
         public void ProcessFrame()
@@ -126,6 +137,24 @@ namespace TheAdventure
                 autoBoostTimer = autoBoostInterval;
             }
 
+            // Update invincibility timer
+            if (isInvincible)
+            {
+                invincibilityTimer -= (float)secsSinceLastFrame;
+                if (invincibilityTimer <= 0)
+                {
+                    isInvincible = false;
+                }
+            }
+
+            // Update automatic invincibility timer
+            autoInvincibilityTimer -= (float)secsSinceLastFrame;
+            if (autoInvincibilityTimer <= 0)
+            {
+                ActivateInvincibility();
+                autoInvincibilityTimer = autoInvincibilityInterval;
+            }
+
             if (isAttacking)
             {
                 var dir = up ? 1 : 0;
@@ -164,7 +193,7 @@ namespace TheAdventure
                     var tempObject = (TemporaryGameObject)gameObject;
                     var deltaX = Math.Abs(_player.Position.X - tempObject.Position.X);
                     var deltaY = Math.Abs(_player.Position.Y - tempObject.Position.Y);
-                    if (deltaX < 32 && deltaY < 32)
+                    if (!isInvincible && deltaX < 32 && deltaY < 32)
                     {
                         GameOver();
                     }
@@ -286,6 +315,16 @@ namespace TheAdventure
                 isSpeedBoostActive = true;
                 speedBoostTimer = speedBoostDuration;
                 playerSpeed = boostedSpeed;
+            }
+        }
+
+        private void ActivateInvincibility()
+        {
+            Console.WriteLine("Invincibility activated"); // Debug statement
+            if (!isInvincible)
+            {
+                isInvincible = true;
+                invincibilityTimer = invincibilityDuration;
             }
         }
 
