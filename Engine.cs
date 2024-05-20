@@ -36,7 +36,8 @@ namespace TheAdventure
         private bool isInvincible = false;
         private float invincibilityDuration = 3.0f; // Invincibility duration in seconds
         private float invincibilityTimer = 0.0f;
-        private float autoInvincibilityInterval = 8.0f; // Interval for automatic invincibility in seconds
+        
+        private float autoInvincibilityInterval = 8.0f; // Interval for automatic invincibility in second
         private float autoInvincibilityTimer = 0.0f;
 
         // Game over variables
