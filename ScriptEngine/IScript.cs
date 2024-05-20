@@ -12,4 +12,3 @@ public interface IScript
     /// </summary>
     public void Execute(Engine engine);
 }
-

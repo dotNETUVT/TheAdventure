@@ -28,14 +28,22 @@ namespace TheAdventure
             _input.OnMouseClick += (_, coords) => AddBomb(coords.x, coords.y);
         }
 
-        public void WriteToConsole(string message){
+        public void WriteToConsole(string message)
+        {
             Console.WriteLine(message);
         }
 
-        public (int x, int y) GetPlayerPosition(){
+        public PlayerObject GetPlayer()
+        {
+            return _player;
+        }
+
+        public (int x, int y) GetPlayerPosition()
+        {
             var pos = _player.Position;
             return (pos.X, pos.Y);
         }
+
 
         public void InitializeWorld()
         {
@@ -47,6 +55,7 @@ namespace TheAdventure
 
             var level = JsonSerializer.Deserialize<Level>(levelContent, jsonSerializerOptions);
             if (level == null) return;
+
             foreach (var refTileSet in level.TileSets)
             {
                 var tileSetContent = File.ReadAllText(Path.Combine("Assets", refTileSet.Source));
@@ -67,25 +76,31 @@ namespace TheAdventure
             }
 
             _currentLevel = level;
-            /*SpriteSheet spriteSheet = new(_renderer, Path.Combine("Assets", "player.png"), 10, 6, 48, 48, new FrameOffset() { OffsetX = 24, OffsetY = 42 });
-            spriteSheet.Animations["IdleDown"] = new SpriteSheet.Animation()
-            {
-                StartFrame = new FramePosition(),//(0, 0),
-                EndFrame = new FramePosition() { Row = 0, Col = 5 },
-                DurationMs = 1000,
-                Loop = true
-            };
-            */
+
             var spriteSheet = SpriteSheet.LoadSpriteSheet("player.json", "Assets", _renderer);
-            if(spriteSheet != null){
+            if (spriteSheet != null)
+            {
                 _player = new PlayerObject(spriteSheet, 100, 100);
             }
+
             _renderer.SetWorldBounds(new Rectangle<int>(0, 0, _currentLevel.Width * _currentLevel.TileWidth,
                 _currentLevel.Height * _currentLevel.TileHeight));
         }
 
+        private void UpdateBombState(TemporaryGameObject bomb)
+        {
+            // If the bomb's TTL (Time to Live) has expired, mark it as exploding
+            if (bomb.IsExpired)
+            {
+                bomb.IsExploding = true;
+                _gameObjects.Remove(bomb.Id); // Remove the bomb from the game objects collection
+            }
+        }
+
         public void ProcessFrame()
         {
+            _scriptEngine.ExecuteAll(this);
+
             var currentTime = DateTimeOffset.Now;
             var secsSinceLastFrame = (currentTime - _lastUpdate).TotalSeconds;
             _lastUpdate = currentTime;
@@ -96,49 +111,113 @@ namespace TheAdventure
             bool right = _input.IsRightPressed();
             bool isAttacking = _input.IsKeyAPressed();
             bool addBomb = _input.IsKeyBPressed();
+            bool reset = _input.IsKeyRPressed();
 
-            _scriptEngine.ExecuteAll(this);
-
-            if(isAttacking)
+            if (_player.IsDead())
             {
-                var dir = up ? 1: 0;
-                dir += down? 1 : 0;
-                dir += left? 1: 0;
-                dir += right ? 1 : 0;
-                if(dir <= 1){
-                    _player.Attack(up, down, left, right);
-                }
-                else{
-                    isAttacking = false;
+                if (reset)
+                {
+                    ResetGame();
                 }
             }
-            if(!isAttacking)
+            else
             {
-                _player.UpdatePlayerPosition(up ? 1.0 : 0.0, down ? 1.0 : 0.0, left ? 1.0 : 0.0, right ? 1.0 : 0.0,
-                    _currentLevel.Width * _currentLevel.TileWidth, _currentLevel.Height * _currentLevel.TileHeight,
-                    secsSinceLastFrame);
-            }
-            var itemsToRemove = new List<int>();
-            itemsToRemove.AddRange(GetAllTemporaryGameObjects().Where(gameObject => gameObject.IsExpired)
-                .Select(gameObject => gameObject.Id).ToList());
-
-            if (addBomb)
-            {
-                AddBomb(_player.Position.X, _player.Position.Y, false);
-            }
-
-            foreach (var gameObjectId in itemsToRemove)
-            {
-                var gameObject = _gameObjects[gameObjectId];
-                if(gameObject is TemporaryGameObject){
-                    var tempObject = (TemporaryGameObject)gameObject;
-                    var deltaX = Math.Abs(_player.Position.X - tempObject.Position.X);
-                    var deltaY = Math.Abs(_player.Position.Y - tempObject.Position.Y);
-                    if(deltaX < 32 && deltaY < 32){
-                        _player.GameOver();
+                if (isAttacking)
+                {
+                    var dir = up ? 1 : 0;
+                    dir += down ? 1 : 0;
+                    dir += left ? 1 : 0;
+                    dir += right ? 1 : 0;
+                    if (dir <= 1)
+                    {
+                        _player.Attack(up, down, left, right);
+                    }
+                    else
+                    {
+                        isAttacking = false;
                     }
                 }
-                _gameObjects.Remove(gameObjectId);
+
+                if (!isAttacking)
+                {
+                    _player.UpdatePlayerPosition(up ? 1.0 : 0.0, down ? 1.0 : 0.0, left ? 1.0 : 0.0, right ? 1.0 : 0.0,
+                        _currentLevel.Width * _currentLevel.TileWidth, _currentLevel.Height * _currentLevel.TileHeight,
+                        secsSinceLastFrame);
+                }
+
+                var itemsToRemove = new List<int>();
+                var playerAttackedBomb = false;
+
+                foreach (var gameObjectId in _gameObjects.Keys.ToList())
+                {
+                    var gameObject = _gameObjects[gameObjectId];
+                    if (gameObject is TemporaryGameObject tempObject && tempObject.Type == GameObjectType.Bomb)
+                    {
+                        UpdateBombState(tempObject); // Update the bomb's state
+
+                        // Check player's distance to the bomb
+                        var deltaX = Math.Abs(_player.Position.X - tempObject.Position.X);
+                        var deltaY = Math.Abs(_player.Position.Y - tempObject.Position.Y);
+                        var distance = Math.Sqrt(deltaX * deltaX + deltaY * deltaY);
+
+                        // If the player is attacking near the bomb, remove the bomb immediately
+                        if (isAttacking && distance < 32) // Adjust the proximity threshold as needed
+                        {
+                            itemsToRemove.Add(gameObjectId); // Remove the bomb immediately
+                        }
+                        // If the bomb is exploding and the player is within range
+                        else if (tempObject.IsExploding && distance < 100) // Replace 32 with the desired interaction radius
+                        {
+                            if (isAttacking)
+                            {
+                                itemsToRemove.Add(gameObjectId); // Remove the bomb if the player attacks it
+                            }
+                            else
+                            {
+                                _player.GameOver(); // Otherwise, trigger player's game over
+                            }
+                        }
+                    }
+                }
+
+                if (addBomb)
+                {
+                    AddBomb(_player.Position.X, _player.Position.Y, false);
+                }
+
+                // Remove expired objects
+                foreach (var gameObjectId in itemsToRemove)
+                {
+                    _gameObjects.Remove(gameObjectId);
+                }
+
+                // Ensure player doesn't die if they successfully attacked a bomb
+                if (playerAttackedBomb && _player.IsDead())
+                {
+                    _player.Reset(); // Or handle player state reset if necessary
+                }
+            }
+        }
+
+        public void ResetGame()
+        {
+            _player.Reset();
+            _gameObjects.Clear();
+            _scriptEngine.ClearScripts();
+            InitializeWorld();
+        }
+
+        public void AddBomb(int x, int y, bool translateCoordinates = true)
+        {
+            var translated = translateCoordinates ? _renderer.TranslateFromScreenToWorldCoordinates(x, y) : new Vector2D<int>(x, y);
+
+            var spriteSheet = SpriteSheet.LoadSpriteSheet("bomb.json", "Assets", _renderer);
+            if (spriteSheet != null)
+            {
+                spriteSheet.ActivateAnimation("Explode");
+                TemporaryGameObject bomb = new(spriteSheet, 2.1, (translated.X, translated.Y), GameObjectType.Bomb);
+                bomb.IsExploding = false; // Set initially to false
+                _gameObjects.Add(bomb.Id, bomb);
             }
         }
 
@@ -229,17 +308,5 @@ namespace TheAdventure
             _player.Render(_renderer);
         }
 
-        public void AddBomb(int x, int y, bool translateCoordinates = true)
-        {
-
-            var translated = translateCoordinates ? _renderer.TranslateFromScreenToWorldCoordinates(x, y) : new Vector2D<int>(x, y);
-            
-            var spriteSheet = SpriteSheet.LoadSpriteSheet("bomb.json", "Assets", _renderer);
-            if(spriteSheet != null){
-                spriteSheet.ActivateAnimation("Explode");
-                TemporaryGameObject bomb = new(spriteSheet, 2.1, (translated.X, translated.Y));
-                _gameObjects.Add(bomb.Id, bomb);
-            }
-        }
     }
 }

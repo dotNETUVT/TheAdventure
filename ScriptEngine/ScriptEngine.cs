@@ -6,6 +6,12 @@ namespace TheAdventure;
 
 public class ScriptEngine
 {
+
+    public void ClearScripts()
+    {
+        _scripts.Clear();
+    }
+
     private PortableExecutableReference[] scriptReferences;
 
     private Dictionary<string, IScript> _scripts = new Dictionary<string, IScript>();
@@ -43,7 +49,8 @@ public class ScriptEngine
         scriptReferences = references.Select(x => MetadataReference.CreateFromFile(x)).ToArray();
     }
 
-    public void AttachWatcher(string path){
+    public void AttachWatcher(string path)
+    {
         _watcher = new FileSystemWatcher(path);
         _watcher.NotifyFilter = NotifyFilters.FileName | NotifyFilters.LastWrite | NotifyFilters.LastAccess | NotifyFilters.Size;
         _watcher.Changed += OnScriptChanged;
@@ -51,10 +58,12 @@ public class ScriptEngine
         _watcher.EnableRaisingEvents = true;
     }
 
-    public void OnScriptChanged(object source, FileSystemEventArgs e){
-        if(_scripts.ContainsKey(e.FullPath)){
+    public void OnScriptChanged(object source, FileSystemEventArgs e)
+    {
+        if (_scripts.ContainsKey(e.FullPath))
+        {
             Console.WriteLine($"Change detected for: {e.FullPath}");
-            switch(e.ChangeType)
+            switch (e.ChangeType)
             {
                 case WatcherChangeTypes.Changed:
                     RemoveScript(e.FullPath);
@@ -67,23 +76,30 @@ public class ScriptEngine
         }
     }
 
-    public void RemoveScript(string path){
-        if(_scripts.TryGetValue(path, out var script)){
+    public void RemoveScript(string path)
+    {
+        if (_scripts.TryGetValue(path, out var script))
+        {
             _scripts.Remove(path);
         }
     }
 
-    public void LoadAll(string scriptFolder){
+    public void LoadAll(string scriptFolder)
+    {
         AttachWatcher(scriptFolder);
         var dirInfo = new DirectoryInfo(scriptFolder);
-        if(dirInfo.Exists){
-            foreach(var file in dirInfo.GetFiles()){
-                if (file.Extension.ToLowerInvariant() == ".script"){
+        if (dirInfo.Exists)
+        {
+            foreach (var file in dirInfo.GetFiles())
+            {
+                if (file.Extension.ToLowerInvariant() == ".script")
+                {
                     try
                     {
                         Load(file.FullName);
                     }
-                    catch(Exception ex){
+                    catch (Exception ex)
+                    {
                         Console.WriteLine($"Exception trying to load {file.FullName}");
                         Console.WriteLine(ex);
                     }
@@ -92,11 +108,16 @@ public class ScriptEngine
         }
     }
 
-    public void ExecuteAll(Engine engine){
-        foreach(var script in _scripts){
-            script.Value.Execute(engine);
+    public void ExecuteAll(Engine engine)
+    {
+        if (engine.GetPlayer().IsDead()) return;
+
+        foreach (var script in _scripts.Values)
+        {
+            script.Execute(engine);
         }
     }
+
 
     public IScript? Load(string file)
     {
@@ -105,13 +126,17 @@ public class ScriptEngine
         var fileOutput = fileInfo.FullName.Replace(fileInfo.Extension, ".dll");
         var code = File.ReadAllText(fileInfo.FullName);
         var syntaxTree = CSharpSyntaxTree.ParseText(code);
-        var compilation = CSharpCompilation.Create(fileInfo.Name.Replace(fileInfo.Extension, string.Empty), new [] { syntaxTree }, 
+        var compilation = CSharpCompilation.Create(fileInfo.Name.Replace(fileInfo.Extension, string.Empty), new[] { syntaxTree },
            scriptReferences, new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary));
-        using (var compiledScriptAssembly = new FileStream(fileOutput, FileMode.OpenOrCreate)){
+        using (var compiledScriptAssembly = new FileStream(fileOutput, FileMode.OpenOrCreate))
+        {
             var result = compilation.Emit(compiledScriptAssembly);
-            if(!result.Success){
-                foreach(var diag in result.Diagnostics){
-                    if(diag.Severity == DiagnosticSeverity.Error ){
+            if (!result.Success)
+            {
+                foreach (var diag in result.Diagnostics)
+                {
+                    if (diag.Severity == DiagnosticSeverity.Error)
+                    {
                         Console.WriteLine(string.Join(";", diag.Descriptor.CustomTags));
                         Console.WriteLine($"{diag.Descriptor.MessageFormat.ToString()} - {code.Substring(diag.Location.SourceSpan.Start, diag.Location.SourceSpan.Length)} - {diag.Descriptor.HelpLinkUri.ToString()} - {diag.Location.ToString()}");
                     }
@@ -119,11 +144,14 @@ public class ScriptEngine
                 throw new FileLoadException(file);
             }
         }
-        foreach(var type in Assembly.LoadFile(fileOutput).GetTypes()){
-            if (type.IsAssignableTo(typeof(IScript))){
+        foreach (var type in Assembly.LoadFile(fileOutput).GetTypes())
+        {
+            if (type.IsAssignableTo(typeof(IScript)))
+            {
                 var instance = (IScript)type.GetConstructor(Type.EmptyTypes)?.Invoke(null);
                 instance.Initialize();
-                if(instance != null){
+                if (instance != null)
+                {
                     _scripts.Add(file, instance);
                 }
                 return instance;
