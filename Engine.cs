@@ -84,8 +84,19 @@ namespace TheAdventure
                 _currentLevel.Height * _currentLevel.TileHeight));
         }
 
+        private bool _isPaused = false;
+
+        public void TogglePause()
+        {
+            _isPaused = !_isPaused;
+        }
+
         public void ProcessFrame()
         {
+            if (_isPaused)
+            {
+                return;
+            }
             var currentTime = DateTimeOffset.Now;
             var secsSinceLastFrame = (currentTime - _lastUpdate).TotalSeconds;
             _lastUpdate = currentTime;

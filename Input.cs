@@ -52,7 +52,13 @@ namespace TheAdventure
             ReadOnlySpan<byte> _keyboardState = new(_sdl.GetKeyboardState(null), (int)KeyCode.Count);
             return _keyboardState[(int)KeyCode.Down] == 1;
         }
-        
+        public bool IsPausePressed()
+        {
+            ReadOnlySpan<byte> _keyboardState = new(_sdl.GetKeyboardState(null), (int)KeyCode.Count);
+            return _keyboardState[(int)KeyCode.P] == 1; // Assuming 'P' is used for pausing
+        }
+
+
         public bool ProcessInput()
         {
             var currentTime = DateTimeOffset.UtcNow;

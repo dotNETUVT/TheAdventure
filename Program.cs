@@ -29,7 +29,12 @@ public static class Program
             {
                 quit = input.ProcessInput();
                 if (quit) break;
-                
+
+                if (input.IsPausePressed())
+                {
+                    engine.TogglePause();
+                }
+
                 engine.ProcessFrame();
                 engine.RenderFrame();
             }
