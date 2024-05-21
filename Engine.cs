@@ -10,7 +10,7 @@ namespace TheAdventure
     {
         private readonly Dictionary<int, GameObject> _gameObjects = new();
         private readonly Dictionary<string, TileSet> _loadedTileSets = new();
-
+        private Audio audio;
         private Level? _currentLevel;
         private PlayerObject _player;
         private GameRenderer _renderer;
@@ -25,7 +25,10 @@ namespace TheAdventure
         {
             _renderer = renderer;
             _input = input;
+            audio = new Audio();
+            audio.LoadBackgroundMusic(@"Assets\horror.mp3");
 
+            audio.PlayBackgroundMusic();
             _input.OnMouseClick += (_, coords) => AddBomb(coords.x, coords.y);
         }
 
@@ -247,8 +250,6 @@ namespace TheAdventure
             _renderer.SetDrawColor(255, 0, 0, 255);
 
             string healthString = $"Health: {_player.CurrentHealth}";
-
-            //_renderer.RenderText(healthString, healthX, healthY);
         }
 
 

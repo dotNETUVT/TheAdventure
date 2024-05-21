@@ -1,4 +1,3 @@
-using System.Formats.Asn1;
 using Silk.NET.Maths;
 using TheAdventure;
 
@@ -6,36 +5,24 @@ namespace TheAdventure.Models;
 
 public class PlayerObject : RenderableGameObject
 {
-    public enum PlayerStateDirection
-    {
-        None = 0,
-        Down,
-        Up,
-        Left,
-        Right,
-    }
-    public enum PlayerState
-    {
-        None = 0,
-        Idle,
-        Move,
-        Attack,
-        GameOver
-    }
+    private float _maxSpeed = 192;
+    private float _acceleration = 300f;
+    private float _friction = 0.9f;
+    private Vector2D<float> _velocity = new Vector2D<float>(0, 0);
 
-    private int _pixelsPerSecond = 192;
+    private string _currentAnimation = "IdleDown";
+
     public int MaxHealth;
     public int CurrentHealth;
     public bool IsAlive => CurrentHealth > 0;
 
     public (PlayerState State, PlayerStateDirection Direction) State { get; private set; }
-    public int CurrentHealthHealth { get; internal set; }
 
     public PlayerObject(SpriteSheet spriteSheet, int x, int y, int maxHealth) : base(spriteSheet, (x, y))
     {
         MaxHealth = maxHealth;
         CurrentHealth = maxHealth;
-        SetState(PlayerState.Idle, PlayerStateDirection.Down);
+        SpriteSheet.ActivateAnimation(_currentAnimation);
     }
 
     public void TakeDamage(int damage)
@@ -58,23 +45,11 @@ public class PlayerObject : RenderableGameObject
     public void SetState(PlayerState state, PlayerStateDirection direction)
     {
         if (State.State == PlayerState.GameOver) return;
-        if (State.State == state && State.Direction == direction)
-        {
-            return;
-        }
-        else if (state == PlayerState.None && direction == PlayerStateDirection.None)
-        {
-            SpriteSheet.ActivateAnimation(null);
-        }
-        else if (state == PlayerState.GameOver)
-        {
-            SpriteSheet.ActivateAnimation(Enum.GetName(state));
-        }
-        else
-        {
-            var animationName = Enum.GetName<PlayerState>(state) + Enum.GetName<PlayerStateDirection>(direction);
-            SpriteSheet.ActivateAnimation(animationName);
-        }
+        if (State.State == state && State.Direction == direction) return;
+
+        var animationName = Enum.GetName(state) + Enum.GetName(direction);
+        SpriteSheet.ActivateAnimation(animationName);
+
         State = (state, direction);
     }
 
@@ -87,90 +62,93 @@ public class PlayerObject : RenderableGameObject
     {
         if (State.State == PlayerState.GameOver) return;
         var direction = State.Direction;
-        if (up)
-        {
-            direction = PlayerStateDirection.Up;
-        }
-        else if (down)
-        {
-            direction = PlayerStateDirection.Down;
-        }
-        else if (right)
-        {
-            direction = PlayerStateDirection.Right;
-        }
-        else if (left)
-        {
-            direction = PlayerStateDirection.Left;
-        }
+        if (up) direction = PlayerStateDirection.Up;
+        else if (down) direction = PlayerStateDirection.Down;
+        else if (right) direction = PlayerStateDirection.Right;
+        else if (left) direction = PlayerStateDirection.Left;
         SetState(PlayerState.Attack, direction);
     }
 
-    public void UpdatePlayerPosition(double up, double down, double left, double right, int width, int height,
-        double time)
+    public void UpdatePlayerPosition(double up, double down, double left, double right, int width, int height, double time)
     {
-        if (State.State == PlayerState.GameOver) return;
-        if (up <= double.Epsilon &&
-            down <= double.Epsilon &&
-            left <= double.Epsilon &&
-            right <= double.Epsilon &&
-            State.State == PlayerState.Idle)
+        Vector2D<float> input = new Vector2D<float>((float)(right - left), (float)(down - up));
+        bool isInput = input.X != 0 || input.Y != 0;
+
+        if (isInput)
         {
-            return;
+            _velocity += input * _acceleration * (float)time;
         }
 
-        var pixelsToMove = time * _pixelsPerSecond;
-
-        var x = Position.X + (int)(right * pixelsToMove);
-        x -= (int)(left * pixelsToMove);
-
-        var y = Position.Y - (int)(up * pixelsToMove);
-        y += (int)(down * pixelsToMove);
-
-        if (x < 10)
+        if (_velocity.Length > _maxSpeed)
         {
-            x = 10;
+            _velocity = Vector2D.Normalize(_velocity) * _maxSpeed;
         }
 
-        if (y < 24)
+        if (!isInput)
         {
-            y = 24;
+            _velocity *= _friction;
         }
 
-        if (x > width - 10)
+        if (_velocity.Length > 0.1)
         {
-            x = width - 10;
-        }
+            Vector2D<int> newPosition = new Vector2D<int>(
+                Position.X + (int)(_velocity.X * time),
+                Position.Y + (int)(_velocity.Y * time));
 
-        if (y > height - 6)
-        {
-            y = height - 6;
-        }
+            newPosition.X = Math.Clamp(newPosition.X, 10, width - 10);
+            newPosition.Y = Math.Clamp(newPosition.Y, 24, height - 6);
 
+            UpdateAnimation(newPosition.X, newPosition.Y);
 
-
-        if (y < Position.Y)
-        {
-            SetState(PlayerState.Move, PlayerStateDirection.Up);
+            if (newPosition.X != Position.X || newPosition.Y != Position.Y)
+            {
+                Position = (newPosition.X, newPosition.Y);
+            }
         }
-        if (y > Position.Y)
+        else
         {
-            SetState(PlayerState.Move, PlayerStateDirection.Down);
+            CheckIdleAnimation();
         }
-        if (x > Position.X)
-        {
-            SetState(PlayerState.Move, PlayerStateDirection.Right);
-        }
-        if (x < Position.X)
-        {
-            SetState(PlayerState.Move, PlayerStateDirection.Left);
-        }
-        if (x == Position.X &&
-            y == Position.Y)
-        {
-            SetState(PlayerState.Idle, State.Direction);
-        }
-
-        Position = (x, y);
     }
+
+    private void UpdateAnimation(int newX, int newY)
+    {
+        if (newY < Position.Y && _currentAnimation != "MoveUp")
+            _currentAnimation = "MoveUp";
+        else if (newY > Position.Y && _currentAnimation != "MoveDown")
+            _currentAnimation = "MoveDown";
+        else if (newX > Position.X && _currentAnimation != "MoveRight")
+            _currentAnimation = "MoveRight";
+        else if (newX < Position.X && _currentAnimation != "MoveLeft")
+            _currentAnimation = "MoveLeft";
+
+        SpriteSheet.ActivateAnimation(_currentAnimation);
+    }
+
+    private void CheckIdleAnimation()
+    {
+        if (_currentAnimation != "IdleDown")
+        {
+            _currentAnimation = "IdleDown";
+            SpriteSheet.ActivateAnimation(_currentAnimation);
+        }
+    }
+}
+
+public enum PlayerStateDirection
+{
+    None = 0,
+    Down,
+    Up,
+    Left,
+    Right,
+}
+
+public enum PlayerState
+{
+    None = 0,
+    Idle,
+    Move,
+    Attack,
+    GameOver
 }
