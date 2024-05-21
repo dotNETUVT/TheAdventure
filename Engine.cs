@@ -13,6 +13,8 @@ namespace TheAdventure
     {
         private readonly Dictionary<int, GameObject> _gameObjects = new();
         private readonly Dictionary<string, TileSet> _loadedTileSets = new();
+        
+        private Sdl _sdl; // Add this line to define _sdl
 
         private Level? _currentLevel;
         private PlayerObject _player;
@@ -26,10 +28,11 @@ namespace TheAdventure
         private DateTimeOffset _gameOverTime;
         private bool _isGameOverTriggered = false;
 
-        public Engine(GameRenderer renderer, Input input)
+        public Engine(GameRenderer renderer, Input input, Sdl sdl) // Add Sdl parameter to the constructor
         {
             _renderer = renderer;
             _input = input;
+            _sdl = sdl; // Initialize _sdl
             _scriptEngine = new ScriptEngine();
             _input.OnMouseClick += (_, coords) => AddBomb(coords.x, coords.y);
             _renderer.LoadGameOverTexture(Path.Combine("Assets", "gameover.png"));
@@ -79,7 +82,7 @@ namespace TheAdventure
             var spriteSheet = SpriteSheet.LoadSpriteSheet("player.json", "Assets", _renderer);
             if (spriteSheet != null)
             {
-                _player = new PlayerObject(spriteSheet, 100, 100);
+                _player = new PlayerObject(spriteSheet, 100, 100, 150); // Initialize with 150 HP
             }
             _renderer.SetWorldBounds(new Rectangle<int>(0, 0, _currentLevel.Width * _currentLevel.TileWidth,
                 _currentLevel.Height * _currentLevel.TileHeight));
@@ -90,11 +93,17 @@ namespace TheAdventure
             if (_isGameOverTriggered)
             {
                 var currentTime2 = DateTimeOffset.Now;
-                if ((currentTime2 - _gameOverTime).TotalSeconds > 3)
+                if ((currentTime2 - _gameOverTime).TotalSeconds > 5)
                 {
-                    _renderer.SetGameOver(true);
+                    CloseGame();
                     return;
                 }
+            }
+
+            if (_input.IsEscapePressed())
+            {
+                CloseGame();
+                return;
             }
 
             var currentTime = DateTimeOffset.Now;
@@ -280,8 +289,8 @@ namespace TheAdventure
             _renderer.SetDrawColor(128, 128, 128, 255);
             _renderer.RenderFillRectangle(hpBarX, hpBarY, hpBarWidth, hpBarHeight);
 
-            var currentHpWidth = (int)((_player.HP / 2.0) * hpBarWidth);
-            _renderer.SetDrawColor(0, 255, 0, 255);
+            var currentHpWidth = (int)((_player.HP / 150.0) * hpBarWidth); // Adjust for new HP value
+            _renderer.SetDrawColor(255, 0, 0, 255); // Change color to red
             _renderer.RenderFillRectangle(hpBarX, hpBarY, currentHpWidth, hpBarHeight);
         }
 
@@ -316,6 +325,13 @@ namespace TheAdventure
                 // Check if player is near the bomb and trigger game over if needed
                 CheckPlayerGameOver();
             }
+        }
+
+        private void CloseGame()
+        {
+            _sdl.Quit(); // Ensure that SDL is properly cleaned up
+            Environment.Exit(0);
+            
         }
     }
 }

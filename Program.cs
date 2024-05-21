@@ -20,7 +20,7 @@ public static class Program
         {
             var renderer = new GameRenderer(sdl, window);
             var input = new Input(sdl, window, renderer);
-            var engine = new Engine(renderer, input);
+            var engine = new Engine(renderer, input, sdl); // Pass the sdl instance
 
             engine.InitializeWorld();
 
