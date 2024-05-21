@@ -123,4 +123,10 @@ public unsafe class GameRenderer
     {
         _sdl.RenderPresent(_renderer);
     }
+    
+    public void RenderFillRectangle(int x, int y, int width, int height)
+    {
+        var rect = new Rectangle<int>(x, y, width, height);
+        _sdl.RenderFillRect(_renderer, rect);
+    }
 }

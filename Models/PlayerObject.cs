@@ -24,6 +24,61 @@ public class PlayerObject : RenderableGameObject
     private int _pixelsPerSecond = 192;
 
 
+    public int HP { get; private set; } = 2;
+    public int Energy { get; private set; } = 4;
+    private const int MaxEnergy = 4;
+    private const double EnergyDepletionInterval = 1.0; // Deplete energy every 1 second
+    private const double EnergyRegenerationInterval = 0.25; // Regenerate energy every 2 seconds
+    private double _timeSinceLastEnergyDepletion = 0;
+    private double _timeSinceLastEnergyRegeneration = 0;
+
+    public void TakeDamage()
+    {
+        HP--;
+        if (HP <= 0)
+        {
+            GameOver();
+        }
+    }
+
+    public void ResetHP()
+    {
+        HP = 3;
+    }
+
+    public void ResetEnergy()
+    {
+        Energy = MaxEnergy;
+    }
+
+    public void DepleteEnergy(double deltaTime)
+    {
+        _timeSinceLastEnergyDepletion += deltaTime;
+        if (_timeSinceLastEnergyDepletion >= EnergyDepletionInterval)
+        {
+            if (Energy > 0)
+            {
+                Energy--;
+            }
+            _timeSinceLastEnergyDepletion = 0;
+        }
+    }
+
+    public void RechargeEnergy(double deltaTime)
+    {
+        _timeSinceLastEnergyRegeneration += deltaTime;
+        if (_timeSinceLastEnergyRegeneration >= EnergyRegenerationInterval)
+        {
+            if (Energy < MaxEnergy)
+            {
+                Energy++;
+            }
+            _timeSinceLastEnergyRegeneration = 0;
+        }
+    }
+
+    public bool HasEnergy => Energy > 0;
+    
     public (PlayerState State, PlayerStateDirection Direction) State{ get; private set; }
 
     public PlayerObject(SpriteSheet spriteSheet, int x, int y) : base(spriteSheet, (x, y))

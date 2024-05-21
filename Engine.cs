@@ -4,10 +4,7 @@ using Silk.NET.Maths;
 using Silk.NET.SDL;
 using TheAdventure.Models;
 using TheAdventure.Models.Data;
-using Silk.NET.Maths;
-using Silk.NET.SDL;
 using System.Timers;
-using TheAdventure.Models;
 using static TheAdventure.GameRenderer;
 
 namespace TheAdventure
@@ -79,21 +76,11 @@ namespace TheAdventure
             }
 
             _currentLevel = level;
-            /*SpriteSheet spriteSheet = new(_renderer, Path.Combine("Assets", "player.png"), 10, 6, 48, 48, new FrameOffset() { OffsetX = 24, OffsetY = 42 });
-            spriteSheet.Animations["IdleDown"] = new SpriteSheet.Animation()
-            {
-                StartFrame = new FramePosition(),//(0, 0),
-                EndFrame = new FramePosition() { Row = 0, Col = 5 },
-                DurationMs = 1000,
-                Loop = true
-            };
-            */
             var spriteSheet = SpriteSheet.LoadSpriteSheet("player.json", "Assets", _renderer);
             if (spriteSheet != null)
             {
                 _player = new PlayerObject(spriteSheet, 100, 100);
             }
-
             _renderer.SetWorldBounds(new Rectangle<int>(0, 0, _currentLevel.Width * _currentLevel.TileWidth,
                 _currentLevel.Height * _currentLevel.TileHeight));
         }
@@ -121,6 +108,8 @@ namespace TheAdventure
             bool isAttacking = _input.IsKeyAPressed();
             bool addBomb = _input.IsKeyBPressed();
 
+            bool isMoving = up || down || left || right;
+
             _scriptEngine.ExecuteAll(this);
 
             if (isAttacking)
@@ -139,11 +128,16 @@ namespace TheAdventure
                 }
             }
 
-            if (!isAttacking)
+            if (isMoving && _player.HasEnergy)
             {
+                _player.DepleteEnergy(secsSinceLastFrame);
                 _player.UpdatePlayerPosition(up ? 1.0 : 0.0, down ? 1.0 : 0.0, left ? 1.0 : 0.0, right ? 1.0 : 0.0,
                     _currentLevel.Width * _currentLevel.TileWidth, _currentLevel.Height * _currentLevel.TileHeight,
                     secsSinceLastFrame);
+            }
+            else if (!isMoving)
+            {
+                _player.RechargeEnergy(secsSinceLastFrame);
             }
 
             var itemsToRemove = new List<int>();
@@ -158,17 +152,15 @@ namespace TheAdventure
             foreach (var gameObjectId in itemsToRemove)
             {
                 var gameObject = _gameObjects[gameObjectId];
-                if (gameObject is TemporaryGameObject)
+                if (gameObject is TemporaryGameObject tempObject)
                 {
-                    var tempObject = (TemporaryGameObject)gameObject;
                     var deltaX = Math.Abs(_player.Position.X - tempObject.Position.X);
                     var deltaY = Math.Abs(_player.Position.Y - tempObject.Position.Y);
                     if (deltaX < 32 && deltaY < 32)
                     {
-                        _player.GameOver();
+                        _player.TakeDamage();
                     }
                 }
-
                 _gameObjects.Remove(gameObjectId);
             }
         }
@@ -188,6 +180,9 @@ namespace TheAdventure
             _renderer.CameraLookAt(_player.Position.X, _player.Position.Y);
             RenderTerrain();
             RenderAllObjects();
+
+            RenderHPBar();
+            RenderEnergyBar();
 
             _renderer.PresentFrame();
         }
@@ -273,6 +268,36 @@ namespace TheAdventure
             }
 
             _player.Render(_renderer);
+        }
+
+        private void RenderHPBar()
+        {
+            var hpBarWidth = 50;
+            var hpBarHeight = 10;
+            var hpBarX = 10;
+            var hpBarY = 10;
+
+            _renderer.SetDrawColor(128, 128, 128, 255);
+            _renderer.RenderFillRectangle(hpBarX, hpBarY, hpBarWidth, hpBarHeight);
+
+            var currentHpWidth = (int)((_player.HP / 2.0) * hpBarWidth);
+            _renderer.SetDrawColor(0, 255, 0, 255);
+            _renderer.RenderFillRectangle(hpBarX, hpBarY, currentHpWidth, hpBarHeight);
+        }
+
+        private void RenderEnergyBar()
+        {
+            var energyBarWidth = 50;
+            var energyBarHeight = 10;
+            var energyBarX = 10;
+            var energyBarY = 25;
+
+            _renderer.SetDrawColor(128, 128, 128, 255);
+            _renderer.RenderFillRectangle(energyBarX, energyBarY, energyBarWidth, energyBarHeight);
+
+            var currentEnergyWidth = (int)((_player.Energy / 4.0) * energyBarWidth);
+            _renderer.SetDrawColor(0, 0, 255, 255);
+            _renderer.RenderFillRectangle(energyBarX, energyBarY, currentEnergyWidth, energyBarHeight);
         }
 
         public void AddBomb(int x, int y, bool translateCoordinates = true)
