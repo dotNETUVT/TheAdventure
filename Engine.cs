@@ -22,6 +22,8 @@ namespace TheAdventure
 
         private bool _isGameOver;
 
+        private Audio audio;
+
         public Engine(GameRenderer renderer, Input input)
         {
             _renderer = renderer;
@@ -54,6 +56,12 @@ namespace TheAdventure
                 }
 
                 refTileSet.Set = tileSet;
+
+                audio = new Audio();
+                audio.LoadBackgroundMusic(@"Assets\music.wav");
+                audio.LoadDeathSound(@"Assets\game-over.wav");
+
+                audio.PlayBackgroundMusic();
             }
 
             _currentLevel = level;
@@ -152,6 +160,9 @@ namespace TheAdventure
 
             if (_isGameOver)
             {
+                audio.StopBackgroundMusic();
+                audio.PlayDeathSound();
+
                 _renderer.RenderGameOver();
 
                 if (_gameOverTime.HasValue && (DateTimeOffset.Now - _gameOverTime.Value).TotalSeconds >= 3)
