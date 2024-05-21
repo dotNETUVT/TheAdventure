@@ -28,6 +28,7 @@ public unsafe class GameRenderer
 
         var windowSize = window.Size;
         _camera = new Camera(windowSize.Width, windowSize.Height);
+
     }
 
     public void SetWorldBounds(Rectangle<int> bounds)
@@ -103,6 +104,7 @@ public unsafe class GameRenderer
         var rect = new Rectangle<int>(x, y, width, height);
         _sdl.RenderFillRect(_renderer, rect);
     }
+
 
 
 }

@@ -18,6 +18,7 @@ namespace TheAdventure
         private DateTimeOffset _lastUpdate = DateTimeOffset.Now;
         private DateTimeOffset _lastPlayerUpdate = DateTimeOffset.Now;
 
+
         public Engine(GameRenderer renderer, Input input)
         {
             _renderer = renderer;
@@ -72,7 +73,6 @@ namespace TheAdventure
         }
 
 
-
         public void InitializeWorld()
         {
             var jsonSerializerOptions = new JsonSerializerOptions() { PropertyNameCaseInsensitive = true };
@@ -114,6 +114,20 @@ namespace TheAdventure
                 _currentLevel.Height * _currentLevel.TileHeight));
         }
 
+
+        private Random _random = new Random();
+        public void AddRandomBomb()
+        {
+
+            // Generate random coordinates within the screen dimensions
+            int randomX = _random.Next(0, 5000);
+            int randomY = _random.Next(0, 5000);
+
+            // Add bomb at the random coordinates
+            AddBomb(randomX, randomY);
+        }
+
+
         public void ProcessFrame()
         {
             var currentTime = DateTimeOffset.Now;
@@ -124,6 +138,9 @@ namespace TheAdventure
             bool down = _input.IsDownPressed();
             bool left = _input.IsLeftPressed();
             bool right = _input.IsRightPressed();
+
+
+            AddRandomBomb();
 
             _player.UpdatePlayerPosition(up ? 1.0 : 0.0, down ? 1.0 : 0.0, left ? 1.0 : 0.0, right ? 1.0 : 0.0,
                 _currentLevel.Width * _currentLevel.TileWidth, _currentLevel.Height * _currentLevel.TileHeight,
@@ -136,7 +153,9 @@ namespace TheAdventure
             foreach (var gameObject in itemsToRemove)
             {
                 _gameObjects.Remove(gameObject);
+
             }
+
         }
 
 
@@ -248,6 +267,6 @@ namespace TheAdventure
 
         }
 
-    }
 
+    }
 }
