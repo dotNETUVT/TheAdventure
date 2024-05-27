@@ -1,47 +1,36 @@
 using NAudio.Wave;
 using System;
 
-public class AudioManager
+public class AudioManager : IDisposable
 {
     private WaveOutEvent _audioOutput;
     private AudioFileReader _audioFile;
+    private AudioFileReader _lifeLostFile;
 
-    public AudioManager(string audioFilePath)
+    public AudioManager(string gameOverFilePath, string lifeLostFilePath)
     {
         _audioOutput = new WaveOutEvent();
-        _audioFile = new AudioFileReader(audioFilePath);
+        _audioFile = new AudioFileReader(gameOverFilePath);
+        _lifeLostFile = new AudioFileReader(lifeLostFilePath);
         _audioOutput.Init(_audioFile);
     }
 
     public void PlayGameOverSound()
     {
+        _audioOutput.Init(_audioFile); // Re-initialize to reset position
         _audioOutput.Play();
     }
 
-    public void StopPlayback()
+    public void PlayLifeLostSound()
     {
-        _audioOutput.Stop();
+        _audioOutput.Init(_lifeLostFile); // Re-initialize to reset position
+        _audioOutput.Play();
     }
 
     public void Dispose()
     {
         _audioOutput.Dispose();
         _audioFile.Dispose();
-    }
-}
-
-public class PlayerObject
-{
-    private AudioManager _audioManager;
-
-    public PlayerObject(string audioFilePath)
-    {
-        _audioManager = new AudioManager(audioFilePath);
-    }
-
-    public void Die()
-    {
-        Console.WriteLine("Player died...");
-        _audioManager.PlayGameOverSound();
+        _lifeLostFile.Dispose();
     }
 }
