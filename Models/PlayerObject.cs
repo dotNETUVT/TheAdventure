@@ -1,116 +1,160 @@
-using System.Text.Json;
-using Silk.NET.Maths;
-using Silk.NET.SDL;
-using TheAdventure.Models.Data;
-
 namespace TheAdventure.Models;
 
-public class SpriteSheet
+public class PlayerObject : RenderableGameObject
 {
-    public class Animation
+    public enum PlayerStateDirection
     {
-        public FramePosition StartFrame { get; set; }
-        public FramePosition EndFrame { get; set; }
-        public RendererFlip Flip { get; set; } = RendererFlip.None;
-        public int DurationMs { get; set; }
-        public bool Loop { get; set; }
+        None = 0,
+        Down,
+        Up,
+        Left,
+        Right,
     }
-
-    public int RowCount { get; set; }
-    public int ColumnCount { get; set; }
-
-    public int FrameWidth { get; set; }
-    public int FrameHeight { get; set; }
-    public FrameOffset FrameCenter { get; set; }
-
-    public string? FileName { get; set; }
-
-    public Animation? ActiveAnimation { get; private set; }
-    public Dictionary<string, Animation> Animations { get; init; } = new();
-
-    private int _textureId = -1;
-    private DateTimeOffset _animationStart = DateTimeOffset.MinValue;
-
-    public SpriteSheet(){
-
-    }
-
-    public static SpriteSheet? LoadSpriteSheet(string fileName, string folder, GameRenderer renderer){
-        var json = File.ReadAllText(Path.Combine(folder, fileName));
-        var spriteSheet = JsonSerializer.Deserialize<SpriteSheet>(json, new JsonSerializerOptions() { PropertyNameCaseInsensitive = true });
-        if(spriteSheet != null){
-            spriteSheet.LoadTexture(renderer, folder);
-        }
-        return spriteSheet;
-    }
-
-    public void LoadTexture(GameRenderer renderer, string? parentFolder = null){
-        var filePath = FileName;
-        if(!string.IsNullOrWhiteSpace(parentFolder) && !string.IsNullOrWhiteSpace(FileName)){
-            filePath = Path.Combine(parentFolder, FileName);
-        }
-        if(_textureId == -1 && !string.IsNullOrWhiteSpace(filePath)){
-            _textureId = renderer.LoadTexture(filePath, out _);
-        }
-    }
-
-    public SpriteSheet(GameRenderer renderer, string fileName, int rowCount, int columnCount, int frameWidth,
-        int frameHeight, FrameOffset frameCenter)
+    public enum PlayerState
     {
-        FileName = fileName;
-        RowCount = rowCount;
-        ColumnCount = columnCount;
-        FrameWidth = frameWidth;
-        FrameHeight = frameHeight;
-        FrameCenter = frameCenter;
-
-        LoadTexture(renderer);
+        None = 0,
+        Idle,
+        Move,
+        Attack,
+        GameOver
     }
 
-    public void ActivateAnimation(string name)
+    private int _pixelsPerSecond = 192;
+    private int _lives;
+
+    public (PlayerState State, PlayerStateDirection Direction) State { get; private set; }
+
+    public PlayerObject(SpriteSheet spriteSheet, int x, int y, int initialLives = 3) : base(spriteSheet, (x, y))
     {
-        if(name == null){
-            ActiveAnimation = null;
-        }
-        if (!Animations.TryGetValue(name, out var animation)) return;
-        ActiveAnimation = animation;
-        _animationStart = DateTimeOffset.Now;
+        _lives = initialLives;
+        SetState(PlayerState.Idle, PlayerStateDirection.Down);
     }
 
-    public void Render(GameRenderer renderer, (int X, int Y) dest, double angle = 0.0, Point rotationCenter = new())
+    public void SetState(PlayerState state, PlayerStateDirection direction)
     {
-        if (ActiveAnimation == null)
+        if (State.State == PlayerState.GameOver) return;
+        if (State.State == state && State.Direction == direction)
         {
-            renderer.RenderTexture(_textureId, new Rectangle<int>(0, 0, FrameWidth, FrameHeight),
-                new Rectangle<int>(dest.X - FrameCenter.OffsetX, dest.Y - FrameCenter.OffsetY, FrameWidth, FrameHeight),
-                RendererFlip.None, angle, rotationCenter);
+            return;
+        }
+        else if (state == PlayerState.None && direction == PlayerStateDirection.None)
+        {
+            SpriteSheet.ActivateAnimation(null);
+        }
+        else if (state == PlayerState.GameOver)
+        {
+            SpriteSheet.ActivateAnimation(Enum.GetName(state));
         }
         else
         {
-            var totalFrames = (ActiveAnimation.EndFrame.Row - ActiveAnimation.StartFrame.Row) * ColumnCount +
-                ActiveAnimation.EndFrame.Col - ActiveAnimation.StartFrame.Col;
-            var currentFrame = (int)((DateTimeOffset.Now - _animationStart).TotalMilliseconds /
-                                     (ActiveAnimation.DurationMs / totalFrames));
-            if (currentFrame > totalFrames)
-            {
-                if (ActiveAnimation.Loop)
-                {
-                    _animationStart = DateTimeOffset.Now;
-                    currentFrame = 0;
-                }
-                else
-                {
-                    currentFrame = totalFrames;
-                }
-            }
-
-            var currentRow = ActiveAnimation.StartFrame.Row + currentFrame / ColumnCount;
-            var currentCol = ActiveAnimation.StartFrame.Col + currentFrame % ColumnCount;
-
-            renderer.RenderTexture(_textureId,
-                new Rectangle<int>(currentCol * FrameWidth, currentRow * FrameHeight, FrameWidth, FrameHeight),
-                new Rectangle<int>(dest.X - FrameCenter.OffsetX, dest.Y - FrameCenter.OffsetY, FrameWidth, FrameHeight),
-                ActiveAnimation.Flip, angle, rotationCenter);
+            var animationName = Enum.GetName<PlayerState>(state) + Enum.GetName<PlayerStateDirection>(direction);
+            SpriteSheet.ActivateAnimation(animationName);
         }
+        State = (state, direction);
+    }
+
+    public void GameOver()
+    {
+        if (_lives > 0)
+        {
+            _lives--;
+            // Optionally, reset player position or perform other actions
+        }
+        if (_lives == 0)
+        {
+            SetState(PlayerState.GameOver, PlayerStateDirection.None);
+        }
+    }
+
+    public void LoseLife()
+    {
+        GameOver();
+    }
+
+    public void Attack(bool up, bool down, bool left, bool right)
+    {
+        if (State.State == PlayerState.GameOver) return;
+        var direction = State.Direction;
+        if (up)
+        {
+            direction = PlayerStateDirection.Up;
+        }
+        else if (down)
+        {
+            direction = PlayerStateDirection.Down;
+        }
+        else if (right)
+        {
+            direction = PlayerStateDirection.Right;
+        }
+        else if (left)
+        {
+            direction = PlayerStateDirection.Left;
+        }
+        SetState(PlayerState.Attack, direction);
+    }
+
+    public void UpdatePlayerPosition(double up, double down, double left, double right, int width, int height, double time)
+    {
+        if (State.State == PlayerState.GameOver) return;
+        if (up <= double.Epsilon &&
+            down <= double.Epsilon &&
+            left <= double.Epsilon &&
+            right <= double.Epsilon &&
+            State.State == PlayerState.Idle)
+        {
+            return;
+        }
+
+        var pixelsToMove = time * _pixelsPerSecond;
+
+        var x = Position.X + (int)(right * pixelsToMove);
+        x -= (int)(left * pixelsToMove);
+
+        var y = Position.Y - (int)(up * pixelsToMove);
+        y += (int)(down * pixelsToMove);
+
+        if (x < 10)
+        {
+            x = 10;
+        }
+
+        if (y < 24)
+        {
+            y = 24;
+        }
+
+        if (x > width - 10)
+        {
+            x = width - 10;
+        }
+
+        if (y > height - 6)
+        {
+            y = height - 6;
+        }
+
+        if (y < Position.Y)
+        {
+            SetState(PlayerState.Move, PlayerStateDirection.Up);
+        }
+        if (y > Position.Y)
+        {
+            SetState(PlayerState.Move, PlayerStateDirection.Down);
+        }
+        if (x > Position.X)
+        {
+            SetState(PlayerState.Move, PlayerStateDirection.Right);
+        }
+        if (x < Position.X)
+        {
+            SetState(PlayerState.Move, PlayerStateDirection.Left);
+        }
+        if (x == Position.X &&
+            y == Position.Y)
+        {
+            SetState(PlayerState.Idle, State.Direction);
+        }
+        Position = (x, y);
     }
 }
