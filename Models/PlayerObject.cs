@@ -62,7 +62,6 @@ public class PlayerObject : RenderableGameObject
         if (_lives > 0)
         {
             _lives--;
-            // Optionally, reset player position or perform other actions
         }
         if (_lives == 0)
         {
