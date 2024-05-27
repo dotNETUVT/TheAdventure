@@ -5,7 +5,8 @@
     "frameHeight" : 48,
     "frameCenter" : {
         "offsetX" : 24,
-        "offsetY" : 42
+      "offsetY": 42
+
     },
     "fileName" : "player.png",
     "animations" : {

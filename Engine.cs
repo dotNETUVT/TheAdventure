@@ -1,5 +1,6 @@
 using System.Reflection;
 using System.Text.Json;
+using Silk.NET.Input;
 using Silk.NET.Maths;
 using Silk.NET.SDL;
 using TheAdventure.Models;
@@ -14,6 +15,7 @@ namespace TheAdventure
 
         private Level? _currentLevel;
         private PlayerObject _player;
+        private SecondPlayer _secPlayer;
         private GameRenderer _renderer;
         private Input _input;
         private ScriptEngine _scriptEngine;
@@ -80,8 +82,14 @@ namespace TheAdventure
             if(spriteSheet != null){
                 _player = new PlayerObject(spriteSheet, 100, 100);
             }
+            var spriteSheet2nd = SpriteSheet.LoadSpriteSheet("player.json", "Assets", _renderer);
+            if (spriteSheet != null)
+            {
+                _secPlayer = new SecondPlayer(spriteSheet2nd, 140, 140);
+            }
             _renderer.SetWorldBounds(new Rectangle<int>(0, 0, _currentLevel.Width * _currentLevel.TileWidth,
                 _currentLevel.Height * _currentLevel.TileHeight));
+
         }
 
         public void ProcessFrame()
@@ -94,8 +102,13 @@ namespace TheAdventure
             bool down = _input.IsDownPressed();
             bool left = _input.IsLeftPressed();
             bool right = _input.IsRightPressed();
-            bool isAttacking = _input.IsKeyAPressed();
+            bool isAttacking = _input.IsKeyEPressed();
+            bool isAttackingSec = _input.IsKeyQPressed();
             bool addBomb = _input.IsKeyBPressed();
+            bool W = _input.IsKeyWPressed();
+            bool S = _input.IsKeySPressed();
+            bool A = _input.IsKeyAPressed();
+            bool D = _input.IsKeyDPressed();
 
             _scriptEngine.ExecuteAll(this);
 
@@ -112,12 +125,37 @@ namespace TheAdventure
                     isAttacking = false;
                 }
             }
-            if(!isAttacking)
+
+            if (isAttackingSec)
+            {
+                var dir = W ? 1 : 0;
+                dir += S ? 1 : 0;
+                dir += A ? 1 : 0;
+                dir += D ? 1 : 0;
+                if (dir <= 1)
+                {
+                    _secPlayer.Attack(up, down, left, right);
+                }
+                else
+                {
+                    isAttacking = false;
+                }
+            }
+
+            if (!isAttacking)
             {
                 _player.UpdatePlayerPosition(up ? 1.0 : 0.0, down ? 1.0 : 0.0, left ? 1.0 : 0.0, right ? 1.0 : 0.0,
                     _currentLevel.Width * _currentLevel.TileWidth, _currentLevel.Height * _currentLevel.TileHeight,
-                    secsSinceLastFrame);
+                secsSinceLastFrame);
             }
+
+            if(!isAttackingSec)
+            {
+                _secPlayer.UpdateSecondPlayerPosition(W ? 1.0 : 0.0, S ? 1.0 : 0.0, A ? 1.0 : 0.0, D ? 1.0 : 0.0,
+                    _currentLevel.Width * _currentLevel.TileWidth, _currentLevel.Height * _currentLevel.TileHeight,
+                secsSinceLastFrame);
+            }
+
             var itemsToRemove = new List<int>();
             itemsToRemove.AddRange(GetAllTemporaryGameObjects().Where(gameObject => gameObject.IsExpired)
                 .Select(gameObject => gameObject.Id).ToList());
@@ -136,6 +174,7 @@ namespace TheAdventure
                     var deltaY = Math.Abs(_player.Position.Y - tempObject.Position.Y);
                     if(deltaX < 32 && deltaY < 32){
                         _player.GameOver();
+                        _secPlayer.GameOver();
                     }
                 }
                 _gameObjects.Remove(gameObjectId);
@@ -148,6 +187,7 @@ namespace TheAdventure
             _renderer.ClearScreen();
             
             _renderer.CameraLookAt(_player.Position.X, _player.Position.Y);
+            _renderer.CameraLookAt(_secPlayer.Position.X, _secPlayer.Position.Y);
 
             RenderTerrain();
             RenderAllObjects();
@@ -227,6 +267,7 @@ namespace TheAdventure
             }
 
             _player.Render(_renderer);
+            _secPlayer.Render(_renderer);
         }
 
         public void AddBomb(int x, int y, bool translateCoordinates = true)

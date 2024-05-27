@@ -19,9 +19,14 @@ namespace TheAdventure
             _renderer = renderer;
         }
 
-        public bool IsKeyAPressed(){
+        public bool IsKeyEPressed(){
             ReadOnlySpan<byte> _keyboardState = new(_sdl.GetKeyboardState(null), (int)KeyCode.Count);
-            return _keyboardState[(int)KeyCode.A] == 1;
+            return _keyboardState[(int)KeyCode.E] == 1;
+        }
+        public bool IsKeyQPressed()
+        {
+            ReadOnlySpan<byte> _keyboardState = new(_sdl.GetKeyboardState(null), (int)KeyCode.Count);
+            return _keyboardState[(int)KeyCode.Q] == 1;
         }
 
         public bool IsKeyBPressed(){
@@ -52,7 +57,31 @@ namespace TheAdventure
             ReadOnlySpan<byte> _keyboardState = new(_sdl.GetKeyboardState(null), (int)KeyCode.Count);
             return _keyboardState[(int)KeyCode.Down] == 1;
         }
-        
+
+        public bool IsKeyAPressed()
+        {
+            ReadOnlySpan<byte> _keyboardState = new(_sdl.GetKeyboardState(null), (int)KeyCode.Count);
+            return _keyboardState[(int)KeyCode.A] == 1;
+        }
+
+        public bool IsKeyWPressed()
+        {
+            ReadOnlySpan<byte> _keyboardState = new(_sdl.GetKeyboardState(null), (int)KeyCode.Count);
+            return _keyboardState[(int)KeyCode.W] == 1;
+        }
+
+        public bool IsKeyDPressed()
+        {
+            ReadOnlySpan<byte> _keyboardState = new(_sdl.GetKeyboardState(null), (int)KeyCode.Count);
+            return _keyboardState[(int)KeyCode.D] == 1;
+        }
+
+        public bool IsKeySPressed()
+        {
+            ReadOnlySpan<byte> _keyboardState = new(_sdl.GetKeyboardState(null), (int)KeyCode.Count);
+            return _keyboardState[(int)KeyCode.S] == 1;
+        }
+
         public bool ProcessInput()
         {
             var currentTime = DateTimeOffset.UtcNow;
