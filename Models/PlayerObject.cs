@@ -1,3 +1,7 @@
+using System.Formats.Asn1;
+using Silk.NET.Maths;
+using TheAdventure;
+
 namespace TheAdventure.Models;
 
 public class PlayerObject : RenderableGameObject
