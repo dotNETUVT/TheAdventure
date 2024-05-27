@@ -69,6 +69,15 @@ namespace TheAdventure
             }
 
             _currentLevel = level;
+            /*SpriteSheet spriteSheet = new(_renderer, Path.Combine("Assets", "player.png"), 10, 6, 48, 48, new FrameOffset() { OffsetX = 24, OffsetY = 42 });
+            spriteSheet.Animations["IdleDown"] = new SpriteSheet.Animation()
+            {
+                StartFrame = new FramePosition(),//(0, 0),
+                EndFrame = new FramePosition() { Row = 0, Col = 5 },
+                DurationMs = 1000,
+                Loop = true
+            };
+            */
             var spriteSheet = SpriteSheet.LoadSpriteSheet("player.json", "Assets", _renderer);
             if (spriteSheet != null)
             {
