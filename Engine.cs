@@ -3,6 +3,7 @@ using Silk.NET.Maths;
 using Silk.NET.SDL;
 using TheAdventure.Models;
 using TheAdventure.Models.Data;
+using System.Timers;
 
 namespace TheAdventure
 {
@@ -15,6 +16,8 @@ namespace TheAdventure
         private PlayerObject _player;
         private GameRenderer _renderer;
         private Input _input;
+        private static System.Timers.Timer bombTimer;
+        private static readonly object bombLock = new object();
 
         private DateTimeOffset _lastUpdate = DateTimeOffset.Now;
         private DateTimeOffset _lastPlayerUpdate = DateTimeOffset.Now;
@@ -25,7 +28,7 @@ namespace TheAdventure
             _input = input;
 
             _input.OnMouseClick += (_, coords) => AddBomb(coords.x, coords.y);
-            
+            InitializeBombTimer();
         }
 
         public void InitializeWorld()
@@ -55,21 +58,59 @@ namespace TheAdventure
             }
 
             _currentLevel = level;
-            /*SpriteSheet spriteSheet = new(_renderer, Path.Combine("Assets", "player.png"), 10, 6, 48, 48, new FrameOffset() { OffsetX = 24, OffsetY = 42 });
-            spriteSheet.Animations["IdleDown"] = new SpriteSheet.Animation()
-            {
-                StartFrame = new FramePosition(),//(0, 0),
-                EndFrame = new FramePosition() { Row = 0, Col = 5 },
-                DurationMs = 1000,
-                Loop = true
-            };
-            */
             var spriteSheet = SpriteSheet.LoadSpriteSheet("player.json", "Assets", _renderer);
-            if(spriteSheet != null){
+            if (spriteSheet != null)
+            {
                 _player = new PlayerObject(spriteSheet, 100, 100);
             }
             _renderer.SetWorldBounds(new Rectangle<int>(0, 0, _currentLevel.Width * _currentLevel.TileWidth,
                 _currentLevel.Height * _currentLevel.TileHeight));
+        }
+
+        private void InitializeBombTimer()
+        {
+            bombTimer = new System.Timers.Timer(5000); // Setează timer-ul la 5 sec.
+            bombTimer.Elapsed += OnTimedEvent;
+            bombTimer.AutoReset = true;
+            bombTimer.Enabled = true;
+        }
+
+        private void OnTimedEvent(Object source, ElapsedEventArgs e)
+        {
+            if (true) // randomBombs este mereu true
+            {
+                Random rand = new Random();
+                int bombCount = rand.Next(2, 10); // 2 sau 10 bombe
+                int range = 300;
+                int minDistance = 50;
+                List<(int, int)> bombPositions = new List<(int, int)>();
+
+                for (int i = 0; i < bombCount; i++)
+                {
+                    int bombX, bombY;
+                    bool positionOk;
+
+                    do
+                    {
+                        bombX = _player.Position.X + rand.Next(-range, range + 1);
+                        bombY = _player.Position.Y + rand.Next(-range, range + 1);
+
+                        positionOk = true;
+                        foreach (var pos in bombPositions)
+                        {
+                            double distance = Math.Sqrt(Math.Pow(bombX - pos.Item1, 2) + Math.Pow(bombY - pos.Item2, 2));
+                            if (distance < minDistance)
+                            {
+                                positionOk = false;
+                                break;
+                            }
+                        }
+                    } while (!positionOk);
+
+                    AddBomb(bombX, bombY, false);
+                    bombPositions.Add((bombX, bombY));
+                }
+            }
         }
 
         public void ProcessFrame()
@@ -78,28 +119,31 @@ namespace TheAdventure
             var secsSinceLastFrame = (currentTime - _lastUpdate).TotalSeconds;
             _lastUpdate = currentTime;
 
-            bool up = _input.IsUpPressed() || _input.IsWPressed() ;
-            bool down = _input.IsDownPressed() ||_input.IsSPressed();
+            bool up = _input.IsUpPressed() || _input.IsWPressed();
+            bool down = _input.IsDownPressed() || _input.IsSPressed();
             bool left = _input.IsLeftPressed() || _input.IsAPressed();
             bool right = _input.IsRightPressed() || _input.IsDPressed();
             bool isAttacking = _input.IsKeyXPressed();
             bool addBomb = _input.IsKeyBPressed();
             bool bombRain = _input.IsRPressed();
-            
-            if(isAttacking)
+            bool randomBombs = true;
+
+            if (isAttacking)
             {
-                var dir = up ? 1: 0;
-                dir += down? 1 : 0;
-                dir += left? 1: 0;
+                var dir = up ? 1 : 0;
+                dir += down ? 1 : 0;
+                dir += left ? 1 : 0;
                 dir += right ? 1 : 0;
-                if(dir <= 1){
+                if (dir <= 1)
+                {
                     _player.Attack(up, down, left, right);
                 }
-                else{
+                else
+                {
                     isAttacking = false;
                 }
             }
-            if(!isAttacking)
+            if (!isAttacking)
             {
                 _player.UpdatePlayerPosition(up ? 1.0 : 0.0, down ? 1.0 : 0.0, left ? 1.0 : 0.0, right ? 1.0 : 0.0,
                     _currentLevel.Width * _currentLevel.TileWidth, _currentLevel.Height * _currentLevel.TileHeight,
@@ -113,8 +157,8 @@ namespace TheAdventure
             {
                 Random rand = new Random();
                 int bombCount = 5;
-                int range = 300; 
-                int minDistance = 50; 
+                int range = 300;
+                int minDistance = 50;
                 List<(int, int)> bombPositions = new List<(int, int)>();
 
                 for (int i = 0; i < bombCount; i++)
@@ -126,7 +170,7 @@ namespace TheAdventure
                     {
                         bombX = _player.Position.X + rand.Next(-range, range + 1);
                         bombY = _player.Position.Y + rand.Next(-range, range + 1);
-                        
+
                         positionOk = true;
                         foreach (var pos in bombPositions)
                         {
@@ -138,24 +182,22 @@ namespace TheAdventure
                             }
                         }
                     } while (!positionOk);
-                    
+
                     AddBomb(bombX, bombY, false);
                     bombPositions.Add((bombX, bombY));
                 }
             }
 
-
-
-           
-
             foreach (var gameObjectId in itemsToRemove)
             {
                 var gameObject = _gameObjects[gameObjectId];
-                if(gameObject is TemporaryGameObject){
+                if (gameObject is TemporaryGameObject)
+                {
                     var tempObject = (TemporaryGameObject)gameObject;
                     var deltaX = Math.Abs(_player.Position.X - tempObject.Position.X);
                     var deltaY = Math.Abs(_player.Position.Y - tempObject.Position.Y);
-                    if(deltaX < 32 && deltaY < 32){
+                    if (deltaX < 32 && deltaY < 32)
+                    {
                         _player.GameOver();
                     }
                 }
@@ -167,7 +209,7 @@ namespace TheAdventure
         {
             _renderer.SetDrawColor(0, 0, 0, 255);
             _renderer.ClearScreen();
-            
+
             _renderer.CameraLookAt(_player.Position.X, _player.Position.Y);
 
             RenderTerrain();
@@ -252,11 +294,11 @@ namespace TheAdventure
 
         private void AddBomb(int x, int y, bool translateCoordinates = true)
         {
-
             var translated = translateCoordinates ? _renderer.TranslateFromScreenToWorldCoordinates(x, y) : new Vector2D<int>(x, y);
-            
+
             var spriteSheet = SpriteSheet.LoadSpriteSheet("bomb.json", "Assets", _renderer);
-            if(spriteSheet != null){
+            if (spriteSheet != null)
+            {
                 spriteSheet.ActivateAnimation("Explode");
                 TemporaryGameObject bomb = new(spriteSheet, 2.1, (translated.X, translated.Y));
                 _gameObjects.Add(bomb.Id, bomb);
