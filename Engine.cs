@@ -37,6 +37,13 @@ namespace TheAdventure
             return (pos.X, pos.Y);
         }
 
+        private void Restart()
+        {
+            gameOver = false;
+            _gameObjects.Clear();
+            InitializeWorld();
+        }
+
         public void InitializeWorld()
         {
             var executableLocation = new FileInfo(Assembly.GetExecutingAssembly().Location);
@@ -84,20 +91,30 @@ namespace TheAdventure
                 _currentLevel.Height * _currentLevel.TileHeight));
         }
 
+        bool gameOver = false;
         public void ProcessFrame()
         {
             var currentTime = DateTimeOffset.Now;
             var secsSinceLastFrame = (currentTime - _lastUpdate).TotalSeconds;
             _lastUpdate = currentTime;
-
+            
             bool up = _input.IsUpPressed();
             bool down = _input.IsDownPressed();
             bool left = _input.IsLeftPressed();
             bool right = _input.IsRightPressed();
             bool isAttacking = _input.IsKeyAPressed();
             bool addBomb = _input.IsKeyBPressed();
+            bool restart = _input.IsKeyRPressed();
 
             _scriptEngine.ExecuteAll(this);
+
+            if(gameOver == true){
+                
+                if (restart)
+                {
+                    Restart();
+                }
+            }
 
             if(isAttacking)
             {
@@ -136,6 +153,7 @@ namespace TheAdventure
                     var deltaY = Math.Abs(_player.Position.Y - tempObject.Position.Y);
                     if(deltaX < 32 && deltaY < 32){
                         _player.GameOver();
+                        gameOver = true;
                     }
                 }
                 _gameObjects.Remove(gameObjectId);
