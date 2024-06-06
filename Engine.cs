@@ -4,6 +4,9 @@ using Silk.NET.Maths;
 using Silk.NET.SDL;
 using TheAdventure.Models;
 using TheAdventure.Models.Data;
+using NAudio.Wave;
+using System;
+using System.Collections.Generic;
 
 namespace TheAdventure
 {
@@ -17,22 +20,32 @@ namespace TheAdventure
         private GameRenderer _renderer;
         private Input _input;
         private ScriptEngine _scriptEngine;
+        private WaveOutEvent bombSound;
+        private AudioFileReader audioFile;
+        private bool gameOver;
 
         private DateTimeOffset _lastUpdate = DateTimeOffset.Now;
         private DateTimeOffset _lastPlayerUpdate = DateTimeOffset.Now;
+        private DateTimeOffset _gameOver;
+
         public Engine(GameRenderer renderer, Input input)
         {
             _renderer = renderer;
             _input = input;
             _scriptEngine = new ScriptEngine();
             _input.OnMouseClick += (_, coords) => AddBomb(coords.x, coords.y);
+
+            // Initialize game over flag
+            gameOver = false;
         }
 
-        public void WriteToConsole(string message){
+        public void WriteToConsole(string message)
+        {
             Console.WriteLine(message);
         }
 
-        public (int x, int y) GetPlayerPosition(){
+        public (int x, int y) GetPlayerPosition()
+        {
             var pos = _player.Position;
             return (pos.X, pos.Y);
         }
@@ -67,17 +80,9 @@ namespace TheAdventure
             }
 
             _currentLevel = level;
-            /*SpriteSheet spriteSheet = new(_renderer, Path.Combine("Assets", "player.png"), 10, 6, 48, 48, new FrameOffset() { OffsetX = 24, OffsetY = 42 });
-            spriteSheet.Animations["IdleDown"] = new SpriteSheet.Animation()
-            {
-                StartFrame = new FramePosition(),//(0, 0),
-                EndFrame = new FramePosition() { Row = 0, Col = 5 },
-                DurationMs = 1000,
-                Loop = true
-            };
-            */
             var spriteSheet = SpriteSheet.LoadSpriteSheet("player.json", "Assets", _renderer);
-            if(spriteSheet != null){
+            if (spriteSheet != null)
+            {
                 _player = new PlayerObject(spriteSheet, 100, 100);
             }
             _renderer.SetWorldBounds(new Rectangle<int>(0, 0, _currentLevel.Width * _currentLevel.TileWidth,
@@ -86,6 +91,11 @@ namespace TheAdventure
 
         public void ProcessFrame()
         {
+            if (gameOver)
+            {
+                return;
+            }
+
             var currentTime = DateTimeOffset.Now;
             var secsSinceLastFrame = (currentTime - _lastUpdate).TotalSeconds;
             _lastUpdate = currentTime;
@@ -99,25 +109,28 @@ namespace TheAdventure
 
             _scriptEngine.ExecuteAll(this);
 
-            if(isAttacking)
+            if (isAttacking)
             {
-                var dir = up ? 1: 0;
-                dir += down? 1 : 0;
-                dir += left? 1: 0;
+                var dir = up ? 1 : 0;
+                dir += down ? 1 : 0;
+                dir += left ? 1 : 0;
                 dir += right ? 1 : 0;
-                if(dir <= 1){
+                if (dir <= 1)
+                {
                     _player.Attack(up, down, left, right);
                 }
-                else{
+                else
+                {
                     isAttacking = false;
                 }
             }
-            if(!isAttacking)
+            if (!isAttacking)
             {
                 _player.UpdatePlayerPosition(up ? 1.0 : 0.0, down ? 1.0 : 0.0, left ? 1.0 : 0.0, right ? 1.0 : 0.0,
                     _currentLevel.Width * _currentLevel.TileWidth, _currentLevel.Height * _currentLevel.TileHeight,
                     secsSinceLastFrame);
             }
+
             var itemsToRemove = new List<int>();
             itemsToRemove.AddRange(GetAllTemporaryGameObjects().Where(gameObject => gameObject.IsExpired)
                 .Select(gameObject => gameObject.Id).ToList());
@@ -130,12 +143,16 @@ namespace TheAdventure
             foreach (var gameObjectId in itemsToRemove)
             {
                 var gameObject = _gameObjects[gameObjectId];
-                if(gameObject is TemporaryGameObject){
+                if (gameObject is TemporaryGameObject)
+                {
                     var tempObject = (TemporaryGameObject)gameObject;
                     var deltaX = Math.Abs(_player.Position.X - tempObject.Position.X);
                     var deltaY = Math.Abs(_player.Position.Y - tempObject.Position.Y);
-                    if(deltaX < 32 && deltaY < 32){
+                    if (deltaX < 32 && deltaY < 32)
+                    {
                         _player.GameOver();
+                        gameOver = true;
+                        _gameOver = DateTimeOffset.Now;
                     }
                 }
                 _gameObjects.Remove(gameObjectId);
@@ -146,11 +163,16 @@ namespace TheAdventure
         {
             _renderer.SetDrawColor(0, 0, 0, 255);
             _renderer.ClearScreen();
-            
+
             _renderer.CameraLookAt(_player.Position.X, _player.Position.Y);
 
             RenderTerrain();
             RenderAllObjects();
+
+            if (gameOver)
+            {
+                _renderer.GameOver();
+            }
 
             _renderer.PresentFrame();
         }
@@ -180,7 +202,6 @@ namespace TheAdventure
                 var cLayer = _currentLevel.Layers[layer];
 
                 for (var i = 0; i < _currentLevel.Width; ++i)
-                {
                     for (var j = 0; j < _currentLevel.Height; ++j)
                     {
                         var cTileId = cLayer.Data[j * cLayer.Width + i] - 1;
@@ -193,7 +214,6 @@ namespace TheAdventure
 
                         _renderer.RenderTexture(cTile.InternalTextureId, src, dst);
                     }
-                }
             }
         }
 
@@ -231,12 +251,18 @@ namespace TheAdventure
 
         public void AddBomb(int x, int y, bool translateCoordinates = true)
         {
-
             var translated = translateCoordinates ? _renderer.TranslateFromScreenToWorldCoordinates(x, y) : new Vector2D<int>(x, y);
-            
+
             var spriteSheet = SpriteSheet.LoadSpriteSheet("bomb.json", "Assets", _renderer);
-            if(spriteSheet != null){
+
+            bombSound = new WaveOutEvent();
+            audioFile = new AudioFileReader("C:\\Users\\katam\\Source\\Repos\\MelnicKatalin\\TheAdventure\\Assets\\bombsound.wav");
+            bombSound.Init(audioFile);
+
+            if (spriteSheet != null)
+            {
                 spriteSheet.ActivateAnimation("Explode");
+                bombSound.Play();
                 TemporaryGameObject bomb = new(spriteSheet, 2.1, (translated.X, translated.Y));
                 _gameObjects.Add(bomb.Id, bomb);
             }

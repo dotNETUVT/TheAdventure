@@ -9,11 +9,12 @@ namespace TheAdventure;
 
 public unsafe class GameRenderer
 {
+
     private Sdl _sdl;
     private Renderer* _renderer;
     private GameWindow _window;
     private Camera _camera;
-
+    private int gameOver;
     private Dictionary<int, IntPtr> _textures = new();
     private Dictionary<int, TextureInfo> _textureData = new();
     private int _textureId;
@@ -76,6 +77,15 @@ public unsafe class GameRenderer
                 angle,
                 center, flip);
         }
+    }
+
+    public void GameOver()
+    {
+        gameOver = LoadTexture("C:\\Users\\katam\\Source\\Repos\\MelnicKatalin\\TheAdventure\\Assets\\game_over.png", out _);
+        var window = _window.Size;
+        var sourceRect = new Rectangle<int>(0, 0, window.Width, window.Height);
+        var destRect = new Rectangle<int>(0, 0, window.Width, window.Height);
+        RenderTexture(gameOver, sourceRect, destRect);
     }
 
     public Vector2D<int> TranslateFromScreenToWorldCoordinates(int x, int y)
