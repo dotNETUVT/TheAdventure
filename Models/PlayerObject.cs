@@ -1,7 +1,8 @@
 using System.Formats.Asn1;
+using NAudio.Wave;
 using Silk.NET.Maths;
 using TheAdventure;
-
+using NAudio;
 namespace TheAdventure.Models;
 
 public class PlayerObject : RenderableGameObject
@@ -20,6 +21,9 @@ public class PlayerObject : RenderableGameObject
         Attack,
         GameOver
     }
+
+    private WaveOutEvent walkingSound;
+    private AudioFileReader audioFile;
 
     private int _pixelsPerSecond = 192;
 
@@ -115,23 +119,30 @@ public class PlayerObject : RenderableGameObject
             y = height - 6;
         }
 
-
+        walkingSound = new WaveOutEvent();
+        audioFile = new AudioFileReader("C:\\Users\\katam\\Source\\Repos\\MelnicKatalin\\TheAdventure\\Assets\\walkingsound.wav");
+        walkingSound.Init(audioFile);
 
         if (y < Position.Y){
             SetState(PlayerState.Move, PlayerStateDirection.Up);
+            walkingSound.Play();
         }
         if (y > Position.Y ){
             SetState(PlayerState.Move, PlayerStateDirection.Down);
+            walkingSound.Play();
         }
         if (x > Position.X ){
             SetState(PlayerState.Move, PlayerStateDirection.Right);
+            walkingSound.Play();
         }
         if (x < Position.X){
             SetState(PlayerState.Move, PlayerStateDirection.Left);
+            walkingSound.Play();
         }
         if (x == Position.X &&
             y == Position.Y){
             SetState(PlayerState.Idle, State.Direction);
+            walkingSound.Stop();
         }
 
         Position = (x, y);
